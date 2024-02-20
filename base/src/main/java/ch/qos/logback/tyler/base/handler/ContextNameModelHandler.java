@@ -25,44 +25,58 @@
  *
  */
 
-package ch.qos.logback.tyler.base.model;
+package ch.qos.logback.tyler.base.handler;
 
+import ch.qos.logback.classic.model.ContextNameModel;
 import ch.qos.logback.core.Context;
-import ch.qos.logback.core.CoreConstants;
-import ch.qos.logback.core.model.ImportModel;
 import ch.qos.logback.core.model.Model;
 import ch.qos.logback.core.model.processor.ModelHandlerBase;
 import ch.qos.logback.core.model.processor.ModelHandlerException;
 import ch.qos.logback.core.model.processor.ModelInterpretationContext;
-import ch.qos.logback.core.util.OptionHelper;
 import ch.qos.logback.tyler.base.TylerModelInterpretationContext;
+import com.squareup.javapoet.MethodSpec;
 
-import static ch.qos.logback.tyler.base.TylerConstants.SEMICOLON;
+import static ch.qos.logback.tyler.base.TylerConstants.ADD_ON_CONSOLE_STATUS_LISTENER;
+import static ch.qos.logback.tyler.base.TylerConstants.SET_CONTEXT_NAME;
 
-public class ImportModelHandler  extends ModelHandlerBase  {
+public class ContextNameModelHandler  extends ModelHandlerBase  {
 
-    public ImportModelHandler(Context context) {
+    public ContextNameModelHandler(Context context) {
         super(context);
     }
 
-    static public ModelHandlerBase makeInstance(Context context, ModelInterpretationContext mic) {
-        System.out.println("sssssssssssssssssssss");
-        return new ImportModelHandler(context);
+    static public ModelHandlerBase makeInstance(Context context, ModelInterpretationContext ic) {
+        return new ContextNameModelHandler(context);
     }
 
     @Override
     public void handle(ModelInterpretationContext mic, Model model) throws ModelHandlerException {
-
-        ImportModel importModel = (ImportModel) model;
+        ContextNameModel contextNameModel = (ContextNameModel) model;
         TylerModelInterpretationContext tmic = (TylerModelInterpretationContext) mic;
 
-        String className = importModel.getClassName();
-        if (OptionHelper.isNullOrEmptyOrAllSpaces(className)) {
-            addWarn("Empty className not allowed");
-            return;
-        }
+        String finalBody = mic.subst(contextNameModel.getBodyText());
+        addInfo("Setting logger context name as [" + finalBody + "]");
 
-        tmic.stringBuffer.append("import "+className).append(SEMICOLON).append(CoreConstants.LINE_SEPARATOR);
+        addJavaStatement(tmic, finalBody);
 
     }
+
+
+    void addJavaStatement(TylerModelInterpretationContext tmic, String finalBody) {
+        //
+        // context.setName(finalBody);
+
+        MethodSpec setContextNameMethodSpec = MethodSpec.methodBuilder(SET_CONTEXT_NAME)
+                .returns(void.class)
+                .beginControlFlow("try")
+                .addStatement("$N.setName($S)", tmic.getLoggerContextFieldSpec(), finalBody)
+                .nextControlFlow("catch ($T e)", IllegalStateException.class)
+                .addStatement("addError(\"Failed to rename context as [$S]", finalBody)
+                .endControlFlow()
+                .build();
+
+        tmic.configureMethodSpecBuilder.addStatement("$N())", setContextNameMethodSpec);
+        tmic.tylerConfiguratorTSB.addMethod(setContextNameMethodSpec);
+    }
+
 }

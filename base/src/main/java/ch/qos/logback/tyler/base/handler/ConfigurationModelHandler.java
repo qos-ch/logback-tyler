@@ -25,7 +25,7 @@
  *
  */
 
-package ch.qos.logback.tyler.base.model;
+package ch.qos.logback.tyler.base.handler;
 
 import ch.qos.logback.classic.model.ConfigurationModel;
 import ch.qos.logback.core.Context;
@@ -33,7 +33,17 @@ import ch.qos.logback.core.model.Model;
 import ch.qos.logback.core.model.processor.ModelHandlerBase;
 import ch.qos.logback.core.model.processor.ModelHandlerException;
 import ch.qos.logback.core.model.processor.ModelInterpretationContext;
+import ch.qos.logback.core.status.OnConsoleStatusListener;
+import ch.qos.logback.core.util.OptionHelper;
+import ch.qos.logback.core.util.StatusListenerConfigHelper;
 import ch.qos.logback.tyler.base.TylerModelInterpretationContext;
+import com.squareup.javapoet.ClassName;
+import com.squareup.javapoet.MethodSpec;
+
+import static ch.qos.logback.core.model.ModelConstants.DEBUG_SYSTEM_PROPERTY_KEY;
+import static ch.qos.logback.core.model.ModelConstants.NULL_STR;
+import static ch.qos.logback.tyler.base.TylerConstants.ADD_ON_CONSOLE_STATUS_LISTENER;
+import static java.lang.Boolean.FALSE;
 
 public class ConfigurationModelHandler extends ModelHandlerBase {
 
@@ -50,5 +60,29 @@ public class ConfigurationModelHandler extends ModelHandlerBase {
         ConfigurationModel configurationModel = (ConfigurationModel) model;
         TylerModelInterpretationContext tmic = (TylerModelInterpretationContext) mic;
         System.out.println("in ConfigurationModelHandler xxxxxxxxxx");
+
+        String debugAttrib = OptionHelper.getSystemProperty(DEBUG_SYSTEM_PROPERTY_KEY, null);
+        if (debugAttrib == null) {
+            debugAttrib = mic.subst(configurationModel.getDebugStr());
+        }
+        if (!(OptionHelper.isNullOrEmptyOrAllSpaces(debugAttrib) || debugAttrib.equalsIgnoreCase(FALSE.toString())
+                || debugAttrib.equalsIgnoreCase(NULL_STR))) {
+            addJavaStatement(tmic);
+        }
+
+    }
+
+    void addJavaStatement(TylerModelInterpretationContext tmic) {
+        //
+        // StatusListenerConfigHelper.addOnConsoleListenerInstance(context, new OnConsoleStatusListener());
+
+        ClassName onConsoleStatusListenerCN = ClassName.get(OnConsoleStatusListener.class);
+
+        MethodSpec addOnConsoleStatusListenerMethodSpec = MethodSpec.methodBuilder(ADD_ON_CONSOLE_STATUS_LISTENER)
+                .returns(void.class)
+                .addStatement("$T.addOnConsoleListenerInstance($N, new $T())", StatusListenerConfigHelper.class, tmic.getLoggerContextFieldSpec(),
+                        onConsoleStatusListenerCN).build();
+
+        tmic.configureMethodSpecBuilder.addStatement("$N())", addOnConsoleStatusListenerMethodSpec);
     }
 }

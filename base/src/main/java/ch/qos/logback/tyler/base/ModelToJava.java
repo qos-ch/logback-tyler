@@ -28,17 +28,23 @@ package ch.qos.logback.tyler.base;
 
 import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.classic.model.ConfigurationModel;
+import ch.qos.logback.classic.model.ContextNameModel;
 import ch.qos.logback.core.Context;
 import ch.qos.logback.core.joran.event.SaxEventRecorder;
 import ch.qos.logback.core.joran.spi.JoranException;
 import ch.qos.logback.core.model.ImportModel;
 import ch.qos.logback.core.model.Model;
 import ch.qos.logback.core.model.processor.DefaultProcessor;
-import ch.qos.logback.tyler.base.model.ImportModelHandler;
-import ch.qos.logback.tyler.base.model.ConfigurationModelHandler;
+import ch.qos.logback.tyler.base.handler.ContextNameModelHandler;
+import ch.qos.logback.tyler.base.handler.ImportModelHandler;
+import ch.qos.logback.tyler.base.handler.ConfigurationModelHandler;
+import com.squareup.javapoet.JavaFile;
+import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.TypeSpec;
 import org.xml.sax.InputSource;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 
 public class ModelToJava {
@@ -63,7 +69,7 @@ public class ModelToJava {
         return top;
     }
 
-    public String toJava(Model topModel) {
+    public String toJava(Model topModel) throws IOException {
         TylerModelInterpretationContext tmic = new TylerModelInterpretationContext(context);
         tmic.setTopModel(topModel);
 
@@ -72,11 +78,19 @@ public class ModelToJava {
 
         defaultProcessor.process(topModel);
 
-        return tmic.stringBuffer.toString();
+        MethodSpec configureMethodSpec = tmic.configureMethodSpecBuilder.build();
+
+        TypeSpec tylerConfiguratorTypeSpec = tmic.tylerConfiguratorTSB.addMethod(configureMethodSpec).build();
+        JavaFile javaFile = JavaFile.builder("com.example.helloworld", tylerConfiguratorTypeSpec).build();
+        //StringBuilder sb = new StringBuilder();
+        StringBuffer sb = new StringBuffer();
+        javaFile.writeTo(sb);
+        return sb.toString();
     }
 
     private void addModelHandlerAssociations(DefaultProcessor defaultProcessor) {
         defaultProcessor.addHandler(ConfigurationModel.class, ConfigurationModelHandler::makeInstance);
+        defaultProcessor.addHandler(ContextNameModel.class, ContextNameModelHandler::makeInstance);
         defaultProcessor.addHandler(ImportModel.class, ImportModelHandler::makeInstance);
     }
 
