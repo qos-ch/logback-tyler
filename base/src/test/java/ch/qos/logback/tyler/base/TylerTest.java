@@ -49,7 +49,7 @@ import java.util.Collections;
 
 import static ch.qos.logback.tyler.base.TylerConstants.ADD_ON_CONSOLE_STATUS_LISTENER;
 import static ch.qos.logback.tyler.base.TylerConstants.CONFIGURE_METHOD_NAME;
-import static ch.qos.logback.tyler.base.TylerConstants.LOGGER_CONTEXT_FIELD_NAME;
+import static ch.qos.logback.tyler.base.TylerConstants.CONTEXT_FIELD_NAME;
 
 public class TylerTest {
 
@@ -59,7 +59,7 @@ public class TylerTest {
     void smoke() throws JoranException, IOException {
         ModelToJava m2j = new ModelToJava(context);
         String input = """
-                <configuration>
+                <configuration debug="true">
                   <import class="ch.qos.logback.classic.encoder.PatternLayoutEncoder"/>
                   <import class="ch.qos.logback.core.ConsoleAppender"/>
                   
@@ -95,7 +95,7 @@ public class TylerTest {
 
         ClassName onConsoleStatusListenerCN = ClassName.get(OnConsoleStatusListener.class);
 
-        FieldSpec loggerContextField = FieldSpec.builder(LoggerContext.class, LOGGER_CONTEXT_FIELD_NAME, Modifier.PRIVATE).build();
+        FieldSpec loggerContextField = FieldSpec.builder(LoggerContext.class, CONTEXT_FIELD_NAME, Modifier.PRIVATE).build();
 
 
 //        MethodSpec constructor = MethodSpec.constructorBuilder()
@@ -109,7 +109,7 @@ public class TylerTest {
                 .addStatement("$T.addOnConsoleListenerInstance($N, new $T())", StatusListenerConfigHelper.class, loggerContextField,
                         onConsoleStatusListenerCN).build();
 
-        ParameterSpec contextParameterSpec = ParameterSpec.builder(LoggerContext.class, LOGGER_CONTEXT_FIELD_NAME).build();
+        ParameterSpec contextParameterSpec = ParameterSpec.builder(LoggerContext.class, CONTEXT_FIELD_NAME).build();
 
         MethodSpec configureMethodSpec = MethodSpec.methodBuilder(CONFIGURE_METHOD_NAME)
                 .addParameter(contextParameterSpec)

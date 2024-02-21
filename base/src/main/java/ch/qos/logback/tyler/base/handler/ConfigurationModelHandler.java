@@ -80,9 +80,10 @@ public class ConfigurationModelHandler extends ModelHandlerBase {
 
         MethodSpec addOnConsoleStatusListenerMethodSpec = MethodSpec.methodBuilder(ADD_ON_CONSOLE_STATUS_LISTENER)
                 .returns(void.class)
-                .addStatement("$T.addOnConsoleListenerInstance($N, new $T())", StatusListenerConfigHelper.class, tmic.getLoggerContextFieldSpec(),
+                .addStatement("$T.addOnConsoleListenerInstance($N, new $T())", StatusListenerConfigHelper.class, tmic.getContextFieldSpec(),
                         onConsoleStatusListenerCN).build();
 
-        tmic.configureMethodSpecBuilder.addStatement("$N())", addOnConsoleStatusListenerMethodSpec);
+        tmic.configureMethodSpecBuilder.addStatement("$N()", addOnConsoleStatusListenerMethodSpec);
+        tmic.tylerConfiguratorTSB.addMethod(addOnConsoleStatusListenerMethodSpec);
     }
 }

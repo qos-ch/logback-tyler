@@ -78,9 +78,14 @@ public class ModelToJava {
 
         defaultProcessor.process(topModel);
 
+
+        tmic.configureMethodSpecBuilder.addStatement("return ExecutionStatus.DO_NOT_INVOKE_NEXT_IF_ANY");
         MethodSpec configureMethodSpec = tmic.configureMethodSpecBuilder.build();
 
-        TypeSpec tylerConfiguratorTypeSpec = tmic.tylerConfiguratorTSB.addMethod(configureMethodSpec).build();
+        tmic.tylerConfiguratorTSB.addMethod(configureMethodSpec);
+
+
+        TypeSpec tylerConfiguratorTypeSpec = tmic.tylerConfiguratorTSB.build();
         JavaFile javaFile = JavaFile.builder("com.example.helloworld", tylerConfiguratorTypeSpec).build();
         //StringBuilder sb = new StringBuilder();
         StringBuffer sb = new StringBuffer();

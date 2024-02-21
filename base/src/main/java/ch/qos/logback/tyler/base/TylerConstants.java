@@ -31,7 +31,7 @@ public class TylerConstants {
 
     public static final char SEMICOLON = ';';
     public static final String TYLER_CONFIGURATOR = "TylerConfigurator";
-    public static String LOGGER_CONTEXT_FIELD_NAME = "loggerContext";
+    public static String CONTEXT_FIELD_NAME = "context";
     public static String CONFIGURE_METHOD_NAME = "configure";
     public static String ADD_ON_CONSOLE_STATUS_LISTENER = "addOnConsoleStatusListener";
 

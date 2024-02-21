@@ -36,7 +36,6 @@ import ch.qos.logback.core.model.processor.ModelInterpretationContext;
 import ch.qos.logback.tyler.base.TylerModelInterpretationContext;
 import com.squareup.javapoet.MethodSpec;
 
-import static ch.qos.logback.tyler.base.TylerConstants.ADD_ON_CONSOLE_STATUS_LISTENER;
 import static ch.qos.logback.tyler.base.TylerConstants.SET_CONTEXT_NAME;
 
 public class ContextNameModelHandler  extends ModelHandlerBase  {
@@ -56,7 +55,7 @@ public class ContextNameModelHandler  extends ModelHandlerBase  {
 
         String finalBody = mic.subst(contextNameModel.getBodyText());
         addInfo("Setting logger context name as [" + finalBody + "]");
-
+        System.out.println("==="+finalBody);
         addJavaStatement(tmic, finalBody);
 
     }
@@ -66,16 +65,19 @@ public class ContextNameModelHandler  extends ModelHandlerBase  {
         //
         // context.setName(finalBody);
 
+        final String parameterName = "name";
+
         MethodSpec setContextNameMethodSpec = MethodSpec.methodBuilder(SET_CONTEXT_NAME)
+                .addParameter(String.class, parameterName)
                 .returns(void.class)
                 .beginControlFlow("try")
-                .addStatement("$N.setName($S)", tmic.getLoggerContextFieldSpec(), finalBody)
+                .addStatement("$N.setName($N)", tmic.getContextFieldSpec(), parameterName)
                 .nextControlFlow("catch ($T e)", IllegalStateException.class)
-                .addStatement("addError(\"Failed to rename context as [$S]", finalBody)
+                .addStatement("addError(\"Failed to rename context as [\"+$N+\"]\")", parameterName)
                 .endControlFlow()
                 .build();
 
-        tmic.configureMethodSpecBuilder.addStatement("$N())", setContextNameMethodSpec);
+        tmic.configureMethodSpecBuilder.addStatement("$N($S)", setContextNameMethodSpec, finalBody);
         tmic.tylerConfiguratorTSB.addMethod(setContextNameMethodSpec);
     }
 
