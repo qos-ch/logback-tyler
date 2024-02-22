@@ -25,19 +25,27 @@
  *
  */
 
-package ch.qos.logback.tyler.base;
+package ch.qos.logback.tyler.base.antlr4;
 
-public class TylerConstants {
+import org.antlr.v4.runtime.ANTLRInputStream;
+import org.antlr.v4.runtime.CommonTokenStream;
 
-    public static final char SEMICOLON = ';';
-    public static final String TYLER_CONFIGURATOR = "TylerConfigurator";
-    public static final String CONTEXT_FIELD_NAME = "context";
-    public static final String CONFIGURE_METHOD_NAME = "configure";
-    public static final String ADD_ON_CONSOLE_STATUS_LISTENER = "addOnConsoleStatusListener";
+public class SyntaxVerifier {
 
-    public static final String SET_CONTEXT_NAME = "setContextName";
+    public TylerAntlr4ErrorListener verify(String inputStr) {
+        ANTLRInputStream inputStream = new ANTLRInputStream(inputStr);
+        JavaLexer lexer = new JavaLexer(inputStream);
+        CommonTokenStream tokens = new CommonTokenStream(lexer);
+        JavaParser parser = new JavaParser(tokens);
 
+        TylerAntlr4ErrorListener errorListener = new TylerAntlr4ErrorListener();
 
-    public static final String SETUP_APPENDER_NAMED_ = "setupAppenderNamed_";
+        parser.addErrorListener(errorListener);
 
+        parser.compilationUnit();
+        int syntaxErrors = parser.getNumberOfSyntaxErrors();
+        errorListener.syntaxErrorCount = syntaxErrors;
+
+        return errorListener;
+    }
 }

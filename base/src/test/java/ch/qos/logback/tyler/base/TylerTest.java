@@ -35,6 +35,8 @@ import ch.qos.logback.core.model.Model;
 import ch.qos.logback.core.status.OnConsoleStatusListener;
 import ch.qos.logback.core.util.StatusListenerConfigHelper;
 import ch.qos.logback.core.util.StatusPrinter;
+import ch.qos.logback.tyler.base.antlr4.SyntaxVerifier;
+import ch.qos.logback.tyler.base.antlr4.TylerAntlr4ErrorListener;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.JavaFile;
@@ -50,10 +52,13 @@ import java.util.Collections;
 import static ch.qos.logback.tyler.base.TylerConstants.ADD_ON_CONSOLE_STATUS_LISTENER;
 import static ch.qos.logback.tyler.base.TylerConstants.CONFIGURE_METHOD_NAME;
 import static ch.qos.logback.tyler.base.TylerConstants.CONTEXT_FIELD_NAME;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TylerTest {
 
     ContextBase context = new ContextBase();
+    SyntaxVerifier syntaxVerifier = new SyntaxVerifier();
+    StatusPrinter statusPrinter = new StatusPrinter();
 
     @Test
     void smoke() throws JoranException, IOException {
@@ -62,8 +67,12 @@ public class TylerTest {
                 <configuration debug="true">
                   <import class="ch.qos.logback.classic.encoder.PatternLayoutEncoder"/>
                   <import class="ch.qos.logback.core.ConsoleAppender"/>
+                  <import class="ch.qos.logback.core.FileAppender"/>
                   
                   <contextName>myAppName</contextName>
+                  <appender class="FileAppender" name="toto">
+                     <file>toto.log</file>
+                  </appender>          
                                 
                 </configuration>                
                 """;
@@ -71,11 +80,17 @@ public class TylerTest {
         Model model = m2j.extractModel(input);
         String result = m2j.toJava(model);
 
-        StatusPrinter statusPrinter = new StatusPrinter();
+        TylerAntlr4ErrorListener errorListener = syntaxVerifier.verify(result);
+
+
+
         statusPrinter.print(context);
         System.out.println("----------------");
         System.out.println(result);
         System.out.println("----------------");
+
+        assertEquals(0, errorListener.getSyntaxErrorCount(), errorListener.getErrorMessages().toString());
+
     }
 
     @Test

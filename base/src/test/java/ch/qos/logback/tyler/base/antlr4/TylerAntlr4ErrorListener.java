@@ -25,19 +25,31 @@
  *
  */
 
-package ch.qos.logback.tyler.base;
+package ch.qos.logback.tyler.base.antlr4;
 
-public class TylerConstants {
+import org.antlr.v4.runtime.BaseErrorListener;
+import org.antlr.v4.runtime.RecognitionException;
+import org.antlr.v4.runtime.Recognizer;
 
-    public static final char SEMICOLON = ';';
-    public static final String TYLER_CONFIGURATOR = "TylerConfigurator";
-    public static final String CONTEXT_FIELD_NAME = "context";
-    public static final String CONFIGURE_METHOD_NAME = "configure";
-    public static final String ADD_ON_CONSOLE_STATUS_LISTENER = "addOnConsoleStatusListener";
+public class TylerAntlr4ErrorListener extends BaseErrorListener {
 
-    public static final String SET_CONTEXT_NAME = "setContextName";
+    final StringBuilder errorMessages = new StringBuilder();
+    int syntaxErrorCount = 0;
 
+    @Override
+    public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol,
+            int line, int charPositionInLine, String msg,
+            RecognitionException e) {
+        String err = String.format("Failed to parse at line %d:%d due to %s", line,
+                charPositionInLine + 1, msg);
+        errorMessages.append(err);
+        errorMessages.append(System.lineSeparator());
+    }
+    public int getSyntaxErrorCount() {
+        return syntaxErrorCount;
+    }
 
-    public static final String SETUP_APPENDER_NAMED_ = "setupAppenderNamed_";
-
+    public StringBuilder getErrorMessages() {
+        return errorMessages;
+    }
 }

@@ -25,19 +25,31 @@
  *
  */
 
-package ch.qos.logback.tyler.base;
+package ch.qos.logback.tyler.base.handler;
 
-public class TylerConstants {
+import com.squareup.javapoet.MethodSpec;
 
-    public static final char SEMICOLON = ';';
-    public static final String TYLER_CONFIGURATOR = "TylerConfigurator";
-    public static final String CONTEXT_FIELD_NAME = "context";
-    public static final String CONFIGURE_METHOD_NAME = "configure";
-    public static final String ADD_ON_CONSOLE_STATUS_LISTENER = "addOnConsoleStatusListener";
+public class ClassAndMethodSpecBuilderTuple {
 
-    public static final String SET_CONTEXT_NAME = "setContextName";
+    final Class objClass;
+    final String  variableName;
+    final MethodSpec.Builder methodSpecBuilder;
 
+    public ClassAndMethodSpecBuilderTuple(Class objClass, String variableName, MethodSpec.Builder methodSpecBuilder) {
+        this.objClass = objClass;
+        this.variableName = variableName;
+        this.methodSpecBuilder = methodSpecBuilder;
+    }
 
-    public static final String SETUP_APPENDER_NAMED_ = "setupAppenderNamed_";
+    public Class getObjClass() {
+        return objClass;
+    }
 
+    public String getVariableName() {
+        return variableName;
+    }
+
+    public MethodSpec.Builder getMethodSpecBuilder() {
+        return methodSpecBuilder;
+    }
 }
