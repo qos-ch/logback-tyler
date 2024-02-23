@@ -36,10 +36,9 @@ import ch.qos.logback.core.model.Model;
 import ch.qos.logback.core.model.processor.ModelHandlerBase;
 import ch.qos.logback.core.model.processor.ModelHandlerException;
 import ch.qos.logback.core.model.processor.ModelInterpretationContext;
-import ch.qos.logback.core.spi.ErrorCodes;
 import ch.qos.logback.core.util.OptionHelper;
 import ch.qos.logback.tyler.base.TylerModelInterpretationContext;
-import ch.qos.logback.tyler.base.util.LoggerNameUtil;
+import ch.qos.logback.tyler.base.util.VariableNameUtil;
 
 import static ch.qos.logback.core.joran.JoranConstants.NULL;
 import static ch.qos.logback.tyler.base.TylerConstants.SETUP_LOGGER_METHOD_NAME;
@@ -47,6 +46,7 @@ import static ch.qos.logback.tyler.base.TylerConstants.SETUP_LOGGER_METHOD_NAME;
 public class LoggerModelHandler  extends ModelHandlerBase {
 
     boolean inError = false;
+    String loggerName;
 
     public LoggerModelHandler(Context context) {
         super(context);
@@ -68,7 +68,7 @@ public class LoggerModelHandler  extends ModelHandlerBase {
 
         TylerModelInterpretationContext tmic = (TylerModelInterpretationContext) mic;
 
-        String loggerName = loggerModel.getName();
+        this.loggerName = loggerModel.getName();
 
         String levelStr = loggerModel.getLevel();
         Level level = levelStringToLevel(levelStr);
@@ -77,6 +77,7 @@ public class LoggerModelHandler  extends ModelHandlerBase {
 
         addJavaStatement(tmic, loggerName, level, levelStr, additivity);
 
+        mic.pushObject(loggerName);
 
 
     }
@@ -104,10 +105,8 @@ public class LoggerModelHandler  extends ModelHandlerBase {
     }
 
     private void addJavaStatement(TylerModelInterpretationContext tmic, String loggerName, Level level, String levelStr, Boolean additivity) {
-
         // Logger logger_XYZ = setupLogger(loggerName, level, levelString, additivity)
-
-        String loggerVariableName = LoggerNameUtil.loggerNameToVariableName(loggerName);
+        String loggerVariableName = VariableNameUtil.loggerNameToVariableName(loggerName);
 
         String additivityStr = additivity == null ? "null" : "Boolean."+additivity.toString().toUpperCase();
 
@@ -116,5 +115,16 @@ public class LoggerModelHandler  extends ModelHandlerBase {
 
     }
 
-
+    @Override
+    public void postHandle(ModelInterpretationContext mic, Model model) throws ModelHandlerException {
+        if (inError) {
+            return;
+        }
+        Object o = mic.peekObject();
+        if (o != loggerName) {
+            addWarn("The object [" + o + "] on the top the of the stack is not the logger pushed earlier");
+        } else {
+            mic.popObject();
+        }
+    }
 }

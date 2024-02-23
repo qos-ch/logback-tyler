@@ -37,6 +37,7 @@ import ch.qos.logback.core.model.processor.ModelInterpretationContext;
 import ch.qos.logback.core.util.OptionHelper;
 import ch.qos.logback.tyler.base.TylerModelInterpretationContext;
 import ch.qos.logback.tyler.base.util.ClassUtil;
+import ch.qos.logback.tyler.base.util.VariableNameUtil;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.MethodSpec;
 
@@ -80,7 +81,7 @@ public class AppenderModelHandler extends ModelHandlerBase {
 
         String originalClassName = appenderModel.getClassName();
         String className = mic.getImport(originalClassName);
-        appenderVariableName = "appender_"+appenderName;
+        this.appenderVariableName = VariableNameUtil.appenderNameToVariableName(appenderName);
         MethodSpec.Builder methodSpec = addJavaStatementForAppenderInitialization(tmic, appenderName, className);
         try {
             Class appenderClass = Class.forName(className);
@@ -103,17 +104,17 @@ public class AppenderModelHandler extends ModelHandlerBase {
                 ClassUtil.extractSimpleClassName(fullyQualifiedAppenderClassName));
 
         MethodSpec.Builder appenderSetupMethodSpec = MethodSpec.methodBuilder(SETUP_APPENDER_NAMED_ + appenderName)
-                .returns(Appender.class).addStatement("$T " + appenderVariableName, desiredAppenderCN)
+                .returns(Appender.class).addStatement("$T " + this.appenderVariableName, desiredAppenderCN)
                 .beginControlFlow("try")
-                .addStatement(appenderVariableName + " = ($1T) $2T.instantiateByClassName($3S, $4T.class, $5N)",
+                .addStatement(this.appenderVariableName + " = ($1T) $2T.instantiateByClassName($3S, $4T.class, $5N)",
                         desiredAppenderCN, optionHelperCN, fullyQualifiedAppenderClassName, appenderIntefaceCN,
                         tmic.getContextFieldSpec())
                 .nextControlFlow("catch ($T oops)", Exception.class)
                 .addStatement("addError(\"Could not create an Appender of type [\" + $S + \"].\", oops)",
                         fullyQualifiedAppenderClassName).addStatement("return null")
                 .endControlFlow()
-                .addStatement(appenderVariableName + ".setContext($N)", tmic.getContextFieldSpec())
-                .addStatement(appenderVariableName + ".setName($S)", appenderName);
+                .addStatement(this.appenderVariableName + ".setContext($N)", tmic.getContextFieldSpec())
+                .addStatement(this.appenderVariableName + ".setName($S)", appenderName);
 
         return appenderSetupMethodSpec;
     }

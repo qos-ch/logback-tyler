@@ -31,12 +31,13 @@
     <import class="ch.qos.logback.core.FileAppender"/>
 
     <contextName>myAppName</contextName>
+
     <appender class="FileAppender" name="toto">
-        <file>toto</file>
+        <file>toto.log</file>
     </appender>
 
-    <root level="info">
+    <logger name="com.foo.Bar" level="DEBUG">
         <appender-ref ref="toto"/>
-    </root>
+    </logger>
 
 </configuration>

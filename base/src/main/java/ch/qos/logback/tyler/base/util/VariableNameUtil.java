@@ -27,10 +27,12 @@
 
 package ch.qos.logback.tyler.base.util;
 //import static ch.qos.logback.core.CoreConstants.DOT;
+import ch.qos.logback.core.util.StringUtil;
+
 import static ch.qos.logback.core.CoreConstants.DOT;
 import static ch.qos.logback.tyler.base.TylerConstants.UNDERSCORE;
 
-public class LoggerNameUtil {
+public class VariableNameUtil {
 
 
     static public String replaceDotsWithUnderscores(String loggerName) {
@@ -39,6 +41,11 @@ public class LoggerNameUtil {
 
     static public String loggerNameToVariableName(String loggerName) {
         return "logger_"+replaceDotsWithUnderscores(loggerName);
+    }
+
+
+    static public String appenderNameToVariableName(String appenderName) {
+        return "appender_"+ appenderName;
     }
 
 }

@@ -39,7 +39,10 @@ import ch.qos.logback.core.model.processor.ModelInterpretationContext;
 import ch.qos.logback.core.util.AggregationType;
 import ch.qos.logback.core.util.StringUtil;
 import ch.qos.logback.tyler.base.TylerModelInterpretationContext;
+import ch.qos.logback.tyler.base.util.StringToVariableStament;
 import com.squareup.javapoet.MethodSpec;
+
+import java.lang.reflect.Method;
 
 public class ImplicitModelHandler extends ModelHandlerBase {
 
@@ -96,6 +99,7 @@ public class ImplicitModelHandler extends ModelHandlerBase {
         aggregationAssessor.setContext(context);
 
         AggregationType aggregationType = aggregationAssessor.computeAggregationType(nestedElementTagName);
+
         switch (aggregationType) {
         case NOT_FOUND:
             addWarn(IGNORING_UNKNOWN_PROP + " [" + nestedElementTagName + "] in [" + o.getClass().getName() + "]");
@@ -105,7 +109,7 @@ public class ImplicitModelHandler extends ModelHandlerBase {
             return;
         case AS_BASIC_PROPERTY:
         case AS_BASIC_PROPERTY_COLLECTION:
-            doBasicProperty(mic, implicitModel, classAndMethodSpecTuple, aggregationType);
+            doBasicProperty(mic, implicitModel, aggregationAssessor, classAndMethodSpecTuple, aggregationType);
             return;
         // we only push action data if NestComponentIA is applicable
         case AS_COMPLEX_PROPERTY_COLLECTION:
@@ -123,16 +127,21 @@ public class ImplicitModelHandler extends ModelHandlerBase {
     private void doComplex(ModelInterpretationContext mic, ImplicitModel implicitModel,
             AggregationType aggregationType) {
 
+        System.out.println("======= ImplicitModel.doComplex");
+
     }
 
-    private void doBasicProperty(ModelInterpretationContext mic, ImplicitModel implicitModel, ClassAndMethodSpecBuilderTuple classAndMethodSpecTuple,
+    private void doBasicProperty(ModelInterpretationContext mic, ImplicitModel implicitModel, AggregationAssessor aggregationAssessor,
+            ClassAndMethodSpecBuilderTuple classAndMethodSpecTuple,
             AggregationType aggregationType) {
         String finalBody = mic.subst(implicitModel.getBodyText());
         String nestedElementTagName = implicitModel.getTag();
 
         switch (aggregationType) {
         case AS_BASIC_PROPERTY:
-            setPropertyJavaStatement(classAndMethodSpecTuple, nestedElementTagName, finalBody);
+            Method setterMethod = aggregationAssessor.findSetterMethod(nestedElementTagName);
+            Class<?>[] paramTypes = setterMethod.getParameterTypes();
+            setPropertyJavaStatement(classAndMethodSpecTuple, nestedElementTagName, finalBody, paramTypes[0]);
             //actionData.parentBean.setProperty(actionData.propertyName, finalBody);
             break;
         case AS_BASIC_PROPERTY_COLLECTION:
@@ -143,13 +152,15 @@ public class ImplicitModelHandler extends ModelHandlerBase {
         }
     }
 
-    private void setPropertyJavaStatement(ClassAndMethodSpecBuilderTuple classAndMethodSpecTuple, String nestedElementTagName, String value) {
+    private void setPropertyJavaStatement(ClassAndMethodSpecBuilderTuple classAndMethodSpecTuple,
+            String nestedElementTagName, String value, Class<?> type) {
 
         MethodSpec.Builder methodSpecBuilder = classAndMethodSpecTuple.methodSpecBuilder;
         String variableName = classAndMethodSpecTuple.getVariableName();
         String setterSuffix = StringUtil.capitalizeFirstLetter(nestedElementTagName );
-
-        methodSpecBuilder.addStatement("$N.set$N($S)", variableName, setterSuffix, value);
+        String valuePart = StringToVariableStament.convertArg(value, type);
+        System.out.println("xxx-"+valuePart);
+        methodSpecBuilder.addStatement("$N.set$N("+valuePart+")", variableName, setterSuffix, value);
 
 
     }

@@ -34,11 +34,13 @@ import ch.qos.logback.core.Context;
 import ch.qos.logback.core.joran.event.SaxEventRecorder;
 import ch.qos.logback.core.joran.spi.JoranException;
 import ch.qos.logback.core.model.AppenderModel;
+import ch.qos.logback.core.model.AppenderRefModel;
 import ch.qos.logback.core.model.ImplicitModel;
 import ch.qos.logback.core.model.ImportModel;
 import ch.qos.logback.core.model.Model;
 import ch.qos.logback.core.model.processor.DefaultProcessor;
 import ch.qos.logback.core.model.processor.ImportModelHandler;
+import ch.qos.logback.tyler.base.handler.AppenderRefModelHandler;
 import ch.qos.logback.tyler.base.handler.ContextNameModelHandler;
 
 import ch.qos.logback.tyler.base.handler.AppenderModelHandler;
@@ -107,7 +109,7 @@ public class ModelToJava {
         defaultProcessor.addHandler(AppenderModel.class, AppenderModelHandler::makeInstance);
         defaultProcessor.addHandler(ImplicitModel.class, ImplicitModelHandler::makeInstance);
         defaultProcessor.addHandler(LoggerModel.class, LoggerModelHandler::makeInstance);
-
+        defaultProcessor.addHandler(AppenderRefModel.class, AppenderRefModelHandler::makeInstance);
     }
 
 }
