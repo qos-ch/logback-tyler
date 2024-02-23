@@ -29,6 +29,7 @@ package ch.qos.logback.tyler.base;
 import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.classic.model.ConfigurationModel;
 import ch.qos.logback.classic.model.ContextNameModel;
+import ch.qos.logback.classic.model.LoggerModel;
 import ch.qos.logback.core.Context;
 import ch.qos.logback.core.joran.event.SaxEventRecorder;
 import ch.qos.logback.core.joran.spi.JoranException;
@@ -43,6 +44,7 @@ import ch.qos.logback.tyler.base.handler.ContextNameModelHandler;
 import ch.qos.logback.tyler.base.handler.AppenderModelHandler;
 import ch.qos.logback.tyler.base.handler.ConfigurationModelHandler;
 import ch.qos.logback.tyler.base.handler.ImplicitModelHandler;
+import ch.qos.logback.tyler.base.handler.LoggerModelHandler;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeSpec;
@@ -104,6 +106,8 @@ public class ModelToJava {
         defaultProcessor.addHandler(ImportModel.class, ImportModelHandler::makeInstance);
         defaultProcessor.addHandler(AppenderModel.class, AppenderModelHandler::makeInstance);
         defaultProcessor.addHandler(ImplicitModel.class, ImplicitModelHandler::makeInstance);
+        defaultProcessor.addHandler(LoggerModel.class, LoggerModelHandler::makeInstance);
+
     }
 
 }

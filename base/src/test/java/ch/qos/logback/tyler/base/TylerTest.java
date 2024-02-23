@@ -74,6 +74,7 @@ public class TylerTest {
                      <file>toto.log</file>
                   </appender>          
                                 
+                  <logger name="com.foo.Bar" level="DEBUG"/>              
                 </configuration>                
                 """;
 

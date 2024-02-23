@@ -25,34 +25,36 @@
  *
  */
 
-package ch.qos.logback.tyler.base;
+package ch.qos.logback.tyler.base.util;
 
-public class TylerConstants {
+import static ch.qos.logback.core.CoreConstants.DOT;
+import static ch.qos.logback.tyler.base.TylerConstants.NOT_FOUND;
 
-    public static final char SEMICOLON = ';';
-
-    public static char UNDERSCORE = '_';
-
-    static public final int NOT_FOUND = -1;
-
-    public static final String TYLER_CONFIGURATOR = "TylerConfigurator";
-    public static final String CONTEXT_FIELD_NAME = "context";
-    public static final String LEVEL_FIELD_NAME = "level";
-    public static final String LEVEL_STRING_PARAMETER_NAME = "levelString";
+public class ClassUtil {
 
 
 
-    public static final String LOGGER_FIELD_NAME = "logger";
+    public static String extractPackageName(String fqcn) {
+        int lastDotIndex = fqcn.lastIndexOf(DOT);
+        if (lastDotIndex != NOT_FOUND) {
+            String packageName = fqcn.substring(0, lastDotIndex);
+            return packageName;
+        } else {
+            return null;
+        }
+    }
 
-    public static final String LOGGER_NAME_FIELD_NAME = "loggerName";
-    public static final String ADDITIVITY_FIELD_NAME = "additivity";
-    public static final String CONFIGURE_METHOD_NAME = "configure";
-    public static final String SETUP_LOGGER_METHOD_NAME = "setupLogger";
-    public static final String ADD_ON_CONSOLE_STATUS_LISTENER = "addOnConsoleStatusListener";
+    public static String extractSimpleClassName(String fqcn) {
+        int lastDotIndex = fqcn.lastIndexOf(DOT);
+        if (lastDotIndex == NOT_FOUND) {
+            return fqcn;
+        }
 
-    public static final String SET_CONTEXT_NAME = "setContextName";
-
-
-    public static final String SETUP_APPENDER_NAMED_ = "setupAppenderNamed_";
-
+        if (lastDotIndex+1 < fqcn.length()) {
+            String className = fqcn.substring(lastDotIndex + 1);
+            return className;
+        } else {
+            return null;
+        }
+    }
 }

@@ -25,34 +25,20 @@
  *
  */
 
-package ch.qos.logback.tyler.base;
+package ch.qos.logback.tyler.base.util;
+//import static ch.qos.logback.core.CoreConstants.DOT;
+import static ch.qos.logback.core.CoreConstants.DOT;
+import static ch.qos.logback.tyler.base.TylerConstants.UNDERSCORE;
 
-public class TylerConstants {
-
-    public static final char SEMICOLON = ';';
-
-    public static char UNDERSCORE = '_';
-
-    static public final int NOT_FOUND = -1;
-
-    public static final String TYLER_CONFIGURATOR = "TylerConfigurator";
-    public static final String CONTEXT_FIELD_NAME = "context";
-    public static final String LEVEL_FIELD_NAME = "level";
-    public static final String LEVEL_STRING_PARAMETER_NAME = "levelString";
+public class LoggerNameUtil {
 
 
+    static public String replaceDotsWithUnderscores(String loggerName) {
+        return loggerName.replace(DOT, UNDERSCORE);
+    }
 
-    public static final String LOGGER_FIELD_NAME = "logger";
-
-    public static final String LOGGER_NAME_FIELD_NAME = "loggerName";
-    public static final String ADDITIVITY_FIELD_NAME = "additivity";
-    public static final String CONFIGURE_METHOD_NAME = "configure";
-    public static final String SETUP_LOGGER_METHOD_NAME = "setupLogger";
-    public static final String ADD_ON_CONSOLE_STATUS_LISTENER = "addOnConsoleStatusListener";
-
-    public static final String SET_CONTEXT_NAME = "setContextName";
-
-
-    public static final String SETUP_APPENDER_NAMED_ = "setupAppenderNamed_";
+    static public String loggerNameToVariableName(String loggerName) {
+        return "logger_"+replaceDotsWithUnderscores(loggerName);
+    }
 
 }

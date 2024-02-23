@@ -25,34 +25,36 @@
  *
  */
 
-package ch.qos.logback.tyler.base;
+package ch.qos.logback.tyler.base.util;
 
-public class TylerConstants {
+import org.junit.jupiter.api.Test;
 
-    public static final char SEMICOLON = ';';
+import static org.junit.jupiter.api.Assertions.*;
+import static ch.qos.logback.core.CoreConstants.DOT;
 
-    public static char UNDERSCORE = '_';
+class ClassUtilTest {
 
-    static public final int NOT_FOUND = -1;
+    @Test
+    void smoke() {
+        String packageName = "ch.qos";
+        String className = "Toto";
+        String fqcn = packageName+DOT+className;
+        assertEquals(packageName, ClassUtil.extractPackageName(fqcn));
+        assertEquals(className, ClassUtil.extractSimpleClassName(fqcn));
+    }
 
-    public static final String TYLER_CONFIGURATOR = "TylerConfigurator";
-    public static final String CONTEXT_FIELD_NAME = "context";
-    public static final String LEVEL_FIELD_NAME = "level";
-    public static final String LEVEL_STRING_PARAMETER_NAME = "levelString";
+    @Test
+    void badFQCN() {
+        {
+            String fqcn = "asd";
+            assertNull(ClassUtil.extractPackageName(fqcn));
+            assertEquals(fqcn, ClassUtil.extractSimpleClassName(fqcn));
+        }
 
-
-
-    public static final String LOGGER_FIELD_NAME = "logger";
-
-    public static final String LOGGER_NAME_FIELD_NAME = "loggerName";
-    public static final String ADDITIVITY_FIELD_NAME = "additivity";
-    public static final String CONFIGURE_METHOD_NAME = "configure";
-    public static final String SETUP_LOGGER_METHOD_NAME = "setupLogger";
-    public static final String ADD_ON_CONSOLE_STATUS_LISTENER = "addOnConsoleStatusListener";
-
-    public static final String SET_CONTEXT_NAME = "setContextName";
-
-
-    public static final String SETUP_APPENDER_NAMED_ = "setupAppenderNamed_";
-
+        {
+            String fqcn = "asd.toto.";
+            assertEquals("asd.toto", ClassUtil.extractPackageName(fqcn));
+            assertNull(ClassUtil.extractSimpleClassName(fqcn));
+        }
+    }
 }
