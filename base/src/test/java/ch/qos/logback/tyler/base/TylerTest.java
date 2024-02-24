@@ -53,6 +53,8 @@ public class TylerTest {
                   <import class="ch.qos.logback.classic.encoder.PatternLayoutEncoder"/>
                   <import class="ch.qos.logback.core.ConsoleAppender"/>
                   <import class="ch.qos.logback.core.FileAppender"/>
+                    <import class="ch.qos.logback.core.rolling.RollingFileAppender"/>
+                    <import class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy"/>
                   
                   <contextName>myAppName</contextName>
                   <appender class="FileAppender" name="toto">
@@ -64,9 +66,22 @@ public class TylerTest {
                      </encoder>
                        
                   </appender>          
+                       
+                  <appender name="RFILE" class="RollingFileAppender">
+                     <file>logFile.log</file>
+                     <rollingPolicy class="TimeBasedRollingPolicy">
+                       <fileNamePattern>logFile.%d{yyyy-MM-dd}.log</fileNamePattern>
+                       <maxHistory>30</maxHistory>
+                       <totalSizeCap>3GB</totalSizeCap>
+                     </rollingPolicy>
+                     <encoder class="PatternLayoutEncoder">
+                       <pattern>%-4relative [%thread] %-5level %logger{35} -%kvp- %msg%n</pattern>
+                     </encoder>
+                  </appender>
                                 
                   <logger name="com.foo.Bar" level="DEBUG">
                     <appender-ref ref="toto"/>
+                     <appender-ref ref="RFILE"/>
                   </logger>              
                 </configuration>                
                 """;
@@ -75,8 +90,6 @@ public class TylerTest {
         String result = m2j.toJava(model);
 
         TylerAntlr4ErrorListener errorListener = syntaxVerifier.verify(result);
-
-
 
         statusPrinter.print(context);
         System.out.println("----------------");

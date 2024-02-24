@@ -35,6 +35,8 @@ import ch.qos.logback.core.model.Model;
 import ch.qos.logback.core.model.processor.ModelHandlerBase;
 import ch.qos.logback.core.model.processor.ModelHandlerException;
 import ch.qos.logback.core.model.processor.ModelInterpretationContext;
+import ch.qos.logback.core.spi.ContextAware;
+import ch.qos.logback.core.spi.ContextAwareBase;
 import ch.qos.logback.core.util.AggregationType;
 import ch.qos.logback.core.util.Loader;
 import ch.qos.logback.core.util.OptionHelper;
@@ -157,7 +159,7 @@ public class ImplicitModelHandler extends ModelHandlerBase {
             }
 
             this.implicitModelHandlerData = addJavaStatementForComplexProperty(tmic, implicitModel,
-                    classAndMethodSpecTuple, aggregationAssessor, componentClass);
+                    classAndMethodSpecTuple, componentClass);
             tmic.pushObject(implicitModelHandlerData);
 
         } catch (Exception oops) {
@@ -170,16 +172,17 @@ public class ImplicitModelHandler extends ModelHandlerBase {
 
     private ImplicitModelHandlerData addJavaStatementForComplexProperty(TylerModelInterpretationContext tmic,
             ImplicitModel implicitModel, ImplicitModelHandlerData implicitModelHandlerData,
-            AggregationAssessor aggregationAssessor, Class<?> componentClass) {
+            Class<?> componentClass) {
 
         MethodSpec.Builder methodSpecBuilder = implicitModelHandlerData.methodSpecBuilder;
         String parentVariableName = implicitModelHandlerData.getVariableName();
-        Method setterMethod = aggregationAssessor.findSetterMethod(implicitModel.getTag());
         String variableName = StringUtil.lowercaseFirstLetter(componentClass.getSimpleName());
         ClassName componentCN = ClassName.get(componentClass.getPackageName(), componentClass.getSimpleName());
 
         methodSpecBuilder.addStatement("$1T $2N = new $1T()", componentCN, variableName);
-
+        methodSpecBuilder.beginControlFlow("if ($N instanceof $T)", variableName, ContextAware.class);
+        methodSpecBuilder.addStatement("$N.setContext($N)", variableName, tmic.getContextFieldSpec());
+        methodSpecBuilder.endControlFlow();
 
         ImplicitModelHandlerData cvnmsbt = new ImplicitModelHandlerData(parentVariableName, componentClass,
                 variableName, methodSpecBuilder);
