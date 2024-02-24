@@ -28,7 +28,6 @@
 package ch.qos.logback.tyler.base.handler;
 
 import ch.qos.logback.core.Context;
-import ch.qos.logback.core.joran.action.ImplicitModelData;
 import ch.qos.logback.core.joran.util.AggregationAssessor;
 import ch.qos.logback.core.joran.util.beans.BeanDescriptionCache;
 import ch.qos.logback.core.model.ImplicitModel;
@@ -37,18 +36,22 @@ import ch.qos.logback.core.model.processor.ModelHandlerBase;
 import ch.qos.logback.core.model.processor.ModelHandlerException;
 import ch.qos.logback.core.model.processor.ModelInterpretationContext;
 import ch.qos.logback.core.util.AggregationType;
+import ch.qos.logback.core.util.Loader;
+import ch.qos.logback.core.util.OptionHelper;
 import ch.qos.logback.core.util.StringUtil;
 import ch.qos.logback.tyler.base.TylerModelInterpretationContext;
 import ch.qos.logback.tyler.base.util.StringToVariableStament;
+import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.MethodSpec;
 
 import java.lang.reflect.Method;
 
 public class ImplicitModelHandler extends ModelHandlerBase {
 
-    private ImplicitModelData implicitModelData;
-    private final BeanDescriptionCache beanDescriptionCache;
     boolean inError = false;
+    private final BeanDescriptionCache beanDescriptionCache;
+    ImplicitModelHandlerData implicitModelHandlerData;
+    AggregationAssessor aggregationAssessor;
 
     static public final String IGNORING_UNKNOWN_PROP = "Ignoring unknown property";
 
@@ -87,15 +90,14 @@ public class ImplicitModelHandler extends ModelHandlerBase {
             return;
         }
 
-        if (!(o instanceof ClassAndMethodSpecBuilderTuple)) {
-            addError("Was expecting class of type " + ClassAndMethodSpecBuilderTuple.class.getName() + " but found"
+        if (!(o instanceof ImplicitModelHandlerData)) {
+            addError("Was expecting class of type " + ImplicitModelHandlerData.class.getName() + " but found"
                     + o.getClass().getName());
             inError = true;
             return;
         }
-        ClassAndMethodSpecBuilderTuple classAndMethodSpecTuple = (ClassAndMethodSpecBuilderTuple) o;
-        AggregationAssessor aggregationAssessor = new AggregationAssessor(beanDescriptionCache,
-                classAndMethodSpecTuple.getObjClass());
+        ImplicitModelHandlerData tylerImplicitData = (ImplicitModelHandlerData) o;
+        this.aggregationAssessor = new AggregationAssessor(beanDescriptionCache, tylerImplicitData.getObjClass());
         aggregationAssessor.setContext(context);
 
         AggregationType aggregationType = aggregationAssessor.computeAggregationType(nestedElementTagName);
@@ -109,12 +111,12 @@ public class ImplicitModelHandler extends ModelHandlerBase {
             return;
         case AS_BASIC_PROPERTY:
         case AS_BASIC_PROPERTY_COLLECTION:
-            doBasicProperty(mic, implicitModel, aggregationAssessor, classAndMethodSpecTuple, aggregationType);
+            doBasicProperty(mic, implicitModel, aggregationAssessor, tylerImplicitData, aggregationType);
             return;
         // we only push action data if NestComponentIA is applicable
         case AS_COMPLEX_PROPERTY_COLLECTION:
         case AS_COMPLEX_PROPERTY:
-            doComplex(mic, implicitModel, aggregationType);
+            doComplex(tmic, implicitModel, aggregationAssessor, tylerImplicitData, aggregationType);
             return;
         default:
             addError("PropertySetter.computeAggregationType returned " + aggregationType);
@@ -124,15 +126,68 @@ public class ImplicitModelHandler extends ModelHandlerBase {
 
     }
 
-    private void doComplex(ModelInterpretationContext mic, ImplicitModel implicitModel,
+    private void doComplex(TylerModelInterpretationContext tmic, ImplicitModel implicitModel,
+            AggregationAssessor aggregationAssessor, ImplicitModelHandlerData classAndMethodSpecTuple,
             AggregationType aggregationType) {
 
-        System.out.println("======= ImplicitModel.doComplex");
+        String className = implicitModel.getClassName();
+        String fqcn = tmic.getImport(className);
+        String nestedElementTagName = implicitModel.getTag();
+
+        Class<?> componentClass = null;
+        try {
+
+            if (!OptionHelper.isNullOrEmptyOrAllSpaces(fqcn)) {
+                componentClass = Loader.loadClass(fqcn, context);
+            } else {
+                // guess class name via implicit rules
+                componentClass = aggregationAssessor.getClassNameViaImplicitRules(nestedElementTagName, aggregationType,
+                        tmic.getDefaultNestedComponentRegistry());
+            }
+
+            if (componentClass == null) {
+                inError = true;
+                String errMsg = "Could not find an appropriate class for property [" + nestedElementTagName + "]";
+                addError(errMsg);
+                return;
+            }
+            if (OptionHelper.isNullOrEmptyOrAllSpaces(fqcn)) {
+                addInfo("Assuming default type [" + componentClass.getName() + "] for [" + nestedElementTagName
+                        + "] property");
+            }
+
+            this.implicitModelHandlerData = addJavaStatementForComplexProperty(tmic, implicitModel,
+                    classAndMethodSpecTuple, aggregationAssessor, componentClass);
+            tmic.pushObject(implicitModelHandlerData);
+
+        } catch (Exception oops) {
+            inError = true;
+            String msg = "Could not create component [" + implicitModel.getTag() + "] of type [" + fqcn + "]";
+            addError(msg, oops);
+        }
 
     }
 
-    private void doBasicProperty(ModelInterpretationContext mic, ImplicitModel implicitModel, AggregationAssessor aggregationAssessor,
-            ClassAndMethodSpecBuilderTuple classAndMethodSpecTuple,
+    private ImplicitModelHandlerData addJavaStatementForComplexProperty(TylerModelInterpretationContext tmic,
+            ImplicitModel implicitModel, ImplicitModelHandlerData implicitModelHandlerData,
+            AggregationAssessor aggregationAssessor, Class<?> componentClass) {
+
+        MethodSpec.Builder methodSpecBuilder = implicitModelHandlerData.methodSpecBuilder;
+        String parentVariableName = implicitModelHandlerData.getVariableName();
+        Method setterMethod = aggregationAssessor.findSetterMethod(implicitModel.getTag());
+        String variableName = StringUtil.lowercaseFirstLetter(componentClass.getSimpleName());
+        ClassName componentCN = ClassName.get(componentClass.getPackageName(), componentClass.getSimpleName());
+
+        methodSpecBuilder.addStatement("$1T $2N = new $1T()", componentCN, variableName);
+
+
+        ImplicitModelHandlerData cvnmsbt = new ImplicitModelHandlerData(parentVariableName, componentClass,
+                variableName, methodSpecBuilder);
+        return cvnmsbt;
+    }
+
+    private void doBasicProperty(ModelInterpretationContext mic, ImplicitModel implicitModel,
+            AggregationAssessor aggregationAssessor, ImplicitModelHandlerData classAndMethodSpecTuple,
             AggregationType aggregationType) {
         String finalBody = mic.subst(implicitModel.getBodyText());
         String nestedElementTagName = implicitModel.getTag();
@@ -141,8 +196,7 @@ public class ImplicitModelHandler extends ModelHandlerBase {
         case AS_BASIC_PROPERTY:
             Method setterMethod = aggregationAssessor.findSetterMethod(nestedElementTagName);
             Class<?>[] paramTypes = setterMethod.getParameterTypes();
-            setPropertyJavaStatement(classAndMethodSpecTuple, nestedElementTagName, finalBody, paramTypes[0]);
-            //actionData.parentBean.setProperty(actionData.propertyName, finalBody);
+            setPropertyJavaStatement(classAndMethodSpecTuple, setterMethod, finalBody, paramTypes[0]);
             break;
         case AS_BASIC_PROPERTY_COLLECTION:
             //actionData.parentBean.addBasicProperty(actionData.propertyName, finalBody);
@@ -152,16 +206,43 @@ public class ImplicitModelHandler extends ModelHandlerBase {
         }
     }
 
-    private void setPropertyJavaStatement(ClassAndMethodSpecBuilderTuple classAndMethodSpecTuple,
-            String nestedElementTagName, String value, Class<?> type) {
+    private void setPropertyJavaStatement(ImplicitModelHandlerData classAndMethodSpecTuple, Method setterMethod,
+            String value, Class<?> type) {
 
         MethodSpec.Builder methodSpecBuilder = classAndMethodSpecTuple.methodSpecBuilder;
         String variableName = classAndMethodSpecTuple.getVariableName();
-        String setterSuffix = StringUtil.capitalizeFirstLetter(nestedElementTagName );
-        String valuePart = StringToVariableStament.convertArg(value, type);
-        System.out.println("xxx-"+valuePart);
-        methodSpecBuilder.addStatement("$N.set$N("+valuePart+")", variableName, setterSuffix, value);
+        //String setterSuffix = StringUtil.capitalizeFirstLetter(nestedElementTagName);
+        String valuePart = StringToVariableStament.convertArg(type);
+        methodSpecBuilder.addStatement("$N.$N(" + valuePart + ")", variableName, setterMethod.getName(),
+                value.toLowerCase());
+    }
 
+    @Override
+    public void postHandle(ModelInterpretationContext mic, Model model) {
+        if (inError) {
+            return;
+        }
+        if (implicitModelHandlerData != null) {
+            postHandleComplex(mic, model);
+        }
 
+    }
+
+    private void postHandleComplex(ModelInterpretationContext mic, Model model) {
+
+        Object o = mic.peekObject();
+        if (o != implicitModelHandlerData) {
+            addError("The object on the top the of the stack is not the " + ImplicitModelHandlerData.class
+                    + " instance pushed earlier.");
+        } else {
+            mic.popObject();
+            ImplicitModel implicitModel = (ImplicitModel) model;
+            MethodSpec.Builder methodSpecBuilder = implicitModelHandlerData.methodSpecBuilder;
+            String parentVariableName = implicitModelHandlerData.getParentVariableName();
+            String variableName = implicitModelHandlerData.getVariableName();
+            Method setterMethod = aggregationAssessor.findSetterMethod(implicitModel.getTag());
+
+            methodSpecBuilder.addStatement("$N.$N($N)", parentVariableName, setterMethod.getName(), variableName);
+        }
     }
 }

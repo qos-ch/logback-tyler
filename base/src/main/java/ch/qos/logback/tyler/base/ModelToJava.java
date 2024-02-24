@@ -30,6 +30,7 @@ import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.classic.model.ConfigurationModel;
 import ch.qos.logback.classic.model.ContextNameModel;
 import ch.qos.logback.classic.model.LoggerModel;
+import ch.qos.logback.classic.model.processor.LogbackClassicDefaultNestedComponentRules;
 import ch.qos.logback.core.Context;
 import ch.qos.logback.core.joran.event.SaxEventRecorder;
 import ch.qos.logback.core.joran.spi.JoranException;
@@ -82,6 +83,8 @@ public class ModelToJava {
         TylerModelInterpretationContext tmic = new TylerModelInterpretationContext(context);
         tmic.setTopModel(topModel);
 
+        LogbackClassicDefaultNestedComponentRules.addDefaultNestedComponentRegistryRules(tmic.getDefaultNestedComponentRegistry());
+
         DefaultProcessor defaultProcessor = new DefaultProcessor(context, tmic);
         addModelHandlerAssociations(defaultProcessor);
 
@@ -95,7 +98,9 @@ public class ModelToJava {
 
 
         TypeSpec tylerConfiguratorTypeSpec = tmic.tylerConfiguratorTSB.build();
-        JavaFile javaFile = JavaFile.builder("com.example.helloworld", tylerConfiguratorTypeSpec).build();
+        JavaFile javaFile = JavaFile.builder("com.example.helloworld", tylerConfiguratorTypeSpec)
+                .indent("    ")
+                .build();
         //StringBuilder sb = new StringBuilder();
         StringBuffer sb = new StringBuffer();
         javaFile.writeTo(sb);

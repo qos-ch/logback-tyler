@@ -29,16 +29,30 @@ package ch.qos.logback.tyler.base.handler;
 
 import com.squareup.javapoet.MethodSpec;
 
-public class ClassAndMethodSpecBuilderTuple {
+/**
+ *
+ */
+public class ImplicitModelHandlerData {
 
+
+    final String parentVariableName;
     final Class objClass;
+
     final String  variableName;
     final MethodSpec.Builder methodSpecBuilder;
 
-    public ClassAndMethodSpecBuilderTuple(Class objClass, String variableName, MethodSpec.Builder methodSpecBuilder) {
+    public ImplicitModelHandlerData(Class objClass, String variableName, MethodSpec.Builder methodSpecBuilder) {
+        this(null, objClass, variableName, methodSpecBuilder);
+    }
+    public ImplicitModelHandlerData(String parentVariableName, Class objClass, String variableName, MethodSpec.Builder methodSpecBuilder) {
+        this.parentVariableName = parentVariableName;
         this.objClass = objClass;
         this.variableName = variableName;
         this.methodSpecBuilder = methodSpecBuilder;
+    }
+
+    public String getParentVariableName() {
+        return parentVariableName;
     }
 
     public Class getObjClass() {

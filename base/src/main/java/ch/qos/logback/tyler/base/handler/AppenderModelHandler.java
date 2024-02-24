@@ -35,19 +35,20 @@ import ch.qos.logback.core.model.processor.ModelHandlerBase;
 import ch.qos.logback.core.model.processor.ModelHandlerException;
 import ch.qos.logback.core.model.processor.ModelInterpretationContext;
 import ch.qos.logback.core.util.OptionHelper;
+import ch.qos.logback.core.util.StringUtil;
 import ch.qos.logback.tyler.base.TylerModelInterpretationContext;
 import ch.qos.logback.tyler.base.util.ClassUtil;
 import ch.qos.logback.tyler.base.util.VariableNameUtil;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.MethodSpec;
 
-import static ch.qos.logback.tyler.base.TylerConstants.SETUP_APPENDER_NAMED_;
+import static ch.qos.logback.tyler.base.TylerConstants.SETUP_APPENDER;
 
 public class AppenderModelHandler extends ModelHandlerBase {
 
     String appenderVariableName;
 
-    ClassAndMethodSpecBuilderTuple classAndMethodSpecBuilderTuple;
+    ImplicitModelHandlerData classAndMethodSpecBuilderTuple;
 
     private boolean skipped = false;
     boolean inError = false;
@@ -85,7 +86,7 @@ public class AppenderModelHandler extends ModelHandlerBase {
         MethodSpec.Builder methodSpec = addJavaStatementForAppenderInitialization(tmic, appenderName, className);
         try {
             Class appenderClass = Class.forName(className);
-            classAndMethodSpecBuilderTuple = new ClassAndMethodSpecBuilderTuple(appenderClass, appenderVariableName,
+            classAndMethodSpecBuilderTuple = new ImplicitModelHandlerData(appenderClass, appenderVariableName,
                     methodSpec);
             mic.pushObject(classAndMethodSpecBuilderTuple);
         } catch (ClassNotFoundException e) {
@@ -103,7 +104,9 @@ public class AppenderModelHandler extends ModelHandlerBase {
         ClassName desiredAppenderCN = ClassName.get(ClassUtil.extractPackageName(fullyQualifiedAppenderClassName),
                 ClassUtil.extractSimpleClassName(fullyQualifiedAppenderClassName));
 
-        MethodSpec.Builder appenderSetupMethodSpec = MethodSpec.methodBuilder(SETUP_APPENDER_NAMED_ + appenderName)
+        String fistLetterCapitalizedAppenderName = StringUtil.capitalizeFirstLetter(appenderName);
+
+        MethodSpec.Builder appenderSetupMethodSpec = MethodSpec.methodBuilder(SETUP_APPENDER + fistLetterCapitalizedAppenderName)
                 .returns(Appender.class).addStatement("$T " + this.appenderVariableName, desiredAppenderCN)
                 .beginControlFlow("try")
                 .addStatement(this.appenderVariableName + " = ($1T) $2T.instantiateByClassName($3S, $4T.class, $5N)",

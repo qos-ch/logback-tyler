@@ -53,6 +53,6 @@ public class TylerConstants {
     public static final String SET_CONTEXT_NAME = "setContextName";
 
 
-    public static final String SETUP_APPENDER_NAMED_ = "setupAppenderNamed_";
+    public static final String SETUP_APPENDER = "setupAppender";
 
 }

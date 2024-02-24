@@ -45,7 +45,7 @@ public class VariableNameUtil {
 
 
     static public String appenderNameToVariableName(String appenderName) {
-        return "appender_"+ appenderName;
+        return "appender"+ StringUtil.capitalizeFirstLetter(appenderName);
     }
 
 }

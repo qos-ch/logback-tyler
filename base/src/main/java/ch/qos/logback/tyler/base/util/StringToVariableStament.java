@@ -34,23 +34,19 @@ import java.nio.charset.Charset;
 
 public class StringToVariableStament {
 
-    public static String convertArg(String val, Class<?> type) {
-        if (val == null) {
-            return null;
-        }
-        String v = val.trim();
+    public static String convertArg (Class<?> type) {
         if (String.class.isAssignableFrom(type)) {
             return "$S";
         } else if (Integer.TYPE.isAssignableFrom(type)) {
-            return "Integer.valueOf($S)";
+            return "$N";
         } else if (Long.TYPE.isAssignableFrom(type)) {
-            return "Long.valueOf($S)";
+            return "$N";
         } else if (Float.TYPE.isAssignableFrom(type)) {
-            return "Float.valueOf($S)";
+            return "$N";
         } else if (Double.TYPE.isAssignableFrom(type)) {
-            return "Double.valueOf($S)";
+            return "$N";
         } else if (Boolean.TYPE.isAssignableFrom(type)) {
-            return "Boolean.valueOf($S)";
+            return "$N";
         } else if (type.isEnum()) {
             return "Enum.valueOf("+type.getName()+", $S)";
         } else if (StringToObjectConverter.followsTheValueOfConvention(type)) {
