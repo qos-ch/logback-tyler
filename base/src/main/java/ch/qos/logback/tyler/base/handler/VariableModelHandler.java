@@ -27,43 +27,52 @@
 
 package ch.qos.logback.tyler.base.handler;
 
-import ch.qos.logback.classic.model.ConfigurationModel;
 import ch.qos.logback.core.Context;
 import ch.qos.logback.core.model.Model;
+import ch.qos.logback.core.model.PropertyModel;
 import ch.qos.logback.core.model.processor.ModelHandlerBase;
 import ch.qos.logback.core.model.processor.ModelHandlerException;
 import ch.qos.logback.core.model.processor.ModelInterpretationContext;
-import ch.qos.logback.core.util.OptionHelper;
+import ch.qos.logback.core.util.StringUtil;
 import ch.qos.logback.tyler.base.TylerModelInterpretationContext;
 
-import static ch.qos.logback.core.model.ModelConstants.DEBUG_SYSTEM_PROPERTY_KEY;
-import static ch.qos.logback.core.model.ModelConstants.NULL_STR;
-import static ch.qos.logback.tyler.base.TylerConstants.ADD_ON_CONSOLE_STATUS_LISTENER;
-import static java.lang.Boolean.FALSE;
+import static ch.qos.logback.classic.tyler.TylerConfiguratorBase.PROPERTY_MODEL_HANDLER_HELPER_FIELD_NAME;
+import static ch.qos.logback.core.model.util.PropertyModelHandlerHelper.HANDLE_PROPERTY_MODEL_METHOD_NAME;
 
-public class ConfigurationModelHandler extends ModelHandlerBase {
+public class VariableModelHandler extends ModelHandlerBase  {
 
-    public ConfigurationModelHandler(Context context) {
+    public VariableModelHandler(Context context) {
         super(context);
     }
-
-    static public ModelHandlerBase makeInstance(Context context, ModelInterpretationContext mic) {
-        return new ConfigurationModelHandler(context);
+    static public ModelHandlerBase makeInstance(Context context, ModelInterpretationContext ic) {
+        return new VariableModelHandler(context);
     }
 
     @Override
     public void handle(ModelInterpretationContext mic, Model model) throws ModelHandlerException {
-        ConfigurationModel configurationModel = (ConfigurationModel) model;
+        PropertyModel propertyModel = (PropertyModel) model;
+
         TylerModelInterpretationContext tmic = (TylerModelInterpretationContext) mic;
 
-        String debugAttrib = OptionHelper.getSystemProperty(DEBUG_SYSTEM_PROPERTY_KEY, null);
-        if (debugAttrib == null) {
-            debugAttrib = mic.subst(configurationModel.getDebugStr());
-        }
-        if (!(OptionHelper.isNullOrEmptyOrAllSpaces(debugAttrib) || debugAttrib.equalsIgnoreCase(FALSE.toString())
-                || debugAttrib.equalsIgnoreCase(NULL_STR))) {
-            tmic.configureMethodSpecBuilder.addStatement("$N()", ADD_ON_CONSOLE_STATUS_LISTENER);
+        addJavaStatement(tmic, propertyModel);
+    }
 
-        }
+
+    private void addJavaStatement(TylerModelInterpretationContext tmic, PropertyModel propertyModel) {
+
+        String nameStr = StringUtil.nullStringToEmpty(propertyModel.getName());
+
+        String valueStr = StringUtil.nullStringToEmpty(propertyModel.getValue());
+        String fileStr = StringUtil.nullStringToEmpty(propertyModel.getFile());
+        String resoureStr = StringUtil.nullStringToEmpty(propertyModel.getResource());
+        String scopeStr = StringUtil.nullStringToEmpty(propertyModel.getScopeStr());
+
+
+        tmic.configureMethodSpecBuilder.addStatement("$N.$N(this, $S, $S, $S, $S, $S)",
+                PROPERTY_MODEL_HANDLER_HELPER_FIELD_NAME, HANDLE_PROPERTY_MODEL_METHOD_NAME, nameStr, valueStr,
+                fileStr, resoureStr, scopeStr );
+        // propertyModelHandlerHelper.handlePropertyModel(this, propertyModel.getName(), ..)
+
+
     }
 }

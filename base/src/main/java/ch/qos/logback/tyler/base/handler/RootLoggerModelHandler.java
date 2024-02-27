@@ -27,43 +27,71 @@
 
 package ch.qos.logback.tyler.base.handler;
 
-import ch.qos.logback.classic.model.ConfigurationModel;
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.model.RootLoggerModel;
+import ch.qos.logback.classic.util.LevelUtil;
 import ch.qos.logback.core.Context;
 import ch.qos.logback.core.model.Model;
 import ch.qos.logback.core.model.processor.ModelHandlerBase;
 import ch.qos.logback.core.model.processor.ModelHandlerException;
 import ch.qos.logback.core.model.processor.ModelInterpretationContext;
-import ch.qos.logback.core.util.OptionHelper;
 import ch.qos.logback.tyler.base.TylerModelInterpretationContext;
 
-import static ch.qos.logback.core.model.ModelConstants.DEBUG_SYSTEM_PROPERTY_KEY;
-import static ch.qos.logback.core.model.ModelConstants.NULL_STR;
-import static ch.qos.logback.tyler.base.TylerConstants.ADD_ON_CONSOLE_STATUS_LISTENER;
-import static java.lang.Boolean.FALSE;
+import ch.qos.logback.tyler.base.util.VariableNameUtil;
 
-public class ConfigurationModelHandler extends ModelHandlerBase {
+import static ch.qos.logback.classic.tyler.TylerConfiguratorBase.SETUP_LOGGER_METHOD_NAME;
 
-    public ConfigurationModelHandler(Context context) {
+public class RootLoggerModelHandler extends ModelHandlerBase {
+
+    Logger root;
+    boolean inError = false;
+
+    public RootLoggerModelHandler(Context context) {
         super(context);
     }
 
+    protected Class<RootLoggerModel> getSupportedModelClass() {
+        return RootLoggerModel.class;
+    }
+
     static public ModelHandlerBase makeInstance(Context context, ModelInterpretationContext mic) {
-        return new ConfigurationModelHandler(context);
+        return new RootLoggerModelHandler(context);
     }
 
     @Override
     public void handle(ModelInterpretationContext mic, Model model) throws ModelHandlerException {
-        ConfigurationModel configurationModel = (ConfigurationModel) model;
+
+        RootLoggerModel rootLoggerModel = (RootLoggerModel) model;
+
         TylerModelInterpretationContext tmic = (TylerModelInterpretationContext) mic;
 
-        String debugAttrib = OptionHelper.getSystemProperty(DEBUG_SYSTEM_PROPERTY_KEY, null);
-        if (debugAttrib == null) {
-            debugAttrib = mic.subst(configurationModel.getDebugStr());
-        }
-        if (!(OptionHelper.isNullOrEmptyOrAllSpaces(debugAttrib) || debugAttrib.equalsIgnoreCase(FALSE.toString())
-                || debugAttrib.equalsIgnoreCase(NULL_STR))) {
-            tmic.configureMethodSpecBuilder.addStatement("$N()", ADD_ON_CONSOLE_STATUS_LISTENER);
+        String levelStr = rootLoggerModel.getLevel();
+        addJavaStatement(tmic, Logger.ROOT_LOGGER_NAME, levelStr);
+        mic.pushObject(Logger.ROOT_LOGGER_NAME);
+    }
 
+
+    private void addJavaStatement(TylerModelInterpretationContext tmic, String loggerName, String levelStr) {
+        // Logger logger_ROOT = setupLogger("ROOT", level, levelString, additivity)
+
+        String loggerVariableName = VariableNameUtil.loggerNameToVariableName(loggerName);
+
+        tmic.configureMethodSpecBuilder.addStatement("$T $N = $N($S, $S, $N)", Logger.class, loggerVariableName,
+                SETUP_LOGGER_METHOD_NAME, loggerVariableName, levelStr, "null");
+    }
+
+
+    @Override
+    public void postHandle(ModelInterpretationContext mic, Model model) throws ModelHandlerException {
+        if (inError) {
+            return;
+        }
+        Object o = mic.peekObject();
+        if (o != Logger.ROOT_LOGGER_NAME) {
+            addWarn("The object [" + o + "] on the top the of the stack is not ROOT pushed earlier");
+        } else {
+            mic.popObject();
         }
     }
 }

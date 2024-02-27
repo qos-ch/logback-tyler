@@ -34,9 +34,8 @@ import ch.qos.logback.core.model.processor.ModelHandlerBase;
 import ch.qos.logback.core.model.processor.ModelHandlerException;
 import ch.qos.logback.core.model.processor.ModelInterpretationContext;
 import ch.qos.logback.tyler.base.TylerModelInterpretationContext;
-import com.squareup.javapoet.MethodSpec;
 
-import static ch.qos.logback.tyler.base.TylerConstants.SET_CONTEXT_NAME;
+import static ch.qos.logback.classic.tyler.TylerConfiguratorBase.SET_CONTEXT_NAME_METHOD_NAME;
 
 public class ContextNameModelHandler  extends ModelHandlerBase  {
 
@@ -53,32 +52,32 @@ public class ContextNameModelHandler  extends ModelHandlerBase  {
         ContextNameModel contextNameModel = (ContextNameModel) model;
         TylerModelInterpretationContext tmic = (TylerModelInterpretationContext) mic;
 
-        String finalBody = mic.subst(contextNameModel.getBodyText());
-        addInfo("Setting logger context name as [" + finalBody + "]");
-        System.out.println("==="+finalBody);
-        addJavaStatement(tmic, finalBody);
+        String bodyText = contextNameModel.getBodyText();
+        tmic.configureMethodSpecBuilder.addStatement("$N($S)", SET_CONTEXT_NAME_METHOD_NAME, bodyText);
 
     }
 
 
     void addJavaStatement(TylerModelInterpretationContext tmic, String finalBody) {
-        //
-        // context.setName(finalBody);
+//        //
+//        // context.setName(finalBody);
+//
+//        final String parameterName = "name";
+//        final String substVarName = "substName";
+//
+//        MethodSpec setContextNameMethodSpec = MethodSpec.methodBuilder(SET_CONTEXT_NAME)
+//                .addParameter(String.class, parameterName)
+//                .returns(void.class)
+//                .addStatement("$T $N = subst($N)", String.class, substVarName, parameterName)
+//                .beginControlFlow("try")
+//                .addStatement("$N.setName($N)", tmic.getContextFieldSpec(), substVarName)
+//                .nextControlFlow("catch ($T e)", IllegalStateException.class)
+//                .addStatement("addError(\"Failed to rename context as [\"+$N+\"]\")", substVarName)
+//                .endControlFlow()
+//                .build();
 
-        final String parameterName = "name";
-
-        MethodSpec setContextNameMethodSpec = MethodSpec.methodBuilder(SET_CONTEXT_NAME)
-                .addParameter(String.class, parameterName)
-                .returns(void.class)
-                .beginControlFlow("try")
-                .addStatement("$N.setName($N)", tmic.getContextFieldSpec(), parameterName)
-                .nextControlFlow("catch ($T e)", IllegalStateException.class)
-                .addStatement("addError(\"Failed to rename context as [\"+$N+\"]\")", parameterName)
-                .endControlFlow()
-                .build();
-
-        tmic.configureMethodSpecBuilder.addStatement("$N($S)", setContextNameMethodSpec, finalBody);
-        tmic.tylerConfiguratorTSB.addMethod(setContextNameMethodSpec);
+        tmic.configureMethodSpecBuilder.addStatement("$N($S)", SET_CONTEXT_NAME_METHOD_NAME, finalBody);
+//        tmic.tylerConfiguratorTSB.addMethod(setContextNameMethodSpec);
     }
 
 }

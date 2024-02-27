@@ -30,8 +30,8 @@ package ch.qos.logback.tyler.base.handler;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.model.LoggerModel;
+import ch.qos.logback.classic.util.LevelUtil;
 import ch.qos.logback.core.Context;
-import ch.qos.logback.core.joran.JoranConstants;
 import ch.qos.logback.core.model.Model;
 import ch.qos.logback.core.model.processor.ModelHandlerBase;
 import ch.qos.logback.core.model.processor.ModelHandlerException;
@@ -40,8 +40,7 @@ import ch.qos.logback.core.util.OptionHelper;
 import ch.qos.logback.tyler.base.TylerModelInterpretationContext;
 import ch.qos.logback.tyler.base.util.VariableNameUtil;
 
-import static ch.qos.logback.core.joran.JoranConstants.NULL;
-import static ch.qos.logback.tyler.base.TylerConstants.SETUP_LOGGER_METHOD_NAME;
+import static ch.qos.logback.classic.tyler.TylerConfiguratorBase.SETUP_LOGGER_METHOD_NAME;
 
 public class LoggerModelHandler  extends ModelHandlerBase {
 
@@ -71,29 +70,13 @@ public class LoggerModelHandler  extends ModelHandlerBase {
         this.loggerName = loggerModel.getName();
 
         String levelStr = loggerModel.getLevel();
-        Level level = levelStringToLevel(levelStr);
         String additivityStr = loggerModel.getAdditivity();
         Boolean additivity = addtivityStringToBoolean(additivityStr);
 
-        addJavaStatement(tmic, loggerName, level, levelStr, additivity);
-
+        addJavaStatement(tmic, loggerName, levelStr, additivity);
         mic.pushObject(loggerName);
-
-
     }
 
-
-    private Level levelStringToLevel(String levelStr) {
-        if (!OptionHelper.isNullOrEmptyOrAllSpaces(levelStr)) {
-            if (JoranConstants.INHERITED.equalsIgnoreCase(levelStr) || NULL.equalsIgnoreCase(levelStr)) {
-                return null;
-            } else {
-                Level level = Level.toLevel(levelStr);
-                return level;
-            }
-        }
-        return null;
-    }
 
     private Boolean addtivityStringToBoolean(String additivityStr) {
         if (!OptionHelper.isNullOrEmptyOrAllSpaces(additivityStr)) {
@@ -104,15 +87,14 @@ public class LoggerModelHandler  extends ModelHandlerBase {
 
     }
 
-    private void addJavaStatement(TylerModelInterpretationContext tmic, String loggerName, Level level, String levelStr, Boolean additivity) {
+    private void addJavaStatement(TylerModelInterpretationContext tmic, String loggerName, String levelStr, Boolean additivity) {
         // Logger logger_XYZ = setupLogger(loggerName, level, levelString, additivity)
         String loggerVariableName = VariableNameUtil.loggerNameToVariableName(loggerName);
 
         String additivityStr = additivity == null ? "null" : "Boolean."+additivity.toString().toUpperCase();
 
-        tmic.configureMethodSpecBuilder.addStatement("$T $N = $N($S, Level.$N, $S, $N)", Logger.class, loggerVariableName,
-                SETUP_LOGGER_METHOD_NAME, loggerName, level.toString(), levelStr, additivityStr );
-
+        tmic.configureMethodSpecBuilder.addStatement("$T $N = $N($S, $S, $N)", Logger.class, loggerVariableName,
+                SETUP_LOGGER_METHOD_NAME, loggerName, levelStr, additivityStr );
     }
 
     @Override

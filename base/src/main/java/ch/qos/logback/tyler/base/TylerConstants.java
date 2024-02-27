@@ -37,6 +37,7 @@ public class TylerConstants {
 
     public static final String TYLER_CONFIGURATOR = "TylerConfigurator";
     public static final String CONTEXT_FIELD_NAME = "context";
+    public static final String LOGGER_CONTEXT_PARAMETER_NAME = "loggerCoontext";
     public static final String LEVEL_FIELD_NAME = "level";
     public static final String LEVEL_STRING_PARAMETER_NAME = "levelString";
 
@@ -47,12 +48,9 @@ public class TylerConstants {
     public static final String LOGGER_NAME_FIELD_NAME = "loggerName";
     public static final String ADDITIVITY_FIELD_NAME = "additivity";
     public static final String CONFIGURE_METHOD_NAME = "configure";
-    public static final String SETUP_LOGGER_METHOD_NAME = "setupLogger";
+    public static final String SETUP_APPENDER = "setupAppender";
     public static final String ADD_ON_CONSOLE_STATUS_LISTENER = "addOnConsoleStatusListener";
 
-    public static final String SET_CONTEXT_NAME = "setContextName";
 
-
-    public static final String SETUP_APPENDER = "setupAppender";
 
 }

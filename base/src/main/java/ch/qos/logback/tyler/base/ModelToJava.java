@@ -30,6 +30,7 @@ import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.classic.model.ConfigurationModel;
 import ch.qos.logback.classic.model.ContextNameModel;
 import ch.qos.logback.classic.model.LoggerModel;
+import ch.qos.logback.classic.model.RootLoggerModel;
 import ch.qos.logback.classic.model.processor.LogbackClassicDefaultNestedComponentRules;
 import ch.qos.logback.core.Context;
 import ch.qos.logback.core.joran.event.SaxEventRecorder;
@@ -39,6 +40,7 @@ import ch.qos.logback.core.model.AppenderRefModel;
 import ch.qos.logback.core.model.ImplicitModel;
 import ch.qos.logback.core.model.ImportModel;
 import ch.qos.logback.core.model.Model;
+import ch.qos.logback.core.model.PropertyModel;
 import ch.qos.logback.core.model.processor.DefaultProcessor;
 import ch.qos.logback.core.model.processor.ImportModelHandler;
 import ch.qos.logback.tyler.base.handler.AppenderRefModelHandler;
@@ -48,6 +50,8 @@ import ch.qos.logback.tyler.base.handler.AppenderModelHandler;
 import ch.qos.logback.tyler.base.handler.ConfigurationModelHandler;
 import ch.qos.logback.tyler.base.handler.ImplicitModelHandler;
 import ch.qos.logback.tyler.base.handler.LoggerModelHandler;
+import ch.qos.logback.tyler.base.handler.RootLoggerModelHandler;
+import ch.qos.logback.tyler.base.handler.VariableModelHandler;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeSpec;
@@ -94,7 +98,7 @@ public class ModelToJava {
         tmic.configureMethodSpecBuilder.addStatement("return ExecutionStatus.DO_NOT_INVOKE_NEXT_IF_ANY");
         MethodSpec configureMethodSpec = tmic.configureMethodSpecBuilder.build();
 
-        tmic.tylerConfiguratorTSB.addMethod(configureMethodSpec);
+        tmic.tylerConfiguratorTSB.methodSpecs.addFirst(configureMethodSpec);
 
 
         TypeSpec tylerConfiguratorTypeSpec = tmic.tylerConfiguratorTSB.build();
@@ -109,11 +113,17 @@ public class ModelToJava {
 
     private void addModelHandlerAssociations(DefaultProcessor defaultProcessor) {
         defaultProcessor.addHandler(ConfigurationModel.class, ConfigurationModelHandler::makeInstance);
+
+        defaultProcessor.addHandler(PropertyModel.class, VariableModelHandler::makeInstance);
+
+
         defaultProcessor.addHandler(ContextNameModel.class, ContextNameModelHandler::makeInstance);
         defaultProcessor.addHandler(ImportModel.class, ImportModelHandler::makeInstance);
         defaultProcessor.addHandler(AppenderModel.class, AppenderModelHandler::makeInstance);
         defaultProcessor.addHandler(ImplicitModel.class, ImplicitModelHandler::makeInstance);
         defaultProcessor.addHandler(LoggerModel.class, LoggerModelHandler::makeInstance);
+        defaultProcessor.addHandler(RootLoggerModel.class, RootLoggerModelHandler::makeInstance);
+
         defaultProcessor.addHandler(AppenderRefModel.class, AppenderRefModelHandler::makeInstance);
     }
 
