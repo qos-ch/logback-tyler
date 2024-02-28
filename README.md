@@ -11,6 +11,15 @@ Running `TylerConfigurator` does not require XML parsers and  usually executes m
 
 At present time, `TylerConfigurator` requires logback-classic version 1.5.1 at runtime. 
 
+Logback-tyler is located at the following Maven coordinates:
+```xml
+ <groupId>ch.qos.logback.tyler</groupId>
+ <artifactId>base</artifactId>
+ <version>0.1</version>
+```
+
+Here is a sample program to translate a logback.xml as string into Java.
+  
 ```java
 import ch.qos.logback.core.joran.spi.JoranException;
 import ch.qos.logback.core.model.Model;
@@ -54,7 +63,7 @@ public class TylerExample {
 }
 ```
 
-will output
+running the above program will output
 
 ```java
 import ch.qos.logback.classic.Logger;
