@@ -36,17 +36,17 @@ public class ImplicitModelHandlerData {
 
 
     final String parentVariableName;
-    final Class objClass;
+    final Class parentObjectClass;
 
     final String  variableName;
     final MethodSpec.Builder methodSpecBuilder;
 
-    public ImplicitModelHandlerData(Class objClass, String variableName, MethodSpec.Builder methodSpecBuilder) {
-        this(null, objClass, variableName, methodSpecBuilder);
+    public ImplicitModelHandlerData(Class parentObjectClass, String variableName, MethodSpec.Builder methodSpecBuilder) {
+        this(null, parentObjectClass, variableName, methodSpecBuilder);
     }
-    public ImplicitModelHandlerData(String parentVariableName, Class objClass, String variableName, MethodSpec.Builder methodSpecBuilder) {
+    public ImplicitModelHandlerData(String parentVariableName, Class parentObjectClass, String variableName, MethodSpec.Builder methodSpecBuilder) {
         this.parentVariableName = parentVariableName;
-        this.objClass = objClass;
+        this.parentObjectClass = parentObjectClass;
         this.variableName = variableName;
         this.methodSpecBuilder = methodSpecBuilder;
     }
@@ -55,8 +55,8 @@ public class ImplicitModelHandlerData {
         return parentVariableName;
     }
 
-    public Class getObjClass() {
-        return objClass;
+    public Class getParentObjectClass() {
+        return parentObjectClass;
     }
 
     public String getVariableName() {

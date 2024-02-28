@@ -52,14 +52,13 @@ public class TylerTest {
                 <configuration debug="true">
                   <import class="ch.qos.logback.classic.encoder.PatternLayoutEncoder"/>
                   <import class="ch.qos.logback.core.ConsoleAppender"/>
-                  <import class="ch.qos.logback.core.FileAppender"/>
                   <import class="ch.qos.logback.core.rolling.RollingFileAppender"/>
                   <import class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy"/>
                   
                   <property name="APPNAME" value="titi"/>
                   
                   <contextName>${APPNAME}</contextName>
-                  <appender class="FileAppender" name="toto">
+                  <appender class="ch.qos.logback.core.FileAppender" name="toto">
                      <file>toto.log</file>
                      <append>true</append>
                      <immediateFlush>true</immediateFlush>
@@ -82,7 +81,6 @@ public class TylerTest {
                   </appender>
                                 
                   <logger name="com.foo.Bar" level="DEBUG">
-                    <appender-ref ref="toto"/>
                      <appender-ref ref="RFILE"/>
                   </logger>  
                   

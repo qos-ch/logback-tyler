@@ -78,7 +78,7 @@ public class RootLoggerModelHandler extends ModelHandlerBase {
         String loggerVariableName = VariableNameUtil.loggerNameToVariableName(loggerName);
 
         tmic.configureMethodSpecBuilder.addStatement("$T $N = $N($S, $S, $N)", Logger.class, loggerVariableName,
-                SETUP_LOGGER_METHOD_NAME, loggerVariableName, levelStr, "null");
+                SETUP_LOGGER_METHOD_NAME, loggerName, levelStr, "null");
     }
 
 

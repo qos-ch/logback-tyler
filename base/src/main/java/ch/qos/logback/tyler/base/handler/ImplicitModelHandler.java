@@ -28,15 +28,17 @@
 package ch.qos.logback.tyler.base.handler;
 
 import ch.qos.logback.core.Context;
+import ch.qos.logback.core.joran.spi.NoAutoStartUtil;
 import ch.qos.logback.core.joran.util.AggregationAssessor;
 import ch.qos.logback.core.joran.util.beans.BeanDescriptionCache;
 import ch.qos.logback.core.model.ImplicitModel;
 import ch.qos.logback.core.model.Model;
+import ch.qos.logback.core.model.ModelConstants;
 import ch.qos.logback.core.model.processor.ModelHandlerBase;
 import ch.qos.logback.core.model.processor.ModelHandlerException;
 import ch.qos.logback.core.model.processor.ModelInterpretationContext;
 import ch.qos.logback.core.spi.ContextAware;
-import ch.qos.logback.core.spi.ContextAwareBase;
+import ch.qos.logback.core.spi.LifeCycle;
 import ch.qos.logback.core.util.AggregationType;
 import ch.qos.logback.core.util.Loader;
 import ch.qos.logback.core.util.OptionHelper;
@@ -99,7 +101,7 @@ public class ImplicitModelHandler extends ModelHandlerBase {
             return;
         }
         ImplicitModelHandlerData tylerImplicitData = (ImplicitModelHandlerData) o;
-        this.aggregationAssessor = new AggregationAssessor(beanDescriptionCache, tylerImplicitData.getObjClass());
+        this.aggregationAssessor = new AggregationAssessor(beanDescriptionCache, tylerImplicitData.getParentObjectClass());
         aggregationAssessor.setContext(context);
 
         AggregationType aggregationType = aggregationAssessor.computeAggregationType(nestedElementTagName);
@@ -171,14 +173,15 @@ public class ImplicitModelHandler extends ModelHandlerBase {
     }
 
     private ImplicitModelHandlerData addJavaStatementForComplexProperty(TylerModelInterpretationContext tmic,
-            ImplicitModel implicitModel, ImplicitModelHandlerData implicitModelHandlerData,
-            Class<?> componentClass) {
+            ImplicitModel implicitModel, ImplicitModelHandlerData implicitModelHandlerData, Class<?> componentClass) {
 
         MethodSpec.Builder methodSpecBuilder = implicitModelHandlerData.methodSpecBuilder;
         String parentVariableName = implicitModelHandlerData.getVariableName();
         String variableName = StringUtil.lowercaseFirstLetter(componentClass.getSimpleName());
         ClassName componentCN = ClassName.get(componentClass.getPackageName(), componentClass.getSimpleName());
 
+        methodSpecBuilder.addCode("\n");
+        methodSpecBuilder.addComment("Configure component of type $T", componentCN);
         methodSpecBuilder.addStatement("$1T $2N = new $1T()", componentCN, variableName);
         methodSpecBuilder.beginControlFlow("if ($N instanceof $T)", variableName, ContextAware.class);
         methodSpecBuilder.addStatement("$N.setContext($N)", variableName, tmic.getContextFieldSpec());
@@ -243,8 +246,30 @@ public class ImplicitModelHandler extends ModelHandlerBase {
             MethodSpec.Builder methodSpecBuilder = implicitModelHandlerData.methodSpecBuilder;
             String parentVariableName = implicitModelHandlerData.getParentVariableName();
             String variableName = implicitModelHandlerData.getVariableName();
+            Class objClass = implicitModelHandlerData.getParentObjectClass();
             Method setterMethod = aggregationAssessor.findSetterMethod(implicitModel.getTag());
 
+            AggregationAssessor nestedAggregationAssessor = new AggregationAssessor(beanDescriptionCache, setterMethod.getParameterTypes()[0]);
+            nestedAggregationAssessor.setContext(context);
+
+            Method parentSetterMethod = nestedAggregationAssessor.findSetterMethod(ModelConstants.PARENT_PROPPERTY_KEY);
+
+            if(parentSetterMethod != null) {
+                methodSpecBuilder.addStatement("$N.$N($N)", variableName, parentSetterMethod.getName(),parentVariableName);
+            } else {
+                methodSpecBuilder.addComment("===========no parent setter");
+            }
+
+
+
+            methodSpecBuilder.addComment("start the complex property if it implements LifeCycle and is not");
+            methodSpecBuilder.addComment("marked with a @NoAutoStart annotation");
+            methodSpecBuilder.beginControlFlow("if(($1N instanceof $2T) && $3T.notMarkedWithNoAutoStart($1N))", variableName, LifeCycle.class,
+                    NoAutoStartUtil.class);
+            methodSpecBuilder.addStatement("(($T) $N).start()", LifeCycle.class, variableName);
+            methodSpecBuilder.endControlFlow();
+
+            methodSpecBuilder.addComment("Inject component of type $T into parent", objClass);
             methodSpecBuilder.addStatement("$N.$N($N)", parentVariableName, setterMethod.getName(), variableName);
         }
     }

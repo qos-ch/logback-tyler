@@ -137,6 +137,9 @@ public class AppenderModelHandler extends ModelHandlerBase {
 
             MethodSpec.Builder appenderMethodBuilder = classAndMethodSpecBuilderTuple.methodSpecBuilder;
 
+            // start the appender
+            appenderMethodBuilder.addCode("\n");
+            appenderMethodBuilder.addStatement("$N.start()", appenderVariableName);
             appenderMethodBuilder.addStatement("return $N", appenderVariableName);
             MethodSpec appenderMethodSpec = appenderMethodBuilder.build();
 
