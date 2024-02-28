@@ -48,7 +48,7 @@ public class TylerExample {
              
              
               <root level="DEBUG">
-                <appender-ref ref="RFILE"/>
+                <appender-ref ref="TOTO"/>
               </root>             
             </configuration>                 
     """;
@@ -66,6 +66,7 @@ public class TylerExample {
 running the above program will output
 
 ```java
+
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
@@ -96,7 +97,7 @@ class TylerConfigurator extends TylerConfiguratorBase implements Configurator {
         setContextName("${APP_NAME}");
         Appender appenderTOTO = setupAppenderTOTO();
         Logger logger_ROOT = setupLogger("ROOT", "DEBUG", null);
-        logger_ROOT.addAppender(appenderRFILE);
+        logger_ROOT.addAppender(appenderTOTO);
         return ExecutionStatus.DO_NOT_INVOKE_NEXT_IF_ANY;
     }
 
