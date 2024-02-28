@@ -11,7 +11,30 @@
     <version>0.1</version>
     <packaging>pom</packaging>
 
+    <description>logback tyler pom.xml file</description>
 
+    <url>http://logback.qos.ch</url>
+
+
+    <organization>
+        <name>QOS.ch</name>
+        <url>http://www.qos.ch</url>
+    </organization>
+    <inceptionYear>2024</inceptionYear>
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>http://www.opensource.org/licenses/mit-license.php</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+
+    <scm>
+        <url>https://github.com/qos-ch/logback-tyler</url>
+        <connection>scm:git@github.com:qos-ch/logback-tyler.git</connection>
+    </scm>
     <properties>
         <jdk.version>21</jdk.version>
         <maven.compiler.source>${jdk.version}</maven.compiler.source>
@@ -48,6 +71,15 @@
         <module>base</module>
         <!--        <module>web</module>-->
     </modules>
+
+    <developers>
+        <developer>
+            <id>ceki</id>
+            <name>Ceki Gulcu</name>
+            <email>ceki@qos.ch</email>
+        </developer>
+    </developers>
+
 
     <dependencies>
         <dependency>
