@@ -10,3 +10,125 @@ Running `TylerConfigurator` does not require XML parsers and  usually executes m
 `TylerConfigurator` does not use reflexion and since it ships with your project's binaries, it is harder to modify and offers yet smaller attack surface.
 
 At present time, `TylerConfigurator` requires logback-classic version 1.5.1 at runtime. 
+
+```
+import ch.qos.logback.core.joran.spi.JoranException;
+import ch.qos.logback.core.model.Model;
+
+import java.io.IOException;
+
+public class TylerExample {
+
+    String xmlInput = """
+                <configuration debug="true">
+                  <import class="ch.qos.logback.classic.encoder.PatternLayoutEncoder"/>
+                  <import class="ch.qos.logback.core.ConsoleAppender"/>
+                  <import class="ch.qos.logback.core.rolling.RollingFileAppender"/>
+                  <import class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy"/>
+                  
+                  <property name="APP_NAME" value="myApp"/>
+                  
+                  <contextName>${APP_NAME}</contextName>
+                  
+                  <appender class="ch.qos.logback.core.FileAppender" name="TOTO">
+                     <file>toto.log</file>
+                     <append>true</append>
+                     <immediateFlush>true</immediateFlush>
+                     <encoder>
+                       <pattern>%-4relative [%thread] %-5level %logger{35} -%kvp- %msg%n</pattern>
+                     </encoder>
+                       
+                  </appender>          
+                       
+                  
+                   <root level="DEBUG">
+                     <appender-ref ref="RFILE"/>
+                  </root>              
+                </configuration>                
+                """;
+    
+    
+    public static void main(String[] args)  throws JoranException, IOException {
+        ContextBase context = new ContextBase();
+        ModelToJava m2j = new ModelToJava(context);
+        Model model = m2j.extractModel(xmlInput);
+        String result = m2j.toJava(model);
+        System.out.println(result);
+    }
+}
+```
+
+will output
+
+```
+
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
+import ch.qos.logback.classic.spi.Configurator;
+import ch.qos.logback.classic.tyler.TylerConfiguratorBase;
+import ch.qos.logback.core.Appender;
+import ch.qos.logback.core.FileAppender;
+import ch.qos.logback.core.joran.spi.NoAutoStartUtil;
+import ch.qos.logback.core.spi.ContextAware;
+import ch.qos.logback.core.spi.LifeCycle;
+import ch.qos.logback.core.util.OptionHelper;
+import java.lang.Exception;
+
+/**
+ * This class is intended to be copied and integrated into the user's project in order
+ * to configure logback without using XML. 
+ */
+class TylerConfigurator extends TylerConfiguratorBase implements Configurator {
+    /**
+     * This method performs configuration per {@link Configurator} interface.
+     *
+     * <p></p>
+     */
+    public Configurator.ExecutionStatus configure(LoggerContext loggerCoontext) {
+        setContext(loggerCoontext);
+        addOnConsoleStatusListener();
+        propertyModelHandlerHelper.handlePropertyModel(this, "APP_NAME", "myApp", "", "", "");
+        setContextName("${APP_NAME}");
+        Appender appenderTOTO = setupAppenderTOTO();
+        Logger logger_ROOT = setupLogger("ROOT", "DEBUG", null);
+        logger_ROOT.addAppender(appenderRFILE);
+        return ExecutionStatus.DO_NOT_INVOKE_NEXT_IF_ANY;
+    }
+
+    Appender setupAppenderTOTO() {
+        FileAppender appenderTOTO;
+        try {
+            appenderTOTO = (FileAppender) OptionHelper.instantiateByClassName("ch.qos.logback.core.FileAppender", Appender.class, context);
+        } catch (Exception oops) {
+            addError("Could not create an Appender of type [" + "ch.qos.logback.core.FileAppender" + "].", oops);
+            return null;
+        }
+        appenderTOTO.setContext(context);
+        appenderTOTO.setName("TOTO");
+        appenderTOTO.setFile("toto.log");
+        appenderTOTO.setAppend(true);
+        appenderTOTO.setImmediateFlush(true);
+
+        // Configure component of type PatternLayoutEncoder
+        PatternLayoutEncoder patternLayoutEncoder = new PatternLayoutEncoder();
+        if (patternLayoutEncoder instanceof ContextAware) {
+            patternLayoutEncoder.setContext(context);
+        }
+        patternLayoutEncoder.setPattern("%-4relative [%thread] %-5level %logger{35} -%kvp- %msg%n");
+        // ===========no parent setter
+        // start the complex property if it implements LifeCycle and is not
+        // marked with a @NoAutoStart annotation
+        if((patternLayoutEncoder instanceof LifeCycle) && NoAutoStartUtil.notMarkedWithNoAutoStart(patternLayoutEncoder)) {
+            ((LifeCycle) patternLayoutEncoder).start();
+        }
+        // Inject component of type PatternLayoutEncoder into parent
+        appenderTOTO.setEncoder(patternLayoutEncoder);
+
+        appenderTOTO.start();
+        return appenderTOTO;
+    }
+}
+```
+
+
