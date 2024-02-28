@@ -11,7 +11,7 @@ Running `TylerConfigurator` does not require XML parsers and  usually executes m
 
 At present time, `TylerConfigurator` requires logback-classic version 1.5.1 at runtime. 
 
-```
+```java
 import ch.qos.logback.core.joran.spi.JoranException;
 import ch.qos.logback.core.model.Model;
 
@@ -19,34 +19,30 @@ import java.io.IOException;
 
 public class TylerExample {
 
-    String xmlInput = """
-                <configuration debug="true">
-                  <import class="ch.qos.logback.classic.encoder.PatternLayoutEncoder"/>
-                  <import class="ch.qos.logback.core.ConsoleAppender"/>
-                  <import class="ch.qos.logback.core.rolling.RollingFileAppender"/>
-                  <import class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy"/>
-                  
-                  <property name="APP_NAME" value="myApp"/>
-                  
-                  <contextName>${APP_NAME}</contextName>
-                  
-                  <appender class="ch.qos.logback.core.FileAppender" name="TOTO">
-                     <file>toto.log</file>
-                     <append>true</append>
-                     <immediateFlush>true</immediateFlush>
-                     <encoder>
-                       <pattern>%-4relative [%thread] %-5level %logger{35} -%kvp- %msg%n</pattern>
-                     </encoder>
-                       
-                  </appender>          
-                       
-                  
-                   <root level="DEBUG">
-                     <appender-ref ref="RFILE"/>
-                  </root>              
-                </configuration>                
-                """;
-    
+    String xmlInput =
+    """
+            <configuration debug="true">
+              <import class="ch.qos.logback.classic.encoder.PatternLayoutEncoder"/>
+              
+              <property name="APP_NAME" value="myApp"/>
+             
+              <contextName>${APP_NAME}</contextName>
+             
+              <appender class="ch.qos.logback.core.FileAppender" name="TOTO">
+                <file>toto.log</file>
+                <append>true</append>
+                <immediateFlush>true</immediateFlush>
+                <encoder>
+                  <pattern>%-4relative [%thread] %-5level %logger{35} -%kvp- %msg%n</pattern>
+                </encoder>   
+              </appender>         
+             
+             
+              <root level="DEBUG">
+                <appender-ref ref="RFILE"/>
+              </root>             
+            </configuration>                 
+    """;
     
     public static void main(String[] args)  throws JoranException, IOException {
         ContextBase context = new ContextBase();
@@ -60,8 +56,7 @@ public class TylerExample {
 
 will output
 
-```
-
+```java
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
