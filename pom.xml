@@ -8,7 +8,7 @@
     <groupId>ch.qos.logback.tyler</groupId>
     <artifactId>parent</artifactId>
     <name>parent</name>
-    <version>2.6.0</version>
+    <version>0.1</version>
     <packaging>pom</packaging>
 
 
@@ -18,7 +18,7 @@
         <maven.compiler.target>${jdk.version}</maven.compiler.target>
 
         <slf4j.version>2.0.12</slf4j.version>
-        <logback.version>1.5.1-SNAPSHOT</logback.version>
+        <logback.version>1.5.1</logback.version>
 
         <junit-jupiter-api.version>5.9.1</junit-jupiter-api.version>
         <junit-vintage-engine.version>5.9.1</junit-vintage-engine.version>
@@ -45,7 +45,7 @@
 
     <modules>
         <module>base</module>
-        <module>web</module>
+<!--        <module>web</module>-->
     </modules>
 
     <dependencies>
