@@ -66,11 +66,11 @@ public class ModelToJava {
 
     Context context;
 
-    ModelToJava(Context context) {
+    public ModelToJava(Context context) {
         this.context = context;
     }
 
-    Model extractModel(String input) throws JoranException {
+    public Model extractModel(String input) throws JoranException {
         InputStream inputStream = new ByteArrayInputStream(input.getBytes());
         InputSource inputSource = new InputSource(inputStream);
         inputSource.setSystemId("UNKNOWN");

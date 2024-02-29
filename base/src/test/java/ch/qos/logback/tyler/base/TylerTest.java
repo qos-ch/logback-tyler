@@ -105,4 +105,41 @@ public class TylerTest {
 
     }
 
+    @Test
+    void example() throws IOException, JoranException {
+        String xmlInput = """
+                <configuration debug="true">
+                  <import class="ch.qos.logback.classic.encoder.PatternLayoutEncoder"/>
+                  <import class="ch.qos.logback.core.ConsoleAppender"/>
+                  <import class="ch.qos.logback.core.rolling.RollingFileAppender"/>
+                  <import class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy"/>
+                  
+                  <property name="APP_NAME" value="myApp"/>
+                  
+                  <contextName>${APP_NAME}</contextName>
+                  
+                  <appender class="ch.qos.logback.core.FileAppender" name="TOTO">
+                     <file>toto.log</file>
+                     <append>true</append>
+                     <immediateFlush>true</immediateFlush>
+                     <encoder>
+                       <pattern>%-4relative [%thread] %-5level %logger{35} -%kvp- %msg%n</pattern>
+                     </encoder>
+                       
+                  </appender>          
+                       
+                  
+                   <root level="DEBUG">
+                     <appender-ref ref="RFILE"/>
+                  </root>              
+                </configuration>                
+                """;
+
+        ModelToJava m2j = new ModelToJava(context);
+        Model model = m2j.extractModel(xmlInput);
+        String result = m2j.toJava(model);
+        System.out.println("----------------");
+        System.out.println(result);
+        System.out.println("----------------");
+    }
 }
