@@ -9,7 +9,7 @@ meachanism. Custom configurators are searched by looking up file resource locate
 Running `TylerConfigurator` does not require XML parsers and  usually executes much faster than `JoranConfigurator`, logback's XML configurator. Moreover, 
 `TylerConfigurator` does not use reflexion and since it ships with your project's binaries, it is harder to modify and offers yet smaller attack surface.
 
-At present time, `TylerConfigurator` requires logback-classic version 1.5.1 at runtime. 
+At present time, `TylerConfigurator` requires logback-classic version 1.5.2 at runtime. 
 
 Logback-tyler is located at the following Maven coordinates:
 ```xml
