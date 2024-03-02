@@ -8,11 +8,11 @@
 
   <parent>
     <groupId>ch.qos.logback.tyler</groupId>
-    <artifactId>parent</artifactId>
-    <version>0.3</version>
+    <artifactId>tyler-parent</artifactId>
+    <version>0.4</version>
   </parent>
   
-  <artifactId>base</artifactId>
+  <artifactId>tyler-base</artifactId>
   <packaging>jar</packaging>
   <name>Tyler Base</name>
   
