@@ -31,6 +31,7 @@
     import ch.qos.logback.classic.LoggerContext;
     import ch.qos.logback.classic.spi.Configurator;
     import ch.qos.logback.classic.tyler.TylerConfiguratorBase;
+    import ch.qos.logback.classic.util.ContextInitializer;
     import ch.qos.logback.core.Context;
     import ch.qos.logback.core.model.processor.ModelInterpretationContext;
     import com.squareup.javapoet.FieldSpec;
@@ -44,6 +45,7 @@
     import static ch.qos.logback.tyler.base.TylerConstants.CONTEXT_FIELD_NAME;
     import static ch.qos.logback.tyler.base.TylerConstants.LEVEL_FIELD_NAME;
     import static ch.qos.logback.tyler.base.TylerConstants.LOGGER_CONTEXT_PARAMETER_NAME;
+    import static ch.qos.logback.tyler.base.TylerConstants.REQUIRED_LOGBACK_VERSION;
 
     public class TylerModelInterpretationContext extends ModelInterpretationContext {
 
@@ -67,8 +69,22 @@
             //MethodSpec setupLoggerMS = makeSetupLoggerMethodSpec();
 
             TypeSpec.Builder tsb  = TypeSpec.classBuilder(TylerConstants.TYLER_CONFIGURATOR)
-                    .addJavadoc("This class is intended to be copied and integrated into the user's project in order\nto "
-                            + "configure logback without using XML. ")
+                    .addJavadoc("""
+                     <p>BEWARE: As of March 2024, TylerConfigurator generation from logback.xml configuration files is 
+                    still experimental and incomplete.
+                    <p>
+                    
+                    <p>This class, i.e. TylerConfigurator, is intended to be copied and integrated into the user's 
+                    project as custom configurator. It will configure logback without XML.</p>
+                    
+                    <p>It requires logback-classic version %s or later at runtime.</p>
+                    
+                    <p>Custom configurators are looked up via Java's service-provide facility. If a custom provider is 
+                    found, it takes precedence over logback's own configurators, e.g. DefaultJoranConfigurator.</p>
+                    
+                    <p>See also item 1 of 'Configuration at initialization' section at 
+                    "https://logback.qos.ch/manual/configuration.html#auto_configuration </p>
+                    """.formatted(REQUIRED_LOGBACK_VERSION))
                     .addSuperinterface(Configurator.class)
                     .superclass(TylerConfiguratorBase.class);
             return tsb;
@@ -76,8 +92,13 @@
 
         private MethodSpec.Builder initializeConfigureMethodSpecBuilder() {
             MethodSpec.Builder msb = MethodSpec.methodBuilder(CONFIGURE_METHOD_NAME)
-                    .addJavadoc("This method performs configuration per {@link $T} interface.\n\n", Configurator.class)
-                    .addJavadoc("<p></p>")
+                    .addJavadoc("""
+                    <p>This method performs configuration per {@link $T} interface.</p>
+                    
+                    <p>If <code>TylerConfgiurator</code> is installed as a configurator service, this method will be 
+                    called by logback-classic during initialization.</p>
+                    """, Configurator.class)
+                    .addAnnotation(Override.class)
                     .addModifiers(Modifier.PUBLIC)
                     .addParameter(contextParameterSpec)
                     .returns(Configurator.ExecutionStatus.class)

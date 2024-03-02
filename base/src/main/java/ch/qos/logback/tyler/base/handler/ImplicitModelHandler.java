@@ -101,7 +101,8 @@ public class ImplicitModelHandler extends ModelHandlerBase {
             return;
         }
         ImplicitModelHandlerData tylerImplicitData = (ImplicitModelHandlerData) o;
-        this.aggregationAssessor = new AggregationAssessor(beanDescriptionCache, tylerImplicitData.getParentObjectClass());
+        this.aggregationAssessor = new AggregationAssessor(beanDescriptionCache,
+                tylerImplicitData.getParentObjectClass());
         aggregationAssessor.setContext(context);
 
         AggregationType aggregationType = aggregationAssessor.computeAggregationType(nestedElementTagName);
@@ -249,23 +250,22 @@ public class ImplicitModelHandler extends ModelHandlerBase {
             Class objClass = implicitModelHandlerData.getParentObjectClass();
             Method setterMethod = aggregationAssessor.findSetterMethod(implicitModel.getTag());
 
-            AggregationAssessor nestedAggregationAssessor = new AggregationAssessor(beanDescriptionCache, setterMethod.getParameterTypes()[0]);
+            AggregationAssessor nestedAggregationAssessor = new AggregationAssessor(beanDescriptionCache,
+                    setterMethod.getParameterTypes()[0]);
             nestedAggregationAssessor.setContext(context);
 
             Method parentSetterMethod = nestedAggregationAssessor.findSetterMethod(ModelConstants.PARENT_PROPPERTY_KEY);
 
-            if(parentSetterMethod != null) {
-                methodSpecBuilder.addStatement("$N.$N($N)", variableName, parentSetterMethod.getName(),parentVariableName);
+            if (parentSetterMethod != null) {
+                methodSpecBuilder.addStatement("$N.$N($N)", variableName, parentSetterMethod.getName(),
+                        parentVariableName);
             } else {
                 methodSpecBuilder.addComment("===========no parent setter");
             }
 
-
-
             methodSpecBuilder.addComment("start the complex property if it implements LifeCycle and is not");
             methodSpecBuilder.addComment("marked with a @NoAutoStart annotation");
-            methodSpecBuilder.beginControlFlow("if(($1N instanceof $2T) && $3T.notMarkedWithNoAutoStart($1N))", variableName, LifeCycle.class,
-                    NoAutoStartUtil.class);
+            methodSpecBuilder.beginControlFlow("if($T.shouldBeStarted($N))", NoAutoStartUtil.class, variableName);
             methodSpecBuilder.addStatement("(($T) $N).start()", LifeCycle.class, variableName);
             methodSpecBuilder.endControlFlow();
 
