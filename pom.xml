@@ -132,7 +132,7 @@
 
             <dependency>
                 <groupId>ch.qos.logback.tyler</groupId>
-                <artifactId>base</artifactId>
+                <artifactId>tyler-base</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
