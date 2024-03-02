@@ -1,6 +1,6 @@
 # logback-tyler
 
-Logback-tyler translates logback-classic XML configuration files to Java.
+Logback-tyler translates logback-classic XML configuration files into Java.
 
 The resulting java class named `TylerConfigurator` implements the
 [`Configurator`](https://logback.qos.ch/xref/ch/qos/logback/classic/spi/Configurator.html)
