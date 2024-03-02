@@ -8,7 +8,7 @@
     <groupId>ch.qos.logback.tyler</groupId>
     <artifactId>parent</artifactId>
     <name>parent</name>
-    <version>0.2</version>
+    <version>0.3</version>
     <packaging>pom</packaging>
 
     <description>logback tyler pom.xml file</description>
