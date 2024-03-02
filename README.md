@@ -14,8 +14,8 @@ At present time, `TylerConfigurator` requires logback-classic version 1.5.1 at r
 Logback-tyler is located at the following Maven coordinates:
 ```xml
  <groupId>ch.qos.logback.tyler</groupId>
- <artifactId>base</artifactId>
- <version>0.1</version>
+ <artifactId>tyler-base</artifactId>
+ <version>0.4</version>
 ```
 
 Here is a sample program to translate a logback.xml as string into Java.
