@@ -27,6 +27,8 @@
 
 package ch.qos.logback.tyler.base;
 
+import ch.qos.logback.tyler.base.util.VersionUtil;
+
 public class TylerConstants {
 
     public static final char SEMICOLON = ';';
@@ -43,6 +45,7 @@ public class TylerConstants {
 
     public static final String REQUIRED_LOGBACK_VERSION = "1.5.2";
 
+    public static final String TYLER_VERSION = VersionUtil.tylerVersion();
 
     public static final String LOGGER_FIELD_NAME = "logger";
 

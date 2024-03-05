@@ -27,6 +27,7 @@
 
 package ch.qos.logback.tyler.base.handler;
 
+import ch.qos.logback.tyler.base.util.VariableNameUtil;
 import com.squareup.javapoet.MethodSpec;
 
 /**
@@ -73,5 +74,18 @@ public class ImplicitModelHandlerData {
 
     public MethodSpec.Builder getMethodSpecBuilder() {
         return methodSpecBuilder;
+    }
+
+    static public ImplicitModelHandlerData makeInstance(MethodSpec.Builder methodSpec, String fqcn) {
+        String variableName = VariableNameUtil.fullyQualifiedClassNameToVariableName(fqcn);
+
+        try {
+            Class statusListenerClass = Class.forName(fqcn);
+            ImplicitModelHandlerData implicitModelHandlerData = new ImplicitModelHandlerData(statusListenerClass, variableName,
+                    methodSpec);
+           return implicitModelHandlerData;
+        } catch (ClassNotFoundException e) {
+            return null;
+        }
     }
 }

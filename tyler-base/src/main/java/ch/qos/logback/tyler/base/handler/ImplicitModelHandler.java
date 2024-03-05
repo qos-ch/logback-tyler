@@ -250,8 +250,7 @@ public class ImplicitModelHandler extends ModelHandlerBase {
             Class objClass = implicitModelHandlerData.getParentObjectClass();
             Method setterMethod = aggregationAssessor.findSetterMethod(implicitModel.getTag());
 
-            AggregationAssessor nestedAggregationAssessor = new AggregationAssessor(beanDescriptionCache,
-                    setterMethod.getParameterTypes()[0]);
+            AggregationAssessor nestedAggregationAssessor = new AggregationAssessor(beanDescriptionCache, objClass);
             nestedAggregationAssessor.setContext(context);
 
             Method parentSetterMethod = nestedAggregationAssessor.findSetterMethod(ModelConstants.PARENT_PROPPERTY_KEY);

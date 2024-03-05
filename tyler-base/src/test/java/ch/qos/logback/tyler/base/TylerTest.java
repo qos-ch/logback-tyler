@@ -56,7 +56,7 @@ public class TylerTest {
                   <import class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy"/>
                   <import class="ch.qos.logback.core.status.OnConsoleStatusListener"/>
                   
-                  
+                  <shutdownHook/>
                   <statusListener class="OnConsoleStatusListener">
                      <prefix>moo</prefix>
                   </statusListener>

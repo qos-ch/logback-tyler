@@ -62,7 +62,6 @@ public class StatusListenerModelHandler extends ModelHandlerBase {
     @Override
     public void handle(ModelInterpretationContext mic, Model model) throws ModelHandlerException {
 
-        System.out.println("--------------------------StatusListenerModelHandler ");
         StatusListenerModel slModel = (StatusListenerModel) model;
         TylerModelInterpretationContext tmic = (TylerModelInterpretationContext) mic;
 
@@ -76,21 +75,17 @@ public class StatusListenerModelHandler extends ModelHandlerBase {
             statusListenerClassName = mic.getImport(statusListenerClassName);
         }
 
-        String variableName = VariableNameUtil.fullyQualifiedClassNameToVariableName(statusListenerClassName);
-
-        MethodSpec.Builder methodSpec = addJavaStatementForStatusListerInitialization(tmic, statusListenerClassName);
-        try {
-            Class statusListenerClass = Class.forName(statusListenerClassName);
-            this.implicitModelHandlerData = new ImplicitModelHandlerData(statusListenerClass, variableName,
-                    methodSpec);
+        MethodSpec.Builder methodSpec = addJavaStatement(tmic, statusListenerClassName);
+        this.implicitModelHandlerData = ImplicitModelHandlerData.makeInstance(methodSpec, statusListenerClassName);
+        if(implicitModelHandlerData != null) {
             mic.pushObject(implicitModelHandlerData);
-        } catch (ClassNotFoundException e) {
-            addError("Could not find class", e);
+        } else {
+            addError("Could not make implicitModelHandlerData for ["+statusListenerClassName+"]");
             inError = true;
         }
     }
 
-    MethodSpec.Builder addJavaStatementForStatusListerInitialization(TylerModelInterpretationContext tmic,
+    MethodSpec.Builder addJavaStatement(TylerModelInterpretationContext tmic,
             String statusListenerFQCN) {
 
 
