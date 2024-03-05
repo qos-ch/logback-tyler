@@ -34,7 +34,6 @@ import ch.qos.logback.core.model.Model;
 import ch.qos.logback.core.model.processor.ModelHandlerBase;
 import ch.qos.logback.core.model.processor.ModelHandlerException;
 import ch.qos.logback.core.model.processor.ModelInterpretationContext;
-import ch.qos.logback.core.util.OptionHelper;
 import ch.qos.logback.core.util.StringUtil;
 import ch.qos.logback.tyler.base.TylerModelInterpretationContext;
 import ch.qos.logback.tyler.base.util.ClassUtil;
@@ -48,7 +47,7 @@ public class AppenderModelHandler extends ModelHandlerBase {
 
     String appenderVariableName;
 
-    ImplicitModelHandlerData classAndMethodSpecBuilderTuple;
+    ImplicitModelHandlerData implicitModelHandlerData;
 
     private boolean skipped = false;
     boolean inError = false;
@@ -65,7 +64,6 @@ public class AppenderModelHandler extends ModelHandlerBase {
     @Override
     @SuppressWarnings("unchecked")
     public void handle(ModelInterpretationContext mic, Model model) throws ModelHandlerException {
-
 
         AppenderModel appenderModel = (AppenderModel) model;
 
@@ -86,9 +84,9 @@ public class AppenderModelHandler extends ModelHandlerBase {
         MethodSpec.Builder methodSpec = addJavaStatementForAppenderInitialization(tmic, appenderName, className);
         try {
             Class appenderClass = Class.forName(className);
-            classAndMethodSpecBuilderTuple = new ImplicitModelHandlerData(appenderClass, appenderVariableName,
+            implicitModelHandlerData = new ImplicitModelHandlerData(appenderClass, appenderVariableName,
                     methodSpec);
-            mic.pushObject(classAndMethodSpecBuilderTuple);
+            mic.pushObject(implicitModelHandlerData);
         } catch (ClassNotFoundException e) {
             addError("Could not find class", e);
             inError = true;
@@ -99,23 +97,14 @@ public class AppenderModelHandler extends ModelHandlerBase {
     MethodSpec.Builder addJavaStatementForAppenderInitialization(TylerModelInterpretationContext tmic,
             String appenderName, String fullyQualifiedAppenderClassName) {
 
-        ClassName optionHelperCN = ClassName.get(OptionHelper.class);
-        ClassName appenderIntefaceCN = ClassName.get(Appender.class);
         ClassName desiredAppenderCN = ClassName.get(ClassUtil.extractPackageName(fullyQualifiedAppenderClassName),
                 ClassUtil.extractSimpleClassName(fullyQualifiedAppenderClassName));
 
         String fistLetterCapitalizedAppenderName = StringUtil.capitalizeFirstLetter(appenderName);
 
-        MethodSpec.Builder appenderSetupMethodSpec = MethodSpec.methodBuilder(SETUP_APPENDER + fistLetterCapitalizedAppenderName)
-                .returns(Appender.class).addStatement("$T " + this.appenderVariableName, desiredAppenderCN)
-                .beginControlFlow("try")
-                .addStatement(this.appenderVariableName + " = ($1T) $2T.instantiateByClassName($3S, $4T.class, $5N)",
-                        desiredAppenderCN, optionHelperCN, fullyQualifiedAppenderClassName, appenderIntefaceCN,
-                        tmic.getContextFieldSpec())
-                .nextControlFlow("catch ($T oops)", Exception.class)
-                .addStatement("addError(\"Could not create an Appender of type [\" + $S + \"].\", oops)",
-                        fullyQualifiedAppenderClassName).addStatement("return null")
-                .endControlFlow()
+        MethodSpec.Builder appenderSetupMethodSpec = MethodSpec.methodBuilder(
+                        SETUP_APPENDER + fistLetterCapitalizedAppenderName).returns(Appender.class)
+                .addStatement("$1T $2N = new $1T()", desiredAppenderCN, appenderVariableName)
                 .addStatement(this.appenderVariableName + ".setContext($N)", tmic.getContextFieldSpec())
                 .addStatement(this.appenderVariableName + ".setName($S)", appenderName);
 
@@ -129,13 +118,13 @@ public class AppenderModelHandler extends ModelHandlerBase {
         }
 
         Object o = mic.peekObject();
-        if (o != classAndMethodSpecBuilderTuple) {
-            addWarn("The object at the of the stack is not the ClassAndMethodSpecTuple pushed earlier.");
+        if (o != implicitModelHandlerData) {
+            addWarn("The object at the of the stack is not the ImplicitModelHandlerData pushed earlier.");
         } else {
             TylerModelInterpretationContext tmic = (TylerModelInterpretationContext) mic;
             tmic.popObject();
 
-            MethodSpec.Builder appenderMethodBuilder = classAndMethodSpecBuilderTuple.methodSpecBuilder;
+            MethodSpec.Builder appenderMethodBuilder = implicitModelHandlerData.methodSpecBuilder;
 
             // start the appender
             appenderMethodBuilder.addCode("\n");
@@ -145,7 +134,8 @@ public class AppenderModelHandler extends ModelHandlerBase {
 
             tmic.tylerConfiguratorTSB.addMethod(appenderMethodSpec);
 
-            tmic.configureMethodSpecBuilder.addStatement("$T $N = $N()", Appender.class, appenderVariableName, appenderMethodSpec);
+            tmic.configureMethodSpecBuilder.addStatement("$T $N = $N()", Appender.class, appenderVariableName,
+                    appenderMethodSpec);
         }
 
     }

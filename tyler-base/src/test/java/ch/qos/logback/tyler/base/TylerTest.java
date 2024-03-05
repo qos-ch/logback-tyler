@@ -49,12 +49,18 @@ public class TylerTest {
     void smoke() throws JoranException, IOException {
         ModelToJava m2j = new ModelToJava(context);
         String input = """
-                <configuration debug="true">
+                <configuration xdebug="true">
                   <import class="ch.qos.logback.classic.encoder.PatternLayoutEncoder"/>
                   <import class="ch.qos.logback.core.ConsoleAppender"/>
                   <import class="ch.qos.logback.core.rolling.RollingFileAppender"/>
                   <import class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy"/>
+                  <import class="ch.qos.logback.core.status.OnConsoleStatusListener"/>
                   
+                  
+                  <statusListener class="OnConsoleStatusListener">
+                     <prefix>moo</prefix>
+                  </statusListener>
+                    
                   <property name="APPNAME" value="titi"/>
                   
                   <contextName>${APPNAME}</contextName>

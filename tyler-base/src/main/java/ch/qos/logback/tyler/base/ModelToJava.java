@@ -41,6 +41,7 @@ import ch.qos.logback.core.model.ImplicitModel;
 import ch.qos.logback.core.model.ImportModel;
 import ch.qos.logback.core.model.Model;
 import ch.qos.logback.core.model.PropertyModel;
+import ch.qos.logback.core.model.StatusListenerModel;
 import ch.qos.logback.core.model.processor.DefaultProcessor;
 import ch.qos.logback.core.model.processor.ImportModelHandler;
 import ch.qos.logback.tyler.base.handler.AppenderRefModelHandler;
@@ -51,6 +52,7 @@ import ch.qos.logback.tyler.base.handler.ConfigurationModelHandler;
 import ch.qos.logback.tyler.base.handler.ImplicitModelHandler;
 import ch.qos.logback.tyler.base.handler.LoggerModelHandler;
 import ch.qos.logback.tyler.base.handler.RootLoggerModelHandler;
+import ch.qos.logback.tyler.base.handler.StatusListenerModelHandler;
 import ch.qos.logback.tyler.base.handler.VariableModelHandler;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
@@ -119,6 +121,7 @@ public class ModelToJava {
 
         defaultProcessor.addHandler(ContextNameModel.class, ContextNameModelHandler::makeInstance);
         defaultProcessor.addHandler(ImportModel.class, ImportModelHandler::makeInstance);
+        defaultProcessor.addHandler(StatusListenerModel.class, StatusListenerModelHandler::makeInstance);
         defaultProcessor.addHandler(AppenderModel.class, AppenderModelHandler::makeInstance);
         defaultProcessor.addHandler(ImplicitModel.class, ImplicitModelHandler::makeInstance);
         defaultProcessor.addHandler(LoggerModel.class, LoggerModelHandler::makeInstance);

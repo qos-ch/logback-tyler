@@ -48,4 +48,8 @@ public class VariableNameUtil {
         return "appender"+ StringUtil.capitalizeFirstLetter(appenderName);
     }
 
+    static public String fullyQualifiedClassNameToVariableName(String fqcn) {
+        String simpleClassName = ClassUtil.extractSimpleClassName(fqcn);
+        return StringUtil.lowercaseFirstLetter(simpleClassName);
+    }
 }

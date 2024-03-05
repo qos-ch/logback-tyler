@@ -50,6 +50,7 @@ public class TylerConstants {
     public static final String ADDITIVITY_FIELD_NAME = "additivity";
     public static final String CONFIGURE_METHOD_NAME = "configure";
     public static final String SETUP_APPENDER = "setupAppender";
+    public static final String SETUP = "setup";
     public static final String ADD_ON_CONSOLE_STATUS_LISTENER = "addOnConsoleStatusListener";
 
 

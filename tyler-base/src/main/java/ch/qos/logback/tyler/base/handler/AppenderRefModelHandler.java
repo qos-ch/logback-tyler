@@ -57,8 +57,6 @@ public class AppenderRefModelHandler extends ModelHandlerBase {
     public void handle(ModelInterpretationContext mic, Model model) throws ModelHandlerException {
         TylerModelInterpretationContext tmic = (TylerModelInterpretationContext) mic;
 
-        System.out.println("============ AppenderRefModelHandler");
-
         AppenderRefModel appenderRefModel = (AppenderRefModel) model;
         Object o = mic.peekObject();
 

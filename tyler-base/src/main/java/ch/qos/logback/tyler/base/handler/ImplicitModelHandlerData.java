@@ -44,6 +44,14 @@ public class ImplicitModelHandlerData {
     public ImplicitModelHandlerData(Class parentObjectClass, String variableName, MethodSpec.Builder methodSpecBuilder) {
         this(null, parentObjectClass, variableName, methodSpecBuilder);
     }
+
+    /**
+     *
+     * @param parentVariableName used to inject the parent into the current object if it has the setParent method
+     * @param parentObjectClass
+     * @param variableName
+     * @param methodSpecBuilder
+     */
     public ImplicitModelHandlerData(String parentVariableName, Class parentObjectClass, String variableName, MethodSpec.Builder methodSpecBuilder) {
         this.parentVariableName = parentVariableName;
         this.parentObjectClass = parentObjectClass;
