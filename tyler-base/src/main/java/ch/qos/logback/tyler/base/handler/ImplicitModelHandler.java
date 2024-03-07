@@ -196,14 +196,14 @@ public class ImplicitModelHandler extends ModelHandlerBase {
     private void doBasicProperty(ModelInterpretationContext mic, ImplicitModel implicitModel,
             AggregationAssessor aggregationAssessor, ImplicitModelHandlerData classAndMethodSpecTuple,
             AggregationType aggregationType) {
-        String finalBody = mic.subst(implicitModel.getBodyText());
+        String bodyText = implicitModel.getBodyText();
         String nestedElementTagName = implicitModel.getTag();
 
         switch (aggregationType) {
         case AS_BASIC_PROPERTY:
             Method setterMethod = aggregationAssessor.findSetterMethod(nestedElementTagName);
             Class<?>[] paramTypes = setterMethod.getParameterTypes();
-            setPropertyJavaStatement(classAndMethodSpecTuple, setterMethod, finalBody, paramTypes[0]);
+            setPropertyJavaStatement(classAndMethodSpecTuple, setterMethod, bodyText, paramTypes[0]);
             break;
         case AS_BASIC_PROPERTY_COLLECTION:
             //actionData.parentBean.addBasicProperty(actionData.propertyName, finalBody);
@@ -219,9 +219,13 @@ public class ImplicitModelHandler extends ModelHandlerBase {
         MethodSpec.Builder methodSpecBuilder = classAndMethodSpecTuple.methodSpecBuilder;
         String variableName = classAndMethodSpecTuple.getVariableName();
         //String setterSuffix = StringUtil.capitalizeFirstLetter(nestedElementTagName);
-        String valuePart = StringToVariableStament.convertArg(type);
-        methodSpecBuilder.addStatement("$N.$N(" + valuePart + ")", variableName, setterMethod.getName(),
-                value.toLowerCase());
+        String valuePart = StringToVariableStament.convertArg(type, value);
+        if(Boolean.TYPE.isAssignableFrom(type)) {
+           value = value.toLowerCase();
+        }
+        methodSpecBuilder.addStatement("$N.$N(" + valuePart + ")", variableName, setterMethod.getName(), value);
+
+        Integer.parseInt("1");
     }
 
     @Override

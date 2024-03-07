@@ -25,35 +25,46 @@
  *
  */
 
-package ch.qos.logback.tyler.base.handler;
+package ch.qos.logback.tyler.base;
 
-import ch.qos.logback.classic.model.ContextNameModel;
+import ch.qos.logback.classic.model.LevelModel;
 import ch.qos.logback.core.Context;
 import ch.qos.logback.core.model.Model;
 import ch.qos.logback.core.model.processor.ModelHandlerBase;
 import ch.qos.logback.core.model.processor.ModelHandlerException;
 import ch.qos.logback.core.model.processor.ModelInterpretationContext;
-import ch.qos.logback.tyler.base.TylerModelInterpretationContext;
+import ch.qos.logback.tyler.base.handler.LoggerModelHandlerData;
 
-import static ch.qos.logback.classic.tyler.TylerConfiguratorBase.SET_CONTEXT_NAME_METHOD_NAME;
+public class LevelModelHandler extends ModelHandlerBase {
 
-public class ContextNameModelHandler  extends ModelHandlerBase  {
+    boolean inError = false;
 
-    public ContextNameModelHandler(Context context) {
+    public LevelModelHandler(Context context) {
         super(context);
     }
 
     static public ModelHandlerBase makeInstance(Context context, ModelInterpretationContext ic) {
-        return new ContextNameModelHandler(context);
+        return new LevelModelHandler(context);
     }
+
 
     @Override
     public void handle(ModelInterpretationContext mic, Model model) throws ModelHandlerException {
-        ContextNameModel contextNameModel = (ContextNameModel) model;
-        TylerModelInterpretationContext tmic = (TylerModelInterpretationContext) mic;
+        LevelModel levelModel = (LevelModel) model;
 
-        String bodyText = contextNameModel.getBodyText();
-        tmic.configureMethodSpecBuilder.addStatement("$N(subst($S))", SET_CONTEXT_NAME_METHOD_NAME, bodyText);
+        Object o = mic.peekObject();
+
+        if (!(o instanceof LoggerModelHandlerData)) {
+            inError = true;
+            addError("For element <level>, could not find a logger String at the top of execution stack.");
+            return;
+        }
+
+        LoggerModelHandlerData loggerModelHandlerData = (LoggerModelHandlerData) o;
+        String levelStr = levelModel.getValue();
+        // let the parent use the data
+        loggerModelHandlerData.setLevelStr(levelStr);
+
     }
 
 }

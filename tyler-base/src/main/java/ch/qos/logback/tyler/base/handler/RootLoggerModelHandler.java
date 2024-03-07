@@ -29,6 +29,7 @@ package ch.qos.logback.tyler.base.handler;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.model.LoggerModel;
 import ch.qos.logback.classic.model.RootLoggerModel;
 import ch.qos.logback.classic.util.LevelUtil;
 import ch.qos.logback.core.Context;
@@ -36,6 +37,7 @@ import ch.qos.logback.core.model.Model;
 import ch.qos.logback.core.model.processor.ModelHandlerBase;
 import ch.qos.logback.core.model.processor.ModelHandlerException;
 import ch.qos.logback.core.model.processor.ModelInterpretationContext;
+import ch.qos.logback.core.util.StringUtil;
 import ch.qos.logback.tyler.base.TylerModelInterpretationContext;
 
 import ch.qos.logback.tyler.base.util.VariableNameUtil;
@@ -44,7 +46,7 @@ import static ch.qos.logback.classic.tyler.TylerConfiguratorBase.SETUP_LOGGER_ME
 
 public class RootLoggerModelHandler extends ModelHandlerBase {
 
-    Logger root;
+    LoggerModelHandlerData loggerModelHandlerData;
     boolean inError = false;
 
     public RootLoggerModelHandler(Context context) {
@@ -66,9 +68,8 @@ public class RootLoggerModelHandler extends ModelHandlerBase {
 
         TylerModelInterpretationContext tmic = (TylerModelInterpretationContext) mic;
 
-        String levelStr = rootLoggerModel.getLevel();
-        addJavaStatement(tmic, Logger.ROOT_LOGGER_NAME, levelStr);
-        mic.pushObject(Logger.ROOT_LOGGER_NAME);
+        loggerModelHandlerData = new LoggerModelHandlerData(Logger.ROOT_LOGGER_NAME);
+        mic.pushObject(loggerModelHandlerData);
     }
 
 
@@ -87,10 +88,29 @@ public class RootLoggerModelHandler extends ModelHandlerBase {
         if (inError) {
             return;
         }
+        RootLoggerModel rootLoggerModel = (RootLoggerModel) model;
+        TylerModelInterpretationContext tmic = (TylerModelInterpretationContext) mic;
+
         Object o = mic.peekObject();
-        if (o != Logger.ROOT_LOGGER_NAME) {
-            addWarn("The object [" + o + "] on the top the of the stack is not ROOT pushed earlier");
+        if (o != loggerModelHandlerData) {
+            addWarn("The object [" + o + "] on the top the of the stack is not the loggerModelHandlerData pushed earlier");
         } else {
+            String loggerName = loggerModelHandlerData.loggerName;
+            String levelStrFromNestedElement = loggerModelHandlerData.getLevelStr();
+            String levelStr = rootLoggerModel.getLevel();
+            String actualLevelStr = null;
+
+            if(StringUtil.notNullNorEmpty(levelStr) && StringUtil.notNullNorEmpty(levelStrFromNestedElement)) {
+                addWarn("Both level attribute and nested level element present. Giving preference to the level attribute");
+                actualLevelStr = levelStr;
+            } else if( StringUtil.notNullNorEmpty(levelStr)) {
+                actualLevelStr = levelStr;
+            } else if ( StringUtil.notNullNorEmpty(levelStrFromNestedElement)){
+                actualLevelStr = levelStrFromNestedElement;
+            } else {
+                addError("Logic error. levelStr='"+levelStr+"', levelStrFromNestedElement='"+levelStrFromNestedElement+"'");
+            }
+            addJavaStatement(tmic, loggerName, actualLevelStr);
             mic.popObject();
         }
     }

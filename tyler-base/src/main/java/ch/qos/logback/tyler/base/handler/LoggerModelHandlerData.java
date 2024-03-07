@@ -27,33 +27,21 @@
 
 package ch.qos.logback.tyler.base.handler;
 
-import ch.qos.logback.classic.model.ContextNameModel;
-import ch.qos.logback.core.Context;
-import ch.qos.logback.core.model.Model;
-import ch.qos.logback.core.model.processor.ModelHandlerBase;
-import ch.qos.logback.core.model.processor.ModelHandlerException;
-import ch.qos.logback.core.model.processor.ModelInterpretationContext;
-import ch.qos.logback.tyler.base.TylerModelInterpretationContext;
+public class LoggerModelHandlerData {
 
-import static ch.qos.logback.classic.tyler.TylerConfiguratorBase.SET_CONTEXT_NAME_METHOD_NAME;
+    final String loggerName;
+    String levelStr;
 
-public class ContextNameModelHandler  extends ModelHandlerBase  {
-
-    public ContextNameModelHandler(Context context) {
-        super(context);
+    LoggerModelHandlerData(String loggerName) {
+        this.loggerName = loggerName;
     }
 
-    static public ModelHandlerBase makeInstance(Context context, ModelInterpretationContext ic) {
-        return new ContextNameModelHandler(context);
+    public String getLevelStr() {
+        return levelStr;
     }
 
-    @Override
-    public void handle(ModelInterpretationContext mic, Model model) throws ModelHandlerException {
-        ContextNameModel contextNameModel = (ContextNameModel) model;
-        TylerModelInterpretationContext tmic = (TylerModelInterpretationContext) mic;
-
-        String bodyText = contextNameModel.getBodyText();
-        tmic.configureMethodSpecBuilder.addStatement("$N(subst($S))", SET_CONTEXT_NAME_METHOD_NAME, bodyText);
+    public void setLevelStr(String levelStr) {
+        this.levelStr = levelStr;
     }
 
 }

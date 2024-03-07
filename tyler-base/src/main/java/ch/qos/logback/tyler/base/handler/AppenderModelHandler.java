@@ -71,13 +71,6 @@ public class AppenderModelHandler extends ModelHandlerBase {
 
         String appenderName = tmic.subst(appenderModel.getName());
 
-        //        if (!mic.hasDependers(appenderName)) {
-        //            addWarn("Appender named [" + appenderName + "] not referenced. Skipping further processing.");
-        //            skipped = true;
-        //            appenderModel.markAsSkipped();
-        //            return;
-        //        }
-
         String originalClassName = appenderModel.getClassName();
         String className = mic.getImport(originalClassName);
         this.appenderVariableName = VariableNameUtil.appenderNameToVariableName(appenderName);

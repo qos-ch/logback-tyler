@@ -29,6 +29,7 @@ package ch.qos.logback.tyler.base;
 import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.classic.model.ConfigurationModel;
 import ch.qos.logback.classic.model.ContextNameModel;
+import ch.qos.logback.classic.model.LevelModel;
 import ch.qos.logback.classic.model.LoggerModel;
 import ch.qos.logback.classic.model.RootLoggerModel;
 import ch.qos.logback.classic.model.processor.LogbackClassicDefaultNestedComponentRules;
@@ -64,15 +65,17 @@ import org.xml.sax.InputSource;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
 public class ModelToJava {
 
 
-    Context context;
+    final Context context;
 
     public ModelToJava(Context context) {
         this.context = context;
     }
+
 
     public Model extractModel(String input) throws JoranException {
         InputStream inputStream = new ByteArrayInputStream(input.getBytes());
@@ -87,7 +90,7 @@ public class ModelToJava {
         return top;
     }
 
-    public String toJava(Model topModel) throws IOException {
+    public StringBuffer toJavaAsStringBuffer(Model topModel) throws IOException {
         TylerModelInterpretationContext tmic = new TylerModelInterpretationContext(context);
         tmic.setTopModel(topModel);
 
@@ -106,15 +109,20 @@ public class ModelToJava {
 
 
         TypeSpec tylerConfiguratorTypeSpec = tmic.tylerConfiguratorTSB.build();
-        JavaFile javaFile = JavaFile.builder("com.example.helloworld", tylerConfiguratorTypeSpec)
-                .indent("    ")
+        JavaFile javaFile = JavaFile.builder("com.example", tylerConfiguratorTypeSpec)
+                .indent("  ")
                 .build();
-        //StringBuilder sb = new StringBuilder();
+
         StringBuffer sb = new StringBuffer();
+
         javaFile.writeTo(sb);
-        return sb.toString();
+        return sb;
     }
 
+    public String toJava(Model topModel) throws IOException {
+        StringBuffer buf = toJavaAsStringBuffer(topModel);
+        return buf.toString();
+    }
     private void addModelHandlerAssociations(DefaultProcessor defaultProcessor) {
         defaultProcessor.addHandler(ConfigurationModel.class, ConfigurationModelHandler::makeInstance);
 
@@ -130,7 +138,7 @@ public class ModelToJava {
         defaultProcessor.addHandler(ImplicitModel.class, ImplicitModelHandler::makeInstance);
         defaultProcessor.addHandler(LoggerModel.class, LoggerModelHandler::makeInstance);
         defaultProcessor.addHandler(RootLoggerModel.class, RootLoggerModelHandler::makeInstance);
-
+        defaultProcessor.addHandler(LevelModel.class, LevelModelHandler::makeInstance);
         defaultProcessor.addHandler(AppenderRefModel.class, AppenderRefModelHandler::makeInstance);
     }
 

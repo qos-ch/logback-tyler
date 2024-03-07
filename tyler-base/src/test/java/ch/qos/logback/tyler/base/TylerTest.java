@@ -61,21 +61,12 @@ public class TylerTest {
                      <prefix>moo</prefix>
                   </statusListener>
                     
-                  <property name="APPNAME" value="titi"/>
+                  <property name="USER_HOME" value="/home/alice"/>
                   
                   <contextName>${APPNAME}</contextName>
-                  <appender class="ch.qos.logback.core.FileAppender" name="toto">
-                     <file>toto.log</file>
-                     <append>true</append>
-                     <immediateFlush>true</immediateFlush>
-                     <encoder>
-                       <pattern>%-4relative [%thread] %-5level %logger{35} -%kvp- %msg%n</pattern>
-                     </encoder>
-                       
-                  </appender>          
                        
                   <appender name="RFILE" class="RollingFileAppender">
-                     <file>logFile.log</file>
+                     <file>${USER_HOME}/logFile.log</file>
                      <rollingPolicy class="TimeBasedRollingPolicy">
                        <fileNamePattern>logFile.%d{yyyy-MM-dd}.log</fileNamePattern>
                        <maxHistory>30</maxHistory>
@@ -124,7 +115,7 @@ public class TylerTest {
                   
                   <contextName>${APP_NAME}</contextName>
                   
-                  <appender class="ch.qos.logback.core.FileAppender" name="TOTO">
+                  <appender class="ch.qos.logback.core.FileAppender" name="RFILE">
                      <file>toto.log</file>
                      <append>true</append>
                      <immediateFlush>true</immediateFlush>
@@ -147,5 +138,6 @@ public class TylerTest {
         System.out.println("----------------");
         System.out.println(result);
         System.out.println("----------------");
+        StatusPrinter.print(context);
     }
 }

@@ -28,15 +28,26 @@
 package ch.qos.logback.tyler.base.util;
 
 import ch.qos.logback.core.joran.util.StringToObjectConverter;
-import ch.qos.logback.core.spi.ContextAware;
 
 import java.nio.charset.Charset;
 
 public class StringToVariableStament {
 
-    public static String convertArg (Class<?> type) {
+    static final String DOLLAR_LEFT_ACCOLADE = "${";
+
+    public static boolean containsVariable(String input) {
+        if(input != null) {
+            return input.contains(DOLLAR_LEFT_ACCOLADE);
+        } else {
+            return false;
+        }
+    }
+
+    public static String convertArg (Class<?> type, String value) {
+        boolean isVar = containsVariable(value);
+
         if (String.class.isAssignableFrom(type)) {
-            return "$S";
+            return isVar ? "subst($S)" : "$S";
         } else if (Integer.TYPE.isAssignableFrom(type)) {
             return "$N";
         } else if (Long.TYPE.isAssignableFrom(type)) {
@@ -48,7 +59,7 @@ public class StringToVariableStament {
         } else if (Boolean.TYPE.isAssignableFrom(type)) {
             return "$N";
         } else if (type.isEnum()) {
-            return "Enum.valueOf("+type.getName()+", $S)";
+            return "Enum.valueOf("+type.getName()+", $S";
         } else if (StringToObjectConverter.followsTheValueOfConvention(type)) {
             return type.getName()+".valueOf($S)";
         } else if (isOfTypeCharset(type)) {
