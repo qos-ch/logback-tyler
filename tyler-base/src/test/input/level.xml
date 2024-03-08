@@ -1,0 +1,9 @@
+<configuration>
+    <logger name="com.foo.Bar">
+        <level value="${MOO_LEVEL}"/>
+    </logger>
+
+    <root>
+        <level value="DEBUG"/>
+    </root>
+</configuration>

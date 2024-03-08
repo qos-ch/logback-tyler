@@ -31,6 +31,7 @@ import ch.qos.logback.core.ContextBase;
 import ch.qos.logback.core.joran.spi.JoranException;
 import ch.qos.logback.core.model.Model;
 import ch.qos.logback.core.util.StatusPrinter;
+import ch.qos.logback.core.util.StatusPrinter2;
 import ch.qos.logback.tyler.base.antlr4.SyntaxVerifier;
 import ch.qos.logback.tyler.base.antlr4.TylerAntlr4ErrorListener;
 import org.junit.jupiter.api.Test;
@@ -43,7 +44,7 @@ public class TylerTest {
 
     ContextBase context = new ContextBase();
     SyntaxVerifier syntaxVerifier = new SyntaxVerifier();
-    StatusPrinter statusPrinter = new StatusPrinter();
+    StatusPrinter2 statusPrinter2 = new StatusPrinter2();
 
     @Test
     void smoke() throws JoranException, IOException {
@@ -93,7 +94,7 @@ public class TylerTest {
 
         TylerAntlr4ErrorListener errorListener = syntaxVerifier.verify(result);
 
-        statusPrinter.print(context);
+        statusPrinter2.print(context);
         System.out.println("----------------");
         System.out.println(result);
         System.out.println("----------------");
@@ -138,6 +139,6 @@ public class TylerTest {
         System.out.println("----------------");
         System.out.println(result);
         System.out.println("----------------");
-        StatusPrinter.print(context);
+        statusPrinter2.print(context);
     }
 }

@@ -66,6 +66,11 @@ public class TylerRegressionTest {
         verify(INPUT_PREFIX+"smoke.xml", INPUT_PREFIX+"smoke_witness.java", false);
     }
 
+    @Test
+    void levelTest() throws JoranException, IOException {
+        verify(INPUT_PREFIX+"level.xml", INPUT_PREFIX+"level_witness.java", false);
+    }
+
     void verify(String path2XMLFile, String path2WitnessFile, boolean dumpResult) throws JoranException, IOException {
         List<String> lines = readFile(path2XMLFile);
         List<String> witnessLines = readFile(path2WitnessFile);
@@ -93,12 +98,9 @@ public class TylerRegressionTest {
     }
 
     private void appendStatusLinesToResultsList(List<String> stringList, List<String> resultList) {
-
         for(String s: stringList) {
-            StringBuilder sb = new StringBuilder();
             String[] split = s.split("\n");
-            Arrays.stream(split).forEach(n -> sb.append("// ").append(n).append("\n"));
-            resultList.add(sb.toString());
+            Arrays.stream(split).forEach(n -> resultList.add("// "+n));
         }
     }
 

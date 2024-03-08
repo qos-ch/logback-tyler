@@ -110,9 +110,12 @@ public class ModelToJava {
 
 
         TypeSpec tylerConfiguratorTypeSpec = tmic.tylerConfiguratorTSB.build();
-        JavaFile javaFile = JavaFile.builder("com.example", tylerConfiguratorTypeSpec)
-                .indent("  ")
-                .build();
+
+        JavaFile.Builder javaFileBuilder = JavaFile.builder("com.example", tylerConfiguratorTypeSpec);
+
+        tmic.staticImportsList.forEach(sid -> javaFileBuilder.addStaticImport(sid.aClass(), sid.methodName()));
+
+        JavaFile javaFile = javaFileBuilder.indent("  ").build();
 
         StringBuffer sb = new StringBuffer();
 

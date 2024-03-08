@@ -29,12 +29,15 @@ package ch.qos.logback.tyler.base.handler;
 
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.model.LevelModel;
+import ch.qos.logback.classic.util.LevelUtil;
 import ch.qos.logback.core.Context;
 import ch.qos.logback.core.model.Model;
 import ch.qos.logback.core.model.processor.ModelHandlerBase;
 import ch.qos.logback.core.model.processor.ModelHandlerException;
 import ch.qos.logback.core.model.processor.ModelInterpretationContext;
 import ch.qos.logback.tyler.base.TylerModelInterpretationContext;
+import ch.qos.logback.tyler.base.spi.StaticImportData;
+import ch.qos.logback.tyler.base.util.StringToVariableStament;
 import ch.qos.logback.tyler.base.util.VariableNameUtil;
 
 import static ch.qos.logback.classic.tyler.TylerConfiguratorBase.SETUP_LOGGER_METHOD_NAME;
@@ -73,8 +76,12 @@ public class LevelModelHandler extends ModelHandlerBase {
 
     void addJavaStatement(TylerModelInterpretationContext tmic, String loggerName, String levelStr) {
         String loggerVariableName = VariableNameUtil.loggerNameToVariableName(loggerName);
+        boolean containsVariable = StringToVariableStament.containsVariable(levelStr);
+        String levelStrPart = containsVariable ? "subst($S)" : "$S";
 
-        tmic.configureMethodSpecBuilder.addStatement("$N.setLevel(levelStringToLevel(subst($S))", loggerVariableName,
+        tmic.addStaticImport(new StaticImportData(LevelUtil.class, "levelStringToLevel"));
+
+        tmic.configureMethodSpecBuilder.addStatement("$N.setLevel(levelStringToLevel("+levelStrPart+"))", loggerVariableName,
                 levelStr);
     }
 }

@@ -38,6 +38,8 @@ public class OutputComparator {
         List<String> cleanWitnessList = clean(witnessList);
         List<String> cleanSubjectList = clean(subjectList);
 
+        //cleanSubjectList.forEach(System.out::println);
+
         final int lenWitness = cleanWitnessList.size();
         final int lenSubject = cleanSubjectList.size();
 
