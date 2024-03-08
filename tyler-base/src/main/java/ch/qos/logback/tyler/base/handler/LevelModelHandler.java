@@ -25,15 +25,19 @@
  *
  */
 
-package ch.qos.logback.tyler.base;
+package ch.qos.logback.tyler.base.handler;
 
+import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.model.LevelModel;
 import ch.qos.logback.core.Context;
 import ch.qos.logback.core.model.Model;
 import ch.qos.logback.core.model.processor.ModelHandlerBase;
 import ch.qos.logback.core.model.processor.ModelHandlerException;
 import ch.qos.logback.core.model.processor.ModelInterpretationContext;
-import ch.qos.logback.tyler.base.handler.LoggerModelHandlerData;
+import ch.qos.logback.tyler.base.TylerModelInterpretationContext;
+import ch.qos.logback.tyler.base.util.VariableNameUtil;
+
+import static ch.qos.logback.classic.tyler.TylerConfiguratorBase.SETUP_LOGGER_METHOD_NAME;
 
 public class LevelModelHandler extends ModelHandlerBase {
 
@@ -51,20 +55,26 @@ public class LevelModelHandler extends ModelHandlerBase {
     @Override
     public void handle(ModelInterpretationContext mic, Model model) throws ModelHandlerException {
         LevelModel levelModel = (LevelModel) model;
+        TylerModelInterpretationContext tmic = (TylerModelInterpretationContext) mic;
 
         Object o = mic.peekObject();
 
-        if (!(o instanceof LoggerModelHandlerData)) {
+        if (!(o instanceof String)) {
             inError = true;
             addError("For element <level>, could not find a logger String at the top of execution stack.");
             return;
         }
 
-        LoggerModelHandlerData loggerModelHandlerData = (LoggerModelHandlerData) o;
+        String loggerName = (String) o;
         String levelStr = levelModel.getValue();
-        // let the parent use the data
-        loggerModelHandlerData.setLevelStr(levelStr);
 
+        addJavaStatement(tmic, loggerName, levelStr);
     }
 
+    void addJavaStatement(TylerModelInterpretationContext tmic, String loggerName, String levelStr) {
+        String loggerVariableName = VariableNameUtil.loggerNameToVariableName(loggerName);
+
+        tmic.configureMethodSpecBuilder.addStatement("$N.setLevel(levelStringToLevel(subst($S))", loggerVariableName,
+                levelStr);
+    }
 }

@@ -25,23 +25,37 @@
  *
  */
 
-package ch.qos.logback.tyler.base.handler;
+package ch.qos.logback.tyler.base;
 
-public class LoggerModelHandlerData {
+import org.junit.jupiter.api.Test;
 
-    final String loggerName;
-    String levelStr;
+import java.util.regex.Matcher;
 
-    LoggerModelHandlerData(String loggerName) {
-        this.loggerName = loggerName;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+public class OutputComparatorTest {
+    String suffix = "-INFO in ch.qos.logback.core.model.processor.DefaultProcessor@1f760b47 - End of configuration.";
+    String s = "// 15:44:51,092 |" + suffix;
+
+    @Test
+    void statusPatternTest() {
+        String suffix = "-INFO in ch.qos.logback.core.model.processor.DefaultProcessor@1f760b47 - End of configuration.";
+        String s = "// 15:44:51,092 |" + suffix;
+        Matcher statusMatcher = OutputComparator.STATUS_PATTERN.matcher(s);
+
+        boolean isMatch = statusMatcher.find();
+        assertTrue(isMatch);
+        String cleaned = statusMatcher.replaceFirst("");
+        assertEquals(cleaned, suffix);
     }
 
-    public String getLevelStr() {
-        return levelStr;
+    @Test
+    public void objectIdPatternTest() {
+        Matcher oidMatcher = OutputComparator.OBJECT_ID_PATTERN.matcher(s);
+        boolean isMatch = oidMatcher.find();
+        assertTrue(isMatch);
+        String cleaned = oidMatcher.replaceFirst("@XXX");
+        System.out.println(cleaned);
     }
-
-    public void setLevelStr(String levelStr) {
-        this.levelStr = levelStr;
-    }
-
 }

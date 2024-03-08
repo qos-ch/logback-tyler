@@ -60,16 +60,15 @@ public class AppenderRefModelHandler extends ModelHandlerBase {
         AppenderRefModel appenderRefModel = (AppenderRefModel) model;
         Object o = mic.peekObject();
 
-        if(!(o instanceof LoggerModelHandlerData)) {
+        if(!(o instanceof String)) {
             inError = true;
             addError("Was expecting loggerName, an object of type String");
             return;
         }
 
-        LoggerModelHandlerData loggerModelHandlerData = (LoggerModelHandlerData) o;
+        String loggerName = (String) o;
 
-        addJavaStatement(tmic, loggerModelHandlerData.loggerName, appenderRefModel.getRef());
-
+        addJavaStatement(tmic, loggerName, appenderRefModel.getRef());
     }
 
     private void addJavaStatement(TylerModelInterpretationContext tmic, String loggerName, String ref) {

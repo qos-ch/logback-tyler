@@ -34,9 +34,11 @@ import ch.qos.logback.core.model.Model;
 import ch.qos.logback.core.model.processor.ModelHandlerBase;
 import ch.qos.logback.core.model.processor.ModelHandlerException;
 import ch.qos.logback.core.model.processor.ModelInterpretationContext;
+import ch.qos.logback.core.spi.ContextAware;
 import ch.qos.logback.core.util.OptionHelper;
 import ch.qos.logback.core.util.StringUtil;
 import ch.qos.logback.tyler.base.TylerModelInterpretationContext;
+import ch.qos.logback.tyler.base.util.StringToVariableStament;
 import ch.qos.logback.tyler.base.util.VariableNameUtil;
 
 import static ch.qos.logback.classic.tyler.TylerConfiguratorBase.SETUP_LOGGER_METHOD_NAME;
@@ -44,7 +46,7 @@ import static ch.qos.logback.classic.tyler.TylerConfiguratorBase.SETUP_LOGGER_ME
 public class LoggerModelHandler  extends ModelHandlerBase {
 
     boolean inError = false;
-    LoggerModelHandlerData loggerModelHandlerData;
+    String loggerName;
 
     public LoggerModelHandler(Context context) {
         super(context);
@@ -61,15 +63,16 @@ public class LoggerModelHandler  extends ModelHandlerBase {
 
     @Override
     public void handle(ModelInterpretationContext mic, Model model) throws ModelHandlerException {
-
         LoggerModel loggerModel = (LoggerModel) model;
-
         TylerModelInterpretationContext tmic = (TylerModelInterpretationContext) mic;
 
-        String loggerName = loggerModel.getName();
-        loggerModelHandlerData = new LoggerModelHandlerData(loggerName);
+        this.loggerName = loggerModel.getName();
 
-        mic.pushObject(loggerModelHandlerData);
+        String levelStr = loggerModel.getLevel();
+        String additivityStr = loggerModel.getAdditivity();
+        Boolean additivity = addtivityStringToBoolean(additivityStr);
+        addJavaStatement(tmic, loggerName, levelStr, additivity);
+        mic.pushObject(loggerName);
     }
 
 
@@ -79,7 +82,6 @@ public class LoggerModelHandler  extends ModelHandlerBase {
         } else {
             return null;
         }
-
     }
 
     private void addJavaStatement(TylerModelInterpretationContext tmic, String loggerName, String levelStr, Boolean additivity) {
@@ -87,8 +89,10 @@ public class LoggerModelHandler  extends ModelHandlerBase {
         String loggerVariableName = VariableNameUtil.loggerNameToVariableName(loggerName);
 
         String additivityStr = additivity == null ? "null" : "Boolean."+additivity.toString().toUpperCase();
+        boolean containsVariable = StringToVariableStament.containsVariable(levelStr);
+        String levelStrPart = containsVariable ? "subst($S)" : "$S";
 
-        tmic.configureMethodSpecBuilder.addStatement("$T $N = $N($S, subst($S), $N)", Logger.class, loggerVariableName,
+        tmic.configureMethodSpecBuilder.addStatement("$T $N = $N($S, "+levelStrPart+", $N)", Logger.class, loggerVariableName,
                 SETUP_LOGGER_METHOD_NAME, loggerName, levelStr, additivityStr );
     }
 
@@ -97,35 +101,12 @@ public class LoggerModelHandler  extends ModelHandlerBase {
         if (inError) {
             return;
         }
-        LoggerModel loggerModel = (LoggerModel) model;
-        TylerModelInterpretationContext tmic = (TylerModelInterpretationContext) mic;
         Object o = mic.peekObject();
-        if (o != loggerModelHandlerData) {
-            addWarn("The object [" + o + "] on the top the of the stack is not the loggerModelHandlerData pushed earlier");
+        if (o != loggerName) {
+            addWarn("The object [" + o + "] on the top the of the stack is not the logger pushed earlier");
         } else {
-
-            String loggerName = loggerModelHandlerData.loggerName;
-            String levelStrFromNestedElement = loggerModelHandlerData.getLevelStr();
-            String levelStr = loggerModel.getLevel();
-            String actualLevelStr = null;
-
-            if(StringUtil.notNullNorEmpty(levelStr) && StringUtil.notNullNorEmpty(levelStrFromNestedElement)) {
-                addWarn("Both level attribute and nested level element present. Giving preference to the level attribute");
-                actualLevelStr = levelStr;
-            } else if( StringUtil.notNullNorEmpty(levelStr)) {
-                actualLevelStr = levelStr;
-            } else if ( StringUtil.notNullNorEmpty(levelStrFromNestedElement)){
-                actualLevelStr = levelStrFromNestedElement;
-            } else {
-                addError("Logic error. levelStr='"+levelStr+"', levelStrFromNestedElement='"+levelStrFromNestedElement+"'");
-            }
-
-            String additivityStr = loggerModel.getAdditivity();
-            Boolean additivity = addtivityStringToBoolean(additivityStr);
-
-            addJavaStatement(tmic, loggerName, actualLevelStr, additivity);
-
             mic.popObject();
         }
     }
+
 }

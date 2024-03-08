@@ -29,6 +29,7 @@ package ch.qos.logback.tyler.base;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class OutputComparator {
@@ -41,7 +42,7 @@ public class OutputComparator {
         final int lenSubject = cleanSubjectList.size();
 
         if(lenWitness != lenSubject) {
-            System.out.println("Lists of differt sizes "+ lenWitness+"!="+lenSubject);
+            System.out.println("Lists of different sizes "+ lenWitness+"!="+lenSubject);
             return false;
         }
 
@@ -55,30 +56,51 @@ public class OutputComparator {
                 return false;
             }
         }
-
         return true;
-
     }
 
     private List<String> clean(List<String> inputList) {
         List<String> cleanList = new ArrayList<>();
         for (String s : inputList) {
-            if (!toSkip(s)) {
-                cleanList.add(s);
-            }
+            String replacement = processLine(s);
+            if(replacement!=null)
+                cleanList.add(replacement);
         }
         return cleanList;
     }
 
-    Pattern pattern0 = Pattern.compile("^\\s*[/]?\\*");
+    Pattern javadocPattern = Pattern.compile("^\\s*[/]?\\*");
 
-    private boolean toSkip(String s) {
+    // 15:44:51,092 |-INFO in ch.qos.logback.core.model.processor.DefaultProcessor@1f760b47 - End of configuration.
+    static final Pattern STATUS_PATTERN = Pattern.compile("^\\s*\\/*\\s*[\\d:,]{12} \\|");
+
+
+    private String processLine(String s) {
         if (s.isBlank())
-            return true;
+            return null;
 
-        if (pattern0.matcher(s).find())
-            return true;
+        if (javadocPattern.matcher(s).find()) {
+            return null;
+        }
 
-        return false;
+        Matcher statusMatcher = STATUS_PATTERN.matcher(s);
+        if(statusMatcher.find()) {
+            String cleaned = statusMatcher.replaceFirst("");
+            String cleaned2 = cleanMemory(cleaned);
+            return cleaned2;
+        }
+        return s;
+    }
+
+    // ....processor.DefaultProcessor@1f760b47
+    static final Pattern OBJECT_ID_PATTERN = Pattern.compile("@[\\dA-Fa-f]{8,10} ");
+
+    private String cleanMemory(String input) {
+        Matcher objectIdMatcher = OBJECT_ID_PATTERN.matcher(input);
+        if(objectIdMatcher.find()) {
+            String clean2 = objectIdMatcher.replaceFirst("@XXX ");
+            return clean2;
+        }
+        return input;
     }
 }

@@ -53,6 +53,7 @@ import ch.qos.logback.tyler.base.handler.AppenderModelHandler;
 import ch.qos.logback.tyler.base.handler.ConfigurationModelHandler;
 import ch.qos.logback.tyler.base.handler.ImplicitModelHandler;
 import ch.qos.logback.tyler.base.handler.LoggerModelHandler;
+import ch.qos.logback.tyler.base.handler.LevelModelHandler;
 import ch.qos.logback.tyler.base.handler.RootLoggerModelHandler;
 import ch.qos.logback.tyler.base.handler.ShutdownHookModelHandler;
 import ch.qos.logback.tyler.base.handler.StatusListenerModelHandler;

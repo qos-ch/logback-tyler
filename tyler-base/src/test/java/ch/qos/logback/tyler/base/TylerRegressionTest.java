@@ -30,7 +30,6 @@ package ch.qos.logback.tyler.base;
 import ch.qos.logback.core.ContextBase;
 import ch.qos.logback.core.joran.spi.JoranException;
 import ch.qos.logback.core.model.Model;
-import ch.qos.logback.core.util.StatusPrinter;
 import ch.qos.logback.core.util.StatusPrinter2;
 import ch.qos.logback.tyler.base.antlr4.SyntaxVerifier;
 import ch.qos.logback.tyler.base.antlr4.TylerAntlr4ErrorListener;
@@ -41,6 +40,7 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -55,7 +55,7 @@ public class TylerRegressionTest {
     ModelToJava m2j = new ModelToJava(context);
     OutputComparator outputComparator = new OutputComparator();
     StatusPrinter2 statusPrinter2 = new StatusPrinter2();
-    StringPrintStream sps = new StringPrintStream(System.out);
+    StringPrintStream sps = new StringPrintStream(System.out, false);
 
     @BeforeEach
     public void setUp() {
@@ -63,7 +63,7 @@ public class TylerRegressionTest {
     }
     @Test
     void smoke() throws JoranException, IOException {
-        verify(INPUT_PREFIX+"smoke.xml", INPUT_PREFIX+"smoke_witness.java", true);
+        verify(INPUT_PREFIX+"smoke.xml", INPUT_PREFIX+"smoke_witness.java", false);
     }
 
     void verify(String path2XMLFile, String path2WitnessFile, boolean dumpResult) throws JoranException, IOException {
@@ -75,33 +75,31 @@ public class TylerRegressionTest {
         Model model = m2j.extractModel(buf.toString());
         String result = m2j.toJava(model);
         String[] resultArray = result.split("\n");
-        List<String> resultList = List.of(resultArray);
-        if(dumpResult) {
-            System.out.println(result);
-        }
-        assertTrue(outputComparator.checkForEquality(witnessLines, resultList));
+        List<String> resultList = new ArrayList<>(List.of(resultArray));
 
-        //StatusPrinter.print(context);
+
+        // capture status messages into sps.stringList
         statusPrinter2.print(context);
 
-        StringBuilder sb = prefixWithLines(sps.stringList);
+        appendStatusLinesToResultsList(sps.stringList, resultList);
 
-        System.out.println(sb);
+        // uncomment to see filtered output
+         resultList.forEach(System.out::println);
 
-        //sps.stringList.stream().map(l -> "z"+l).toList().forEach(System.out::println);
+        assertTrue(outputComparator.checkForEquality(witnessLines, resultList));
 
         TylerAntlr4ErrorListener errorListener = syntaxVerifier.verify(result);
         assertEquals(0, errorListener.getSyntaxErrorCount(), errorListener.getErrorMessages().toString());
-
     }
 
-    private StringBuilder prefixWithLines(List<String> stringList) {
-        StringBuilder sb = new StringBuilder();
+    private void appendStatusLinesToResultsList(List<String> stringList, List<String> resultList) {
+
         for(String s: stringList) {
+            StringBuilder sb = new StringBuilder();
             String[] split = s.split("\n");
             Arrays.stream(split).forEach(n -> sb.append("// ").append(n).append("\n"));
+            resultList.add(sb.toString());
         }
-        return sb;
     }
 
     private List<String> readFile(String pathStr) throws IOException {

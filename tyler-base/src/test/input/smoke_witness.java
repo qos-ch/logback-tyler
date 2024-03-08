@@ -1,30 +1,3 @@
-/*
- * Copyright (c) 2024 QOS.ch Sarl (Switzerland)
- * All rights reserved.
- *
- * Permission is hereby granted, free  of charge, to any person obtaining
- * a  copy  of this  software  and  associated  documentation files  (the
- * "Software"), to  deal in  the Software without  restriction, including
- * without limitation  the rights to  use, copy, modify,  merge, publish,
- * distribute,  sublicense, and/or sell  copies of  the Software,  and to
- * permit persons to whom the Software  is furnished to do so, subject to
- * the following conditions:
- *
- * The  above  copyright  notice  and  this permission  notice  shall  be
- * included in all copies or substantial portions of the Software.
- *
- * THE  SOFTWARE IS  PROVIDED  "AS  IS", WITHOUT  WARRANTY  OF ANY  KIND,
- * EXPRESS OR  IMPLIED, INCLUDING  BUT NOT LIMITED  TO THE  WARRANTIES OF
- * MERCHANTABILITY,    FITNESS    FOR    A   PARTICULAR    PURPOSE    AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
- * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
- * OF CONTRACT, TORT OR OTHERWISE,  ARISING FROM, OUT OF OR IN CONNECTION
- * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- *
- *
- *
- */
-
 package com.example;
 
 import ch.qos.logback.classic.Logger;
@@ -70,77 +43,76 @@ import java.lang.Override;
  * </p>
  */
 class TylerConfigurator extends TylerConfiguratorBase implements Configurator {
-    /**
-     * <p>This method performs configuration per {@link Configurator} interface.</p>
-     *
-     * <p>If <code>TylerConfgiurator</code> is installed as a configurator service, this
-     * method will be called by logback-classic during initialization.</p>
-     */
-    @Override
-    public Configurator.ExecutionStatus configure(LoggerContext loggerCoontext) {
-        setContext(loggerCoontext);
-        setupOnConsoleStatusListener();
-        propertyModelHandlerHelper.handlePropertyModel(this, "USER_HOME", "/home/alice", "", "", "");
-        setContextName(subst("${APPNAME}"));
-        Appender appenderRFILE = setupAppenderRFILE();
-        Logger logger_com_foo_Bar = setupLogger("com.foo.Bar", subst("DEBUG"), null);
-        Logger logger_ROOT = setupLogger("ROOT", "DEBUG", null);
-        return ExecutionStatus.DO_NOT_INVOKE_NEXT_IF_ANY;
+  /**
+   * <p>This method performs configuration per {@link Configurator} interface.</p>
+   *
+   * <p>If <code>TylerConfgiurator</code> is installed as a configurator service, this
+   * method will be called by logback-classic during initialization.</p>
+   */
+  @Override
+  public Configurator.ExecutionStatus configure(LoggerContext loggerCoontext) {
+    setContext(loggerCoontext);
+    setupOnConsoleStatusListener();
+    propertyModelHandlerHelper.handlePropertyModel(this, "USER_HOME", "/home/alice", "", "", "");
+    setContextName(subst("${APPNAME}"));
+    Appender appenderRFILE = setupAppenderRFILE();
+    Logger logger_com_foo_Bar = setupLogger("com.foo.Bar", "DEBUG", null);
+    Logger logger_ROOT = setupLogger("ROOT", "DEBUG", null);
+    logger_ROOT.addAppender(appenderRFILE);
+    return ExecutionStatus.DO_NOT_INVOKE_NEXT_IF_ANY;
+  }
+
+  void setupOnConsoleStatusListener() {
+    OnConsoleStatusListener onConsoleStatusListener = new OnConsoleStatusListener();
+    onConsoleStatusListener.setContext(context);
+    boolean effectivelyAdded = context.getStatusManager().add(onConsoleStatusListener);
+    onConsoleStatusListener.setPrefix("moo");
+
+    if(effectivelyAdded && (onConsoleStatusListener instanceof LifeCycle)) {
+      ((LifeCycle)onConsoleStatusListener).start();
     }
+  }
 
-    void setupOnConsoleStatusListener() {
-        OnConsoleStatusListener onConsoleStatusListener = new OnConsoleStatusListener();
-        onConsoleStatusListener.setContext(context);
-        boolean effectivelyAdded = context.getStatusManager().add(onConsoleStatusListener);
-        onConsoleStatusListener.setPrefix("moo");
+  Appender setupAppenderRFILE() {
+    RollingFileAppender appenderRFILE = new RollingFileAppender();
+    appenderRFILE.setContext(context);
+    appenderRFILE.setName("RFILE");
+    appenderRFILE.setFile(subst("${USER_HOME}/logFile.log"));
 
-        if(effectivelyAdded && (onConsoleStatusListener instanceof LifeCycle)) {
-            ((LifeCycle)onConsoleStatusListener).start();
-        }
+    // Configure component of type TimeBasedRollingPolicy
+    TimeBasedRollingPolicy timeBasedRollingPolicy = new TimeBasedRollingPolicy();
+    if (timeBasedRollingPolicy instanceof ContextAware) {
+      timeBasedRollingPolicy.setContext(context);
     }
-
-    Appender setupAppenderRFILE() {
-        RollingFileAppender appenderRFILE = new RollingFileAppender();
-        appenderRFILE.setContext(context);
-        appenderRFILE.setName("RFILE");
-        appenderRFILE.setFile(subst("${USER_HOME}/logFile.log"));
-
-        // Configure component of type TimeBasedRollingPolicy
-        TimeBasedRollingPolicy timeBasedRollingPolicy = new TimeBasedRollingPolicy();
-        if (timeBasedRollingPolicy instanceof ContextAware) {
-            timeBasedRollingPolicy.setContext(context);
-        }
-        timeBasedRollingPolicy.setFileNamePattern("logFile.%d{yyyy-MM-dd}.log");
-        timeBasedRollingPolicy.setMaxHistory(30);
-        timeBasedRollingPolicy.setTotalSizeCap(ch.qos.logback.core.util.FileSize.valueOf("3GB"));
-        timeBasedRollingPolicy.setParent(appenderRFILE);
-        // start the complex property if it implements LifeCycle and is not
-        // marked with a @NoAutoStart annotation
-        if(NoAutoStartUtil.shouldBeStarted(timeBasedRollingPolicy)) {
-            ((LifeCycle) timeBasedRollingPolicy).start();
-        }
-        // Inject component of type TimeBasedRollingPolicy into parent
-        appenderRFILE.setRollingPolicy(timeBasedRollingPolicy);
-
-        // Configure component of type PatternLayoutEncoder
-        PatternLayoutEncoder patternLayoutEncoder = new PatternLayoutEncoder();
-        if (patternLayoutEncoder instanceof ContextAware) {
-            patternLayoutEncoder.setContext(context);
-        }
-        patternLayoutEncoder.setPattern("%-4relative [%thread] %-5level %logger{35} -%kvp- %msg%n");
-        patternLayoutEncoder.setParent(appenderRFILE);
-        // start the complex property if it implements LifeCycle and is not
-        // marked with a @NoAutoStart annotation
-        if(NoAutoStartUtil.shouldBeStarted(patternLayoutEncoder)) {
-            ((LifeCycle) patternLayoutEncoder).start();
-        }
-        // Inject component of type PatternLayoutEncoder into parent
-        appenderRFILE.setEncoder(patternLayoutEncoder);
-
-        appenderRFILE.start();
-        return appenderRFILE;
+    timeBasedRollingPolicy.setFileNamePattern("logFile.%d{yyyy-MM-dd}.log");
+    timeBasedRollingPolicy.setMaxHistory(30);
+    timeBasedRollingPolicy.setTotalSizeCap(ch.qos.logback.core.util.FileSize.valueOf("3GB"));
+    timeBasedRollingPolicy.setParent(appenderRFILE);
+    // start the complex property if it implements LifeCycle and is not
+    // marked with a @NoAutoStart annotation
+    if(NoAutoStartUtil.shouldBeStarted(timeBasedRollingPolicy)) {
+      ((LifeCycle) timeBasedRollingPolicy).start();
     }
+    // Inject component of type TimeBasedRollingPolicy into parent
+    appenderRFILE.setRollingPolicy(timeBasedRollingPolicy);
+
+    // Configure component of type PatternLayoutEncoder
+    PatternLayoutEncoder patternLayoutEncoder = new PatternLayoutEncoder();
+    if (patternLayoutEncoder instanceof ContextAware) {
+      patternLayoutEncoder.setContext(context);
+    }
+    patternLayoutEncoder.setPattern("%-4relative [%thread] %-5level %logger{35} -%kvp- %msg%n");
+    patternLayoutEncoder.setParent(appenderRFILE);
+    // start the complex property if it implements LifeCycle and is not
+    // marked with a @NoAutoStart annotation
+    if(NoAutoStartUtil.shouldBeStarted(patternLayoutEncoder)) {
+      ((LifeCycle) patternLayoutEncoder).start();
+    }
+    // Inject component of type PatternLayoutEncoder into parent
+    appenderRFILE.setEncoder(patternLayoutEncoder);
+
+    appenderRFILE.start();
+    return appenderRFILE;
+  }
 }
-
-// 15:39:04,262 |-ERROR in ch.qos.logback.tyler.base.handler.AppenderRefModelHandler - Was expecting loggerName, an object of type String
-// 15:39:04,263 |-INFO in ch.qos.logback.core.model.processor.DefaultProcessor@4d6025c5 - End of configuration.
+// 21:32:27,561 |-INFO in ch.qos.logback.core.model.processor.DefaultProcessor@5f20155b - End of configuration.
