@@ -95,7 +95,7 @@ public class OutputComparator {
     }
 
     // ....processor.DefaultProcessor@1f760b47
-    static final Pattern OBJECT_ID_PATTERN = Pattern.compile("@[\\dA-Fa-f]{8,10} ");
+    static final Pattern OBJECT_ID_PATTERN = Pattern.compile("@[\\dA-Fa-f]{6,10} ");
 
     private String cleanMemory(String input) {
         Matcher objectIdMatcher = OBJECT_ID_PATTERN.matcher(input);
