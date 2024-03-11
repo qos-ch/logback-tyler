@@ -95,7 +95,7 @@ public class ImplicitModelHandler extends ModelHandlerBase {
         }
 
         if (!(o instanceof ImplicitModelHandlerData)) {
-            addError("Was expecting class of type " + ImplicitModelHandlerData.class.getName() + " but found"
+            addError("Was expecting class of type " + ImplicitModelHandlerData.class.getName() + " but found "
                     + o.getClass().getName());
             inError = true;
             return;

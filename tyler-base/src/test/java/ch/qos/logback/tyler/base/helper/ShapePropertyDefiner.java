@@ -25,28 +25,44 @@
  *
  */
 
-package ch.qos.logback.tyler.base.handler;
+package ch.qos.logback.tyler.base.helper;
 
-import ch.qos.logback.classic.spi.LoggerContextListener;
-import ch.qos.logback.core.Context;
-import ch.qos.logback.core.model.processor.ModelHandlerBase;
-import ch.qos.logback.core.model.processor.ModelInterpretationContext;
+import ch.qos.logback.core.PropertyDefinerBase;
 
-public class LoggerContextListenerModelHandler extends ComponentModelHandler {
+public class ShapePropertyDefiner extends PropertyDefinerBase {
 
 
-    public LoggerContextListenerModelHandler(Context context) {
-        super(context);
-    }
-
-
-    static public ModelHandlerBase makeInstance(Context context, ModelInterpretationContext mic) {
-        return new LoggerContextListenerModelHandler(context);
-    }
+    String shape;
+    String color;
+    int size;
 
     @Override
-    String getTargetType() {
-        return LoggerContextListener.class.getSimpleName();
+    public String getPropertyValue() {
+        return "INFO";
+    }
+
+    public String getShape() {
+        return shape;
+    }
+
+    public void setShape(String shape) {
+        this.shape = shape;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
+    }
+
+    public int getSize() {
+        return size;
+    }
+
+    public void setSize(int size) {
+        this.size = size;
     }
 
 

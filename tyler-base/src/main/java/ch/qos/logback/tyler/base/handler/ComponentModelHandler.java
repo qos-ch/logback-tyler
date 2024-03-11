@@ -71,6 +71,7 @@ public abstract class ComponentModelHandler extends ModelHandlerBase {
 
         addInfo("About to configure " + getTargetType() + " of type [" + componentClassName + "]");
         MethodSpec.Builder methodSpec = addJavaStatement(tmic, componentClassName);
+        addAdditionalJavaStatement(methodSpec, componentModel);
         this.implicitModelHandlerData = ImplicitModelHandlerData.makeInstance(methodSpec, componentClassName);
         if(implicitModelHandlerData != null) {
             mic.pushObject(implicitModelHandlerData);
@@ -78,6 +79,10 @@ public abstract class ComponentModelHandler extends ModelHandlerBase {
             addError("Could not make implicitModelHandlerData for ["+componentClassName+"]");
             inError = true;
         }
+    }
+
+    protected void addAdditionalJavaStatement(MethodSpec.Builder methodSpec, ComponentModel componentModel) {
+
     }
 
     MethodSpec.Builder addJavaStatement(TylerModelInterpretationContext tmic,
@@ -91,12 +96,12 @@ public abstract class ComponentModelHandler extends ModelHandlerBase {
 
         String variableName = VariableNameUtil.fullyQualifiedClassNameToVariableName(componentClassName);
 
-        MethodSpec.Builder statusListenerSetupMethodSpec = MethodSpec.methodBuilder(
+        MethodSpec.Builder methodSpecBuilder = MethodSpec.methodBuilder(
                         SETUP + simpleName).returns(void.class)
                 .addStatement("$1T $2N = new $1T()", desiredComponentCN, variableName)
                 .addStatement("$N.setContext($N)", variableName, tmic.getContextFieldSpec());
 
-        return statusListenerSetupMethodSpec;
+        return methodSpecBuilder;
     }
 
     @Override

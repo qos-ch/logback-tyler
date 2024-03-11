@@ -30,6 +30,7 @@ package ch.qos.logback.tyler.base.handler;
 import ch.qos.logback.core.Context;
 import ch.qos.logback.core.model.processor.ModelHandlerBase;
 import ch.qos.logback.core.model.processor.ModelInterpretationContext;
+import ch.qos.logback.core.spi.SequenceNumberGenerator;
 
 public class SequenceNumberGeneratorModelHandler extends ComponentModelHandler {
 
@@ -40,7 +41,7 @@ public class SequenceNumberGeneratorModelHandler extends ComponentModelHandler {
 
     @Override
     String getTargetType() {
-        return "SequenceNumberGenerator";
+        return SequenceNumberGenerator.class.getSimpleName();
     }
 
     static public ModelHandlerBase makeInstance(Context context, ModelInterpretationContext mic) {

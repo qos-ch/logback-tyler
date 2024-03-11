@@ -81,6 +81,10 @@ public class TylerRegressionTest {
         verify(INPUT_PREFIX+"contextListener.xml", INPUT_PREFIX+"contextListener_witness.java", false);
     }
 
+    @Test
+    void defineTest() throws JoranException, IOException {
+        verify(INPUT_PREFIX+"define.xml", INPUT_PREFIX+"define_witness.java", false);
+    }
 
     void verify(String path2XMLFile, String path2WitnessFile, boolean dumpResult) throws JoranException, IOException {
         List<String> lines = readFile(path2XMLFile);
