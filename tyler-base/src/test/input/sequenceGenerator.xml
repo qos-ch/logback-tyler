@@ -1,0 +1,8 @@
+<configuration>
+    <import class="ch.qos.logback.core.spi.BasicSequenceNumberGenerator"/>
+    <sequenceNumberGenerator class="BasicSequenceNumberGenerator"/>
+
+    <root level="DEBUG">
+        <appender-ref ref="RFILE"/>
+    </root>
+</configuration>

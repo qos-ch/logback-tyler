@@ -30,6 +30,7 @@ import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.classic.model.ConfigurationModel;
 import ch.qos.logback.classic.model.ContextNameModel;
 import ch.qos.logback.classic.model.LevelModel;
+import ch.qos.logback.classic.model.LoggerContextListenerModel;
 import ch.qos.logback.classic.model.LoggerModel;
 import ch.qos.logback.classic.model.RootLoggerModel;
 import ch.qos.logback.classic.model.processor.LogbackClassicDefaultNestedComponentRules;
@@ -42,19 +43,21 @@ import ch.qos.logback.core.model.ImplicitModel;
 import ch.qos.logback.core.model.ImportModel;
 import ch.qos.logback.core.model.Model;
 import ch.qos.logback.core.model.PropertyModel;
+import ch.qos.logback.core.model.SequenceNumberGeneratorModel;
 import ch.qos.logback.core.model.ShutdownHookModel;
 import ch.qos.logback.core.model.StatusListenerModel;
 import ch.qos.logback.core.model.processor.DefaultProcessor;
 import ch.qos.logback.core.model.processor.ImportModelHandler;
-import ch.qos.logback.tyler.base.handler.AppenderRefModelHandler;
-import ch.qos.logback.tyler.base.handler.ContextNameModelHandler;
-
 import ch.qos.logback.tyler.base.handler.AppenderModelHandler;
+import ch.qos.logback.tyler.base.handler.AppenderRefModelHandler;
 import ch.qos.logback.tyler.base.handler.ConfigurationModelHandler;
+import ch.qos.logback.tyler.base.handler.ContextNameModelHandler;
 import ch.qos.logback.tyler.base.handler.ImplicitModelHandler;
-import ch.qos.logback.tyler.base.handler.LoggerModelHandler;
 import ch.qos.logback.tyler.base.handler.LevelModelHandler;
+import ch.qos.logback.tyler.base.handler.LoggerContextListenerModelHandler;
+import ch.qos.logback.tyler.base.handler.LoggerModelHandler;
 import ch.qos.logback.tyler.base.handler.RootLoggerModelHandler;
+import ch.qos.logback.tyler.base.handler.SequenceNumberGeneratorModelHandler;
 import ch.qos.logback.tyler.base.handler.ShutdownHookModelHandler;
 import ch.qos.logback.tyler.base.handler.StatusListenerModelHandler;
 import ch.qos.logback.tyler.base.handler.VariableModelHandler;
@@ -66,7 +69,6 @@ import org.xml.sax.InputSource;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
 
 public class ModelToJava {
 
@@ -144,6 +146,10 @@ public class ModelToJava {
         defaultProcessor.addHandler(RootLoggerModel.class, RootLoggerModelHandler::makeInstance);
         defaultProcessor.addHandler(LevelModel.class, LevelModelHandler::makeInstance);
         defaultProcessor.addHandler(AppenderRefModel.class, AppenderRefModelHandler::makeInstance);
+
+
+        defaultProcessor.addHandler(LoggerContextListenerModel.class, LoggerContextListenerModelHandler::makeInstance);
+        defaultProcessor.addHandler(SequenceNumberGeneratorModel.class, SequenceNumberGeneratorModelHandler::makeInstance);
     }
 
 }

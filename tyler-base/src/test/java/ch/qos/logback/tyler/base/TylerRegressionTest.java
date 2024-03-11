@@ -71,6 +71,17 @@ public class TylerRegressionTest {
         verify(INPUT_PREFIX+"level.xml", INPUT_PREFIX+"level_witness.java", false);
     }
 
+    @Test
+    void sequenceGeneratorTest() throws JoranException, IOException {
+        verify(INPUT_PREFIX+"sequenceGenerator.xml", INPUT_PREFIX+"sequenceGenerator_witness.java", false);
+    }
+
+    @Test
+    void contextListenerTest() throws JoranException, IOException {
+        verify(INPUT_PREFIX+"contextListener.xml", INPUT_PREFIX+"contextListener_witness.java", false);
+    }
+
+
     void verify(String path2XMLFile, String path2WitnessFile, boolean dumpResult) throws JoranException, IOException {
         List<String> lines = readFile(path2XMLFile);
         List<String> witnessLines = readFile(path2WitnessFile);
