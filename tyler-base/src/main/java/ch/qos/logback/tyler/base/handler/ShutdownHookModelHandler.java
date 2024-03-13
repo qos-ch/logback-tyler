@@ -93,11 +93,12 @@ public class ShutdownHookModelHandler  extends ModelHandlerBase  {
         addInfo("About to instantiate shutdown hook of type [" + className + "]");
 
         MethodSpec.Builder methodSpec = addJavaStatement(tmic, className);
-        this.implicitModelHandlerData = ImplicitModelHandlerData.makeInstance(methodSpec, className);
+        this.implicitModelHandlerData = ImplicitModelHandlerData.makeInstance(this, methodSpec, className);
         if(implicitModelHandlerData != null) {
             mic.pushObject(implicitModelHandlerData);
         } else {
             addError("Could not make implicitModelHandlerData for ["+className+"]");
+            model.markAsSkipped();
             inError = true;
         }
 

@@ -30,10 +30,8 @@ package ch.qos.logback.tyler.base;
 import ch.qos.logback.core.ContextBase;
 import ch.qos.logback.core.joran.spi.JoranException;
 import ch.qos.logback.core.model.Model;
-import ch.qos.logback.core.util.StatusPrinter2;
 import ch.qos.logback.tyler.base.antlr4.SyntaxVerifier;
 import ch.qos.logback.tyler.base.antlr4.TylerAntlr4ErrorListener;
-import ch.qos.logback.tyler.base.util.StringPrintStream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -41,7 +39,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static ch.qos.logback.tyler.base.TylerTestContants.INPUT_PREFIX;
@@ -54,13 +51,11 @@ public class TylerRegressionTest {
     SyntaxVerifier syntaxVerifier = new SyntaxVerifier();
     ModelToJava m2j = new ModelToJava(context);
     OutputComparator outputComparator = new OutputComparator();
-    StatusPrinter2 statusPrinter2 = new StatusPrinter2();
-    StringPrintStream sps = new StringPrintStream(System.out, false);
 
     @BeforeEach
     public void setUp() {
-        statusPrinter2.setPrintStream(sps);
     }
+
     @Test
     void smoke() throws JoranException, IOException {
         verify(INPUT_PREFIX+"smoke.xml", INPUT_PREFIX+"smoke_witness.java", false);
@@ -86,6 +81,11 @@ public class TylerRegressionTest {
         verify(INPUT_PREFIX+"define.xml", INPUT_PREFIX+"define_witness.java", false);
     }
 
+    @Test
+    void defineBadFQCNTest() throws JoranException, IOException {
+        verify(INPUT_PREFIX+"defineBadFQCN.xml", INPUT_PREFIX+"defineBadFQCNTest_witness.java", false);
+    }
+
     void verify(String path2XMLFile, String path2WitnessFile, boolean dumpResult) throws JoranException, IOException {
         List<String> lines = readFile(path2XMLFile);
         List<String> witnessLines = readFile(path2WitnessFile);
@@ -97,11 +97,8 @@ public class TylerRegressionTest {
         String[] resultArray = result.split("\n");
         List<String> resultList = new ArrayList<>(List.of(resultArray));
 
-
-        // capture status messages into sps.stringList
-        statusPrinter2.print(context);
-
-        appendStatusLinesToResultsList(sps.stringList, resultList);
+        List<String> statusList = m2j.statusToStringList();
+        resultList.addAll(statusList);
 
         // uncomment to see filtered output
          resultList.forEach(System.out::println);
@@ -110,13 +107,6 @@ public class TylerRegressionTest {
 
         TylerAntlr4ErrorListener errorListener = syntaxVerifier.verify(result);
         assertEquals(0, errorListener.getSyntaxErrorCount(), errorListener.getErrorMessages().toString());
-    }
-
-    private void appendStatusLinesToResultsList(List<String> stringList, List<String> resultList) {
-        for(String s: stringList) {
-            String[] split = s.split("\n");
-            Arrays.stream(split).forEach(n -> resultList.add("// "+n));
-        }
     }
 
     private List<String> readFile(String pathStr) throws IOException {

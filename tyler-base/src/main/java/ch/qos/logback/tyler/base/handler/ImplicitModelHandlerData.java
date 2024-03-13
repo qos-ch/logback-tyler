@@ -27,6 +27,8 @@
 
 package ch.qos.logback.tyler.base.handler;
 
+import ch.qos.logback.core.spi.ContextAware;
+import ch.qos.logback.core.spi.ContextAwareBase;
 import ch.qos.logback.tyler.base.util.VariableNameUtil;
 import com.squareup.javapoet.MethodSpec;
 
@@ -76,15 +78,16 @@ public class ImplicitModelHandlerData {
         return methodSpecBuilder;
     }
 
-    static public ImplicitModelHandlerData makeInstance(MethodSpec.Builder methodSpec, String fqcn) {
+    public static ImplicitModelHandlerData makeInstance(ContextAware contextAware, MethodSpec.Builder methodSpec, String fqcn) {
         String variableName = VariableNameUtil.fullyQualifiedClassNameToVariableName(fqcn);
 
         try {
-            Class statusListenerClass = Class.forName(fqcn);
-            ImplicitModelHandlerData implicitModelHandlerData = new ImplicitModelHandlerData(statusListenerClass, variableName,
+            Class aClass = Class.forName(fqcn);
+            ImplicitModelHandlerData implicitModelHandlerData = new ImplicitModelHandlerData(aClass, variableName,
                     methodSpec);
            return implicitModelHandlerData;
         } catch (ClassNotFoundException e) {
+            contextAware.addError("Could not find class ["+fqcn+"]");
             return null;
         }
     }

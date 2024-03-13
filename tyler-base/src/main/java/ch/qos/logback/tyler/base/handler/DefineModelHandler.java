@@ -37,7 +37,7 @@ import ch.qos.logback.core.spi.PropertyDefiner;
 import ch.qos.logback.tyler.base.util.VariableNameUtil;
 import com.squareup.javapoet.MethodSpec;
 
-public class DefineModelHandler extends ComponentModelHandler{
+public class DefineModelHandler extends ComponentModelHandler {
 
     static String PROPERTY_VALUE_VARIABLE_NAME = "propertyValue";
     static String SCOPE_VARIABLE_NAME = "scope";

@@ -76,11 +76,12 @@ public class StatusListenerModelHandler extends ModelHandlerBase {
         }
 
         MethodSpec.Builder methodSpec = addJavaStatement(tmic, statusListenerClassName);
-        this.implicitModelHandlerData = ImplicitModelHandlerData.makeInstance(methodSpec, statusListenerClassName);
+        this.implicitModelHandlerData = ImplicitModelHandlerData.makeInstance(this, methodSpec, statusListenerClassName);
         if(implicitModelHandlerData != null) {
             mic.pushObject(implicitModelHandlerData);
         } else {
             addError("Could not make implicitModelHandlerData for ["+statusListenerClassName+"]");
+            model.markAsSkipped();
             inError = true;
         }
     }

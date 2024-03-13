@@ -72,11 +72,12 @@ public abstract class ComponentModelHandler extends ModelHandlerBase {
         addInfo("About to configure " + getTargetType() + " of type [" + componentClassName + "]");
         MethodSpec.Builder methodSpec = addJavaStatement(tmic, componentClassName);
         addAdditionalJavaStatement(methodSpec, componentModel);
-        this.implicitModelHandlerData = ImplicitModelHandlerData.makeInstance(methodSpec, componentClassName);
+        this.implicitModelHandlerData = ImplicitModelHandlerData.makeInstance(this, methodSpec, componentClassName);
         if(implicitModelHandlerData != null) {
             mic.pushObject(implicitModelHandlerData);
         } else {
             addError("Could not make implicitModelHandlerData for ["+componentClassName+"]");
+            model.markAsSkipped();
             inError = true;
         }
     }

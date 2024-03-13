@@ -49,7 +49,7 @@ import ch.qos.logback.core.model.ShutdownHookModel;
 import ch.qos.logback.core.model.StatusListenerModel;
 import ch.qos.logback.core.model.processor.DefaultProcessor;
 import ch.qos.logback.core.model.processor.ImportModelHandler;
-import ch.qos.logback.core.spi.PropertyDefiner;
+import ch.qos.logback.core.util.StatusPrinter2;
 import ch.qos.logback.tyler.base.handler.AppenderModelHandler;
 import ch.qos.logback.tyler.base.handler.AppenderRefModelHandler;
 import ch.qos.logback.tyler.base.handler.ConfigurationModelHandler;
@@ -64,6 +64,7 @@ import ch.qos.logback.tyler.base.handler.SequenceNumberGeneratorModelHandler;
 import ch.qos.logback.tyler.base.handler.ShutdownHookModelHandler;
 import ch.qos.logback.tyler.base.handler.StatusListenerModelHandler;
 import ch.qos.logback.tyler.base.handler.VariableModelHandler;
+import ch.qos.logback.tyler.base.util.StringPrintStream;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeSpec;
@@ -72,6 +73,9 @@ import org.xml.sax.InputSource;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class ModelToJava {
 
@@ -132,6 +136,20 @@ public class ModelToJava {
         StringBuffer buf = toJavaAsStringBuffer(topModel);
         return buf.toString();
     }
+
+    public List<String>  statusToStringList() {
+        List<String> resultList = new ArrayList<>();
+        StatusPrinter2 statusPrinter2 = new StatusPrinter2();
+        StringPrintStream sps = new StringPrintStream(System.out, false);
+        statusPrinter2.setPrintStream(sps);
+        statusPrinter2.print(context);
+        for(String s: sps.stringList) {
+            String[] split = s.split("\n");
+            Arrays.stream(split).forEach(n -> resultList.add("// "+n));
+        }
+        return resultList;
+    }
+
     private void addModelHandlerAssociations(DefaultProcessor defaultProcessor) {
         defaultProcessor.addHandler(ConfigurationModel.class, ConfigurationModelHandler::makeInstance);
 
