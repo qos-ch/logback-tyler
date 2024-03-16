@@ -44,7 +44,7 @@ import static ch.qos.logback.classic.tyler.TylerConfiguratorBase.SETUP_LOGGER_ME
 public class LoggerModelHandler  extends ModelHandlerBase {
 
     boolean inError = false;
-    AppenderAttachableData appenderAttachableData;
+    String loggerName;
 
     public LoggerModelHandler(Context context) {
         super(context);
@@ -64,15 +64,13 @@ public class LoggerModelHandler  extends ModelHandlerBase {
         LoggerModel loggerModel = (LoggerModel) model;
         TylerModelInterpretationContext tmic = (TylerModelInterpretationContext) mic;
 
-        String loggerName = loggerModel.getName();
-
-        this.appenderAttachableData = new AppenderAttachableData(loggerName, AppenderAttachableData.AttachableType.LOGGER);
+        this.loggerName = loggerModel.getName();
 
         String levelStr = loggerModel.getLevel();
         String additivityStr = loggerModel.getAdditivity();
         Boolean additivity = addtivityStringToBoolean(additivityStr);
         addJavaStatement(tmic, loggerName, levelStr, additivity);
-        mic.pushObject(appenderAttachableData);
+        mic.pushObject(loggerName);
     }
 
 
@@ -102,7 +100,7 @@ public class LoggerModelHandler  extends ModelHandlerBase {
             return;
         }
         Object o = mic.peekObject();
-        if (o != appenderAttachableData) {
+        if (o != loggerName) {
             addWarn("The object [" + o + "] on the top the of the stack is not the data pushed earlier");
         } else {
             mic.popObject();

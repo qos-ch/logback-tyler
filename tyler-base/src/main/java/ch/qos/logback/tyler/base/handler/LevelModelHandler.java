@@ -62,16 +62,16 @@ public class LevelModelHandler extends ModelHandlerBase {
 
         Object o = mic.peekObject();
 
-        if (!(o instanceof AppenderAttachableData)) {
+        if (!(o instanceof String)) {
             inError = true;
             addError("For element <level>, could not find a AppenderAttachableData at the top of execution stack.");
             return;
         }
 
-        AppenderAttachableData appenderAttachableData = (AppenderAttachableData) o;
+        String loggerName = (String) o;
         String levelStr = levelModel.getValue();
 
-        addJavaStatement(tmic, appenderAttachableData.name, levelStr);
+        addJavaStatement(tmic, loggerName, levelStr);
     }
 
     void addJavaStatement(TylerModelInterpretationContext tmic, String loggerName, String levelStr) {

@@ -92,7 +92,6 @@ public class TylerRegressionTest {
         verify(INPUT_PREFIX+"conditional.xml", INPUT_PREFIX+"conditional_witness.java", false);
     }
 
-    @Disabled
     @Test
     void asyncTest() throws JoranException, IOException {
         verify(INPUT_PREFIX+"async.xml", INPUT_PREFIX+"async_witness.java", false);

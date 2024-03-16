@@ -60,23 +60,26 @@ public class AppenderRefModelHandler extends ModelHandlerBase {
         AppenderRefModel appenderRefModel = (AppenderRefModel) model;
         Object o = mic.peekObject();
 
-        if(!(o instanceof AppenderAttachableData)) {
+        if(o instanceof String) {
+            String loggerName  = (String) o;
+            String variableName = VariableNameUtil.loggerNameToVariableName(loggerName);
+            addJavaStatement(tmic, variableName, appenderRefModel.getRef());
+        } else if(o instanceof ImplicitModelHandlerData) {
+            ImplicitModelHandlerData implicitModelHandlerData = (ImplicitModelHandlerData) o;
+            String variableName = implicitModelHandlerData.variableName;
+            addJavaStatement(tmic, variableName, appenderRefModel.getRef());
+        } else {
             inError = true;
             addError("Was expecting an object of type AppenderAttachableData");
             return;
         }
 
-        AppenderAttachableData appenderAttachableData = (AppenderAttachableData) o;
 
-        addJavaStatement(tmic, appenderAttachableData, appenderRefModel.getRef());
     }
 
-    private void addJavaStatement(TylerModelInterpretationContext tmic, AppenderAttachableData appenderAttachableData, String ref) {
-
-        String loggerVariableName = VariableNameUtil.loggerNameToVariableName(appenderAttachableData.name);
+    private void addJavaStatement(TylerModelInterpretationContext tmic, String variableName, String ref) {
         String appenderVariableName = VariableNameUtil.appenderNameToVariableName(ref);
-
-        tmic.configureMethodSpecBuilder.addStatement("$N.addAppender($N)", loggerVariableName, appenderVariableName);
+        tmic.configureMethodSpecBuilder.addStatement("$N.addAppender($N)", variableName, appenderVariableName);
 
 
     }

@@ -79,6 +79,8 @@ public class AppenderModelHandler extends ModelHandlerBase {
             Class appenderClass = Class.forName(className);
             implicitModelHandlerData = new ImplicitModelHandlerData(appenderClass, appenderVariableName,
                     methodSpec);
+
+
             mic.pushObject(implicitModelHandlerData);
         } catch (ClassNotFoundException e) {
             addError("Could not find class", e);
@@ -95,8 +97,12 @@ public class AppenderModelHandler extends ModelHandlerBase {
 
         String fistLetterCapitalizedAppenderName = StringUtil.capitalizeFirstLetter(appenderName);
 
-        MethodSpec.Builder appenderSetupMethodSpec = MethodSpec.methodBuilder(
-                        SETUP_APPENDER + fistLetterCapitalizedAppenderName).returns(Appender.class)
+        String methodName = SETUP_APPENDER + fistLetterCapitalizedAppenderName;
+
+        tmic.configureMethodSpecBuilder.addStatement("$T $N = $N()", Appender.class, appenderVariableName,
+                methodName);
+
+        MethodSpec.Builder appenderSetupMethodSpec = MethodSpec.methodBuilder(methodName).returns(Appender.class)
                 .addStatement("$1T $2N = new $1T()", desiredAppenderCN, appenderVariableName)
                 .addStatement(this.appenderVariableName + ".setContext($N)", tmic.getContextFieldSpec())
                 .addStatement(this.appenderVariableName + ".setName($S)", appenderName);
@@ -127,8 +133,7 @@ public class AppenderModelHandler extends ModelHandlerBase {
 
             tmic.tylerConfiguratorTSB.addMethod(appenderMethodSpec);
 
-            tmic.configureMethodSpecBuilder.addStatement("$T $N = $N()", Appender.class, appenderVariableName,
-                    appenderMethodSpec);
+
         }
 
     }
