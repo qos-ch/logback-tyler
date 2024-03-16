@@ -33,6 +33,7 @@ import ch.qos.logback.core.model.Model;
 import ch.qos.logback.tyler.base.antlr4.SyntaxVerifier;
 import ch.qos.logback.tyler.base.antlr4.TylerAntlr4ErrorListener;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -84,6 +85,17 @@ public class TylerRegressionTest {
     @Test
     void defineBadFQCNTest() throws JoranException, IOException {
         verify(INPUT_PREFIX+"defineBadFQCN.xml", INPUT_PREFIX+"defineBadFQCNTest_witness.java", false);
+    }
+
+    @Test
+    void conditionalTest() throws JoranException, IOException {
+        verify(INPUT_PREFIX+"conditional.xml", INPUT_PREFIX+"conditional_witness.java", false);
+    }
+
+    @Disabled
+    @Test
+    void asyncTest() throws JoranException, IOException {
+        verify(INPUT_PREFIX+"async.xml", INPUT_PREFIX+"async_witness.java", false);
     }
 
     void verify(String path2XMLFile, String path2WitnessFile, boolean dumpResult) throws JoranException, IOException {

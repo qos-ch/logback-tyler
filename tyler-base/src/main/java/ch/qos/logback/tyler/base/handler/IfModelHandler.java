@@ -27,61 +27,70 @@
 
 package ch.qos.logback.tyler.base.handler;
 
-import ch.qos.logback.classic.Logger;
-import ch.qos.logback.classic.model.LevelModel;
-import ch.qos.logback.classic.util.LevelUtil;
 import ch.qos.logback.core.Context;
+import ch.qos.logback.core.model.ComponentModel;
 import ch.qos.logback.core.model.Model;
+import ch.qos.logback.core.model.conditional.IfModel;
 import ch.qos.logback.core.model.processor.ModelHandlerBase;
 import ch.qos.logback.core.model.processor.ModelHandlerException;
 import ch.qos.logback.core.model.processor.ModelInterpretationContext;
+import ch.qos.logback.core.spi.ScanException;
+import ch.qos.logback.core.util.OptionHelper;
 import ch.qos.logback.tyler.base.TylerModelInterpretationContext;
-import ch.qos.logback.tyler.base.spi.StaticImportData;
-import ch.qos.logback.tyler.base.util.StringToVariableStament;
-import ch.qos.logback.tyler.base.util.VariableNameUtil;
+import com.squareup.javapoet.MethodSpec;
 
-import static ch.qos.logback.classic.tyler.TylerConfiguratorBase.SETUP_LOGGER_METHOD_NAME;
+public class IfModelHandler extends ModelHandlerBase {
 
-public class LevelModelHandler extends ModelHandlerBase {
-
-    boolean inError = false;
-
-    public LevelModelHandler(Context context) {
+    public IfModelHandler(Context context) {
         super(context);
     }
 
+
+
     static public ModelHandlerBase makeInstance(Context context, ModelInterpretationContext ic) {
-        return new LevelModelHandler(context);
+        return new IfModelHandler(context);
     }
 
+    @Override
+    protected Class<IfModel> getSupportedModelClass() {
+        return IfModel.class;
+    }
 
     @Override
     public void handle(ModelInterpretationContext mic, Model model) throws ModelHandlerException {
-        LevelModel levelModel = (LevelModel) model;
+        IfModel ifModel = (IfModel) model;
         TylerModelInterpretationContext tmic = (TylerModelInterpretationContext) mic;
 
-        Object o = mic.peekObject();
+        mic.pushModel(ifModel);
+        String conditionStr = ifModel.getCondition();
+        int lineNum = model.getLineNumber();
 
-        if (!(o instanceof AppenderAttachableData)) {
-            inError = true;
-            addError("For element <level>, could not find a AppenderAttachableData at the top of execution stack.");
+        if (!OptionHelper.isNullOrEmptyOrAllSpaces(conditionStr)) {
+            addJavaStatement(tmic, conditionStr);
+        } else {
+            addError("Empty condition for <if> element on line "+lineNum);
+        }
+    }
+
+    protected void addJavaStatement(TylerModelInterpretationContext tmic, String conditionStr) {
+        tmic.configureMethodSpecBuilder.beginControlFlow("if($N)", conditionStr);
+    }
+
+    @Override
+    public void postHandle(ModelInterpretationContext mic, Model model) {
+        if(mic.isModelStackEmpty()) {
+            addError("Unexpected unexpected empty model stack.");
             return;
         }
 
-        AppenderAttachableData appenderAttachableData = (AppenderAttachableData) o;
-        String levelStr = levelModel.getValue();
+        Object o = mic.peekModel();
+        if (!(o instanceof IfModel)) {
+            addWarn("The object [" + o + "] on the top the of the stack is not of type [" + IfModel.class);
+        } else {
+            TylerModelInterpretationContext tmic = (TylerModelInterpretationContext) mic;
+            tmic.configureMethodSpecBuilder.endControlFlow();
+            mic.popModel();
+        }
 
-        addJavaStatement(tmic, appenderAttachableData.name, levelStr);
-    }
-
-    void addJavaStatement(TylerModelInterpretationContext tmic, String loggerName, String levelStr) {
-        String loggerVariableName = VariableNameUtil.loggerNameToVariableName(loggerName);
-        boolean containsVariable = StringToVariableStament.containsVariable(levelStr);
-        String levelStrPart = containsVariable ? "subst($S)" : "$S";
-
-        tmic.addStaticImport(new StaticImportData(LevelUtil.class, "levelStringToLevel"));
-
-        tmic.configureMethodSpecBuilder.addStatement("$N.setLevel(levelStringToLevel("+levelStrPart+"))", loggerVariableName,
-                levelStr);
     }
 }

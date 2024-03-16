@@ -34,9 +34,7 @@ import ch.qos.logback.core.model.Model;
 import ch.qos.logback.core.model.processor.ModelHandlerBase;
 import ch.qos.logback.core.model.processor.ModelHandlerException;
 import ch.qos.logback.core.model.processor.ModelInterpretationContext;
-import ch.qos.logback.core.spi.ContextAware;
 import ch.qos.logback.core.util.OptionHelper;
-import ch.qos.logback.core.util.StringUtil;
 import ch.qos.logback.tyler.base.TylerModelInterpretationContext;
 import ch.qos.logback.tyler.base.util.StringToVariableStament;
 import ch.qos.logback.tyler.base.util.VariableNameUtil;
@@ -46,7 +44,7 @@ import static ch.qos.logback.classic.tyler.TylerConfiguratorBase.SETUP_LOGGER_ME
 public class LoggerModelHandler  extends ModelHandlerBase {
 
     boolean inError = false;
-    String loggerName;
+    AppenderAttachableData appenderAttachableData;
 
     public LoggerModelHandler(Context context) {
         super(context);
@@ -66,13 +64,15 @@ public class LoggerModelHandler  extends ModelHandlerBase {
         LoggerModel loggerModel = (LoggerModel) model;
         TylerModelInterpretationContext tmic = (TylerModelInterpretationContext) mic;
 
-        this.loggerName = loggerModel.getName();
+        String loggerName = loggerModel.getName();
+
+        this.appenderAttachableData = new AppenderAttachableData(loggerName, AppenderAttachableData.AttachableType.LOGGER);
 
         String levelStr = loggerModel.getLevel();
         String additivityStr = loggerModel.getAdditivity();
         Boolean additivity = addtivityStringToBoolean(additivityStr);
         addJavaStatement(tmic, loggerName, levelStr, additivity);
-        mic.pushObject(loggerName);
+        mic.pushObject(appenderAttachableData);
     }
 
 
@@ -102,8 +102,8 @@ public class LoggerModelHandler  extends ModelHandlerBase {
             return;
         }
         Object o = mic.peekObject();
-        if (o != loggerName) {
-            addWarn("The object [" + o + "] on the top the of the stack is not the logger pushed earlier");
+        if (o != appenderAttachableData) {
+            addWarn("The object [" + o + "] on the top the of the stack is not the data pushed earlier");
         } else {
             mic.popObject();
         }

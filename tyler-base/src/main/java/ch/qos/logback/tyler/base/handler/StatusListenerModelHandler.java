@@ -34,7 +34,6 @@ import ch.qos.logback.core.model.processor.ModelHandlerBase;
 import ch.qos.logback.core.model.processor.ModelHandlerException;
 import ch.qos.logback.core.model.processor.ModelInterpretationContext;
 import ch.qos.logback.core.spi.LifeCycle;
-import ch.qos.logback.core.status.StatusListener;
 import ch.qos.logback.core.util.OptionHelper;
 import ch.qos.logback.tyler.base.TylerModelInterpretationContext;
 import ch.qos.logback.tyler.base.util.ClassUtil;

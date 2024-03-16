@@ -47,6 +47,9 @@ import ch.qos.logback.core.model.PropertyModel;
 import ch.qos.logback.core.model.SequenceNumberGeneratorModel;
 import ch.qos.logback.core.model.ShutdownHookModel;
 import ch.qos.logback.core.model.StatusListenerModel;
+import ch.qos.logback.core.model.conditional.ElseModel;
+import ch.qos.logback.core.model.conditional.IfModel;
+import ch.qos.logback.core.model.conditional.ThenModel;
 import ch.qos.logback.core.model.processor.DefaultProcessor;
 import ch.qos.logback.core.model.processor.ImportModelHandler;
 import ch.qos.logback.core.util.StatusPrinter2;
@@ -55,6 +58,9 @@ import ch.qos.logback.tyler.base.handler.AppenderRefModelHandler;
 import ch.qos.logback.tyler.base.handler.ConfigurationModelHandler;
 import ch.qos.logback.tyler.base.handler.ContextNameModelHandler;
 import ch.qos.logback.tyler.base.handler.DefineModelHandler;
+import ch.qos.logback.tyler.base.handler.ElseModelHandler;
+import ch.qos.logback.tyler.base.handler.IfModelHandler;
+import ch.qos.logback.tyler.base.handler.ThenModelHandler;
 import ch.qos.logback.tyler.base.handler.ImplicitModelHandler;
 import ch.qos.logback.tyler.base.handler.LevelModelHandler;
 import ch.qos.logback.tyler.base.handler.LoggerContextListenerModelHandler;
@@ -169,9 +175,13 @@ public class ModelToJava {
         defaultProcessor.addHandler(LevelModel.class, LevelModelHandler::makeInstance);
         defaultProcessor.addHandler(AppenderRefModel.class, AppenderRefModelHandler::makeInstance);
 
-
         defaultProcessor.addHandler(LoggerContextListenerModel.class, LoggerContextListenerModelHandler::makeInstance);
         defaultProcessor.addHandler(SequenceNumberGeneratorModel.class, SequenceNumberGeneratorModelHandler::makeInstance);
+
+        defaultProcessor.addHandler(IfModel.class, IfModelHandler::makeInstance);
+        defaultProcessor.addHandler(ThenModel.class, ThenModelHandler::makeInstance);
+        defaultProcessor.addHandler(ElseModel.class, ElseModelHandler::makeInstance);
+
     }
 
 }

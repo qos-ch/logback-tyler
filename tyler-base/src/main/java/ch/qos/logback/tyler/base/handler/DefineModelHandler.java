@@ -51,6 +51,12 @@ public class DefineModelHandler extends ComponentModelHandler {
     }
 
     @Override
+    protected Class<DefineModel> getSupportedModelClass() {
+        return DefineModel.class;
+    }
+
+
+    @Override
     String getTargetType() {
         return PropertyDefiner.class.getSimpleName();
     }

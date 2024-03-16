@@ -118,15 +118,15 @@ public abstract class ComponentModelHandler extends ModelHandlerBase {
             TylerModelInterpretationContext tmic = (TylerModelInterpretationContext) mic;
             tmic.popObject();
 
-            MethodSpec.Builder statusListenerMethodBuilder = implicitModelHandlerData.methodSpecBuilder;
+            MethodSpec.Builder componentMethodBuilder = implicitModelHandlerData.methodSpecBuilder;
 
             String variableName = implicitModelHandlerData.getVariableName();
 
-            statusListenerMethodBuilder.addCode("\n");
-            statusListenerMethodBuilder.beginControlFlow("if($N instanceof $T)", variableName, LifeCycle.class);
-            statusListenerMethodBuilder.addStatement("(($T)$N).start()", LifeCycle.class, variableName);
-            statusListenerMethodBuilder.endControlFlow();
-            MethodSpec statusListenerMethodSpec = statusListenerMethodBuilder.build();
+            componentMethodBuilder.addCode("\n");
+            componentMethodBuilder.beginControlFlow("if($N instanceof $T)", variableName, LifeCycle.class);
+            componentMethodBuilder.addStatement("(($T)$N).start()", LifeCycle.class, variableName);
+            componentMethodBuilder.endControlFlow();
+            MethodSpec statusListenerMethodSpec = componentMethodBuilder.build();
 
             tmic.tylerConfiguratorTSB.addMethod(statusListenerMethodSpec);
 

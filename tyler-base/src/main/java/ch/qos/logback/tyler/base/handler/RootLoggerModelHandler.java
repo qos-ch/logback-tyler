@@ -44,6 +44,7 @@ import static ch.qos.logback.classic.tyler.TylerConfiguratorBase.SETUP_LOGGER_ME
 public class RootLoggerModelHandler extends ModelHandlerBase {
 
     boolean inError = false;
+    AppenderAttachableData appenderAttachableData;
 
     public RootLoggerModelHandler(Context context) {
         super(context);
@@ -64,21 +65,23 @@ public class RootLoggerModelHandler extends ModelHandlerBase {
 
         TylerModelInterpretationContext tmic = (TylerModelInterpretationContext) mic;
 
+        AppenderAttachableData appenderAttachableData = new AppenderAttachableData(Logger.ROOT_LOGGER_NAME, AppenderAttachableData.AttachableType.LOGGER);
+
         String levelStr = rootLoggerModel.getLevel();
-        addJavaStatement(tmic, Logger.ROOT_LOGGER_NAME, levelStr);
-        mic.pushObject(Logger.ROOT_LOGGER_NAME);
+        addJavaStatement(tmic, appenderAttachableData, levelStr);
+        mic.pushObject(appenderAttachableData);
     }
 
 
-    private void addJavaStatement(TylerModelInterpretationContext tmic, String loggerName, String levelStr) {
+    private void addJavaStatement(TylerModelInterpretationContext tmic, AppenderAttachableData appenderAttachableData, String levelStr) {
         // Logger logger_ROOT = setupLogger("ROOT", level, levelString, additivity)
 
-        String loggerVariableName = VariableNameUtil.loggerNameToVariableName(loggerName);
+        String loggerVariableName = VariableNameUtil.loggerNameToVariableName(appenderAttachableData.name);
 
         boolean containsVariable = StringToVariableStament.containsVariable(levelStr);
         String levelStrPart = containsVariable ? "subst($S)" : "$S";
         tmic.configureMethodSpecBuilder.addStatement("$T $N = $N($S, "+levelStrPart+", $N)", Logger.class, loggerVariableName,
-                SETUP_LOGGER_METHOD_NAME, loggerName, levelStr, "null");
+                SETUP_LOGGER_METHOD_NAME, appenderAttachableData.name, levelStr, "null");
     }
 
 
@@ -88,8 +91,8 @@ public class RootLoggerModelHandler extends ModelHandlerBase {
             return;
         }
         Object o = mic.peekObject();
-        if (o != Logger.ROOT_LOGGER_NAME) {
-            addWarn("The object [" + o + "] on the top the of the stack is not ROOT pushed earlier");
+        if (!(o instanceof AppenderAttachableData)) {
+            addWarn("The object [" + o + "] on the top the of the stack is not the data pushed earlier");
         } else {
             mic.popObject();
         }

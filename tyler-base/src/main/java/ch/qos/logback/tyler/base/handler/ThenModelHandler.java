@@ -27,61 +27,48 @@
 
 package ch.qos.logback.tyler.base.handler;
 
-import ch.qos.logback.classic.Logger;
-import ch.qos.logback.classic.model.LevelModel;
-import ch.qos.logback.classic.util.LevelUtil;
 import ch.qos.logback.core.Context;
 import ch.qos.logback.core.model.Model;
+import ch.qos.logback.core.model.conditional.IfModel;
+import ch.qos.logback.core.model.conditional.ThenModel;
 import ch.qos.logback.core.model.processor.ModelHandlerBase;
 import ch.qos.logback.core.model.processor.ModelHandlerException;
 import ch.qos.logback.core.model.processor.ModelInterpretationContext;
-import ch.qos.logback.tyler.base.TylerModelInterpretationContext;
-import ch.qos.logback.tyler.base.spi.StaticImportData;
-import ch.qos.logback.tyler.base.util.StringToVariableStament;
-import ch.qos.logback.tyler.base.util.VariableNameUtil;
 
-import static ch.qos.logback.classic.tyler.TylerConfiguratorBase.SETUP_LOGGER_METHOD_NAME;
+import static ch.qos.logback.core.spi.ErrorCodes.MISSING_IF_EMPTY_MODEL_STACK;
 
-public class LevelModelHandler extends ModelHandlerBase {
+public class ThenModelHandler  extends ModelHandlerBase  {
 
-    boolean inError = false;
-
-    public LevelModelHandler(Context context) {
+    public ThenModelHandler(Context context) {
         super(context);
     }
 
+
     static public ModelHandlerBase makeInstance(Context context, ModelInterpretationContext ic) {
-        return new LevelModelHandler(context);
+        return new ThenModelHandler(context);
     }
 
+    @Override
+    protected Class<ThenModel> getSupportedModelClass() {
+        return ThenModel.class;
+    }
 
     @Override
     public void handle(ModelInterpretationContext mic, Model model) throws ModelHandlerException {
-        LevelModel levelModel = (LevelModel) model;
-        TylerModelInterpretationContext tmic = (TylerModelInterpretationContext) mic;
 
-        Object o = mic.peekObject();
+        ThenModel thenModel = (ThenModel) model;
 
-        if (!(o instanceof AppenderAttachableData)) {
-            inError = true;
-            addError("For element <level>, could not find a AppenderAttachableData at the top of execution stack.");
+        if(mic.isModelStackEmpty()) {
+            addError(MISSING_IF_EMPTY_MODEL_STACK);
+            thenModel.markAsSkipped();
             return;
         }
+        Model parent = mic.peekModel();
 
-        AppenderAttachableData appenderAttachableData = (AppenderAttachableData) o;
-        String levelStr = levelModel.getValue();
-
-        addJavaStatement(tmic, appenderAttachableData.name, levelStr);
-    }
-
-    void addJavaStatement(TylerModelInterpretationContext tmic, String loggerName, String levelStr) {
-        String loggerVariableName = VariableNameUtil.loggerNameToVariableName(loggerName);
-        boolean containsVariable = StringToVariableStament.containsVariable(levelStr);
-        String levelStrPart = containsVariable ? "subst($S)" : "$S";
-
-        tmic.addStaticImport(new StaticImportData(LevelUtil.class, "levelStringToLevel"));
-
-        tmic.configureMethodSpecBuilder.addStatement("$N.setLevel(levelStringToLevel("+levelStrPart+"))", loggerVariableName,
-                levelStr);
+        if (!(parent instanceof IfModel)) {
+            addError("Unexpected type for parent model [" + parent + "]");
+            thenModel.markAsSkipped();
+            return;
+        }
     }
 }
