@@ -59,7 +59,7 @@ import java.lang.Override;
  * into the user's project as a custom configurator. It will configure logback
  * without XML.</p>
  *
- * <p>It requires logback-classic version 1.5.2 or later at runtime.</p>
+ * <p>It requires logback-classic version 1.5.4 or later at runtime.</p>
  *
  * <p>Custom configurators are looked up via Java's service-provide facility. If a
  * custom provider is found, it takes precedence over logback's own configurators,

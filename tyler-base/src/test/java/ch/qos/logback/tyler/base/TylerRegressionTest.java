@@ -97,6 +97,11 @@ public class TylerRegressionTest {
         verify(INPUT_PREFIX+"async.xml", INPUT_PREFIX+"async_witness.java", false);
     }
 
+    @Test
+    void timestampTest() throws JoranException, IOException {
+        verify(INPUT_PREFIX+"timestamp.xml", INPUT_PREFIX+"timestamp_witness.java", false);
+    }
+
     void verify(String path2XMLFile, String path2WitnessFile, boolean dumpResult) throws JoranException, IOException {
         List<String> lines = readFile(path2XMLFile);
         List<String> witnessLines = readFile(path2WitnessFile);

@@ -100,7 +100,8 @@ public class StatusListenerModelHandler extends ModelHandlerBase {
                         SETUP + simpleName).returns(void.class)
                 .addStatement("$1T $2N = new $1T()", desiredStatusListenerCN, variableName)
                 .addStatement("$N.setContext($N)", variableName, tmic.getContextFieldSpec())
-                .addStatement("boolean $N = $N.getStatusManager().add($N)", EFFECTIVELY_ADDED_VARIABLE_NAME, tmic.getContextFieldSpec(), variableName);
+                .addStatement("boolean $N = $N.getStatusManager().add($N)", EFFECTIVELY_ADDED_VARIABLE_NAME,
+                        tmic.getContextFieldSpec(), variableName);
 
         return statusListenerSetupMethodSpec;
     }

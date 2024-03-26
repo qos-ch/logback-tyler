@@ -47,6 +47,7 @@ import ch.qos.logback.core.model.PropertyModel;
 import ch.qos.logback.core.model.SequenceNumberGeneratorModel;
 import ch.qos.logback.core.model.ShutdownHookModel;
 import ch.qos.logback.core.model.StatusListenerModel;
+import ch.qos.logback.core.model.TimestampModel;
 import ch.qos.logback.core.model.conditional.ElseModel;
 import ch.qos.logback.core.model.conditional.IfModel;
 import ch.qos.logback.core.model.conditional.ThenModel;
@@ -167,6 +168,7 @@ public class ModelToJava {
         defaultProcessor.addHandler(DefineModel.class, DefineModelHandler::makeInstance);
         defaultProcessor.addHandler(StatusListenerModel.class, StatusListenerModelHandler::makeInstance);
         defaultProcessor.addHandler(ShutdownHookModel.class, ShutdownHookModelHandler::makeInstance);
+        defaultProcessor.addHandler(TimestampModel.class, ShutdownHookModelHandler::makeInstance);
 
         defaultProcessor.addHandler(AppenderModel.class, AppenderModelHandler::makeInstance);
         defaultProcessor.addHandler(ImplicitModel.class, ImplicitModelHandler::makeInstance);
@@ -177,6 +179,7 @@ public class ModelToJava {
 
         defaultProcessor.addHandler(LoggerContextListenerModel.class, LoggerContextListenerModelHandler::makeInstance);
         defaultProcessor.addHandler(SequenceNumberGeneratorModel.class, SequenceNumberGeneratorModelHandler::makeInstance);
+
 
         defaultProcessor.addHandler(IfModel.class, IfModelHandler::makeInstance);
         defaultProcessor.addHandler(ThenModel.class, ThenModelHandler::makeInstance);
