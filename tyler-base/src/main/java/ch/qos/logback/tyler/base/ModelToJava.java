@@ -70,6 +70,7 @@ import ch.qos.logback.tyler.base.handler.RootLoggerModelHandler;
 import ch.qos.logback.tyler.base.handler.SequenceNumberGeneratorModelHandler;
 import ch.qos.logback.tyler.base.handler.ShutdownHookModelHandler;
 import ch.qos.logback.tyler.base.handler.StatusListenerModelHandler;
+import ch.qos.logback.tyler.base.handler.TimestampModelHandler;
 import ch.qos.logback.tyler.base.handler.VariableModelHandler;
 import ch.qos.logback.tyler.base.util.StringPrintStream;
 import com.squareup.javapoet.JavaFile;
@@ -168,7 +169,7 @@ public class ModelToJava {
         defaultProcessor.addHandler(DefineModel.class, DefineModelHandler::makeInstance);
         defaultProcessor.addHandler(StatusListenerModel.class, StatusListenerModelHandler::makeInstance);
         defaultProcessor.addHandler(ShutdownHookModel.class, ShutdownHookModelHandler::makeInstance);
-        defaultProcessor.addHandler(TimestampModel.class, ShutdownHookModelHandler::makeInstance);
+        defaultProcessor.addHandler(TimestampModel.class, TimestampModelHandler::makeInstance);
 
         defaultProcessor.addHandler(AppenderModel.class, AppenderModelHandler::makeInstance);
         defaultProcessor.addHandler(ImplicitModel.class, ImplicitModelHandler::makeInstance);

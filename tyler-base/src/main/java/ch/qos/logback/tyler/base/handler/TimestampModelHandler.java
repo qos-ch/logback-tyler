@@ -84,7 +84,10 @@ public class TimestampModelHandler extends ModelHandlerBase {
     }
 
     void addJavaStatement(TylerModelInterpretationContext tmic, TimestampModel timestampModel) {
-        final String scopeStr = timestampModel.getScopeStr();
+        String scopeStr = timestampModel.getScopeStr();
+        if(scopeStr == null) {
+            scopeStr = "";
+        }
         final String keyStr = timestampModel.getKey();
         final String scopeVarName = "scope";
         final String datePatternStr = timestampModel.getDatePattern();
@@ -98,24 +101,24 @@ public class TimestampModelHandler extends ModelHandlerBase {
 
         MethodSpec.Builder timestampMethodSpecBuilder = MethodSpec.methodBuilder(toMethodName(keyStr)).
                 returns(void.class)
-                .addStatement("$T $N = $T.stringToScope($N)", ActionUtil.Scope.class, scopeVarName, ActionUtil.class,
+                .addStatement("$T $N = $T.stringToScope($S)", ActionUtil.Scope.class, scopeVarName, ActionUtil.class,
                         scopeStr)
-                .addStatement("$1T $2N = new $1T($3N)", CachingDateFormatter.class, cdfVarName, datePatternStr);
+                .addStatement("$1T $2N = new $1T($3S)", CachingDateFormatter.class, cdfVarName, datePatternStr);
 
         if (TimestampModel.CONTEXT_BIRTH.equalsIgnoreCase(timeReferenceStr)) {
             timestampMethodSpecBuilder.addStatement("addInfo(\"Using context birth as time reference.\"");
             timestampMethodSpecBuilder.addStatement("long $N = $N.getBirthTime()", timeReferenceVarName, tmic.getContextFieldSpec());
         } else {
             timestampMethodSpecBuilder.addStatement("long $N = System.currentTimeMillis()", timeReferenceVarName);
-            timestampMethodSpecBuilder.addStatement("addInfo(\"Using current interpretation time, i.e. now, as time reference.\"");
+            timestampMethodSpecBuilder.addStatement("addInfo(\"Using current interpretation time, i.e. now, as time reference.\")");
         }
 
         timestampMethodSpecBuilder.addStatement("String $N = $N.format($N)", timevalVarName, cdfVarName, timeReferenceVarName);
 
-        timestampMethodSpecBuilder.addStatement("addInfo(\"Adding property to the context with key=\"" + keyStr + "\" and value=$S to the $S"
-                + " scope", timevalVarName, scopeVarName);
+        timestampMethodSpecBuilder.addStatement("addInfo(\"Adding property to the context with key='\"+$S+\"' and value=\"+$N+\" to the \"+$N+\" scope\")"
+                , keyStr, timevalVarName, scopeVarName);
 
-        timestampMethodSpecBuilder.addStatement("$T.setProperty(this, $S, $N, $N", ActionUtil.class, keyStr, timevalVarName, scopeVarName);
+        timestampMethodSpecBuilder.addStatement("$T.setProperty(this, $S, $N, $N)", ActionUtil.class, keyStr, timevalVarName, scopeVarName);
 
         MethodSpec timestampMethodSpec = timestampMethodSpecBuilder.build();
         tmic.tylerConfiguratorTSB.addMethod(timestampMethodSpec);
