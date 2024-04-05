@@ -282,11 +282,17 @@ public class ImplicitModelHandler extends ModelHandlerBase {
                 methodSpecBuilder.addComment("===========no parent setter");
             }
 
-            methodSpecBuilder.addComment("start the complex property if it implements LifeCycle and is not");
-            methodSpecBuilder.addComment("marked with a @NoAutoStart annotation");
-            methodSpecBuilder.beginControlFlow("if($T.shouldBeStarted($N))", NoAutoStartUtil.class, variableName);
-            methodSpecBuilder.addStatement("(($T) $N).start()", LifeCycle.class, variableName);
-            methodSpecBuilder.endControlFlow();
+           //methodSpecBuilder.addComment("start the complex property if it implements LifeCycle and is not");
+           //methodSpecBuilder.addComment("marked with a @NoAutoStart annotation");
+
+            boolean shouldBeStarted = ClassUtil.shouldBeStarted(objClass);
+
+            if(shouldBeStarted) {
+                methodSpecBuilder.addStatement("$N.start()", variableName);
+            } else {
+                methodSpecBuilder.addComment("$N of class $T does not implement $T interface,", variableName, objClass, LifeCycle.class);
+                methodSpecBuilder.addComment("or alternatively class $T is annotated with @NoAutoStart", objClass);
+            }
 
             methodSpecBuilder.addComment("Inject component of type $T into parent", objClass);
             methodSpecBuilder.addStatement("$N.$N($N)", parentVariableName, method.getName(), variableName);

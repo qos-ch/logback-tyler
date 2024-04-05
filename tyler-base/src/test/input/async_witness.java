@@ -35,8 +35,6 @@ import ch.qos.logback.classic.spi.Configurator;
 import ch.qos.logback.classic.tyler.TylerConfiguratorBase;
 import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.FileAppender;
-import ch.qos.logback.core.joran.spi.NoAutoStartUtil;
-import ch.qos.logback.core.spi.LifeCycle;
 import java.lang.Override;
 
 /**
@@ -99,11 +97,8 @@ class TylerConfigurator extends TylerConfiguratorBase implements Configurator {
         patternLayoutEncoder.setContext(context);
         patternLayoutEncoder.setPattern("%logger{35} -%kvp -%msg%n");
         patternLayoutEncoder.setParent(appenderFILE);
-        // start the complex property if it implements LifeCycle and is not
-        // marked with a @NoAutoStart annotation
-        if(NoAutoStartUtil.shouldBeStarted(patternLayoutEncoder)) {
-            ((LifeCycle) patternLayoutEncoder).start();
-        }
+        patternLayoutEncoder.start();
+
         // Inject component of type PatternLayoutEncoder into parent
         appenderFILE.setEncoder(patternLayoutEncoder);
 

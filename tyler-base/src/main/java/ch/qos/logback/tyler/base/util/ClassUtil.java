@@ -28,7 +28,9 @@
 package ch.qos.logback.tyler.base.util;
 
 import ch.qos.logback.core.Context;
+import ch.qos.logback.core.joran.spi.NoAutoStart;
 import ch.qos.logback.core.spi.ContextAware;
+import ch.qos.logback.core.spi.LifeCycle;
 import ch.qos.logback.core.util.Loader;
 
 import static ch.qos.logback.core.CoreConstants.DOT;
@@ -41,6 +43,18 @@ public class ClassUtil {
         return otherClass.isAssignableFrom(aClass);
     }
 
+
+    static public boolean shouldBeStarted(Class<?> aClass) {
+        if(classImplements(aClass, LifeCycle.class)) {
+            return notMarkedWithNoAutoStart(aClass);
+        } else
+            return false;
+    }
+
+    static public boolean notMarkedWithNoAutoStart(Class<?> aClass) {
+        NoAutoStart a = aClass.getAnnotation(NoAutoStart.class);
+        return a == null;
+    }
 
 
     public static Class<?> restrictecLoadClass(String classStr, Context context) throws ClassNotFoundException {

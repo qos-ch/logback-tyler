@@ -6,7 +6,6 @@ import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.classic.spi.Configurator;
 import ch.qos.logback.classic.tyler.TylerConfiguratorBase;
 import ch.qos.logback.core.Appender;
-import ch.qos.logback.core.joran.spi.NoAutoStartUtil;
 import ch.qos.logback.core.rolling.RollingFileAppender;
 import ch.qos.logback.core.rolling.TimeBasedRollingPolicy;
 import ch.qos.logback.core.spi.LifeCycle;
@@ -85,11 +84,8 @@ class TylerConfigurator extends TylerConfiguratorBase implements Configurator {
     timeBasedRollingPolicy.setMaxHistory(30);
     timeBasedRollingPolicy.setTotalSizeCap(ch.qos.logback.core.util.FileSize.valueOf("3GB"));
     timeBasedRollingPolicy.setParent(appenderRFILE);
-    // start the complex property if it implements LifeCycle and is not
-    // marked with a @NoAutoStart annotation
-    if(NoAutoStartUtil.shouldBeStarted(timeBasedRollingPolicy)) {
-      ((LifeCycle) timeBasedRollingPolicy).start();
-    }
+    timeBasedRollingPolicy.start();
+
     // Inject component of type TimeBasedRollingPolicy into parent
     appenderRFILE.setRollingPolicy(timeBasedRollingPolicy);
 
@@ -98,11 +94,8 @@ class TylerConfigurator extends TylerConfiguratorBase implements Configurator {
     patternLayoutEncoder.setContext(context);
     patternLayoutEncoder.setPattern("%-4relative [%thread] %-5level %logger{35} -%kvp- %msg%n");
     patternLayoutEncoder.setParent(appenderRFILE);
-    // start the complex property if it implements LifeCycle and is not
-    // marked with a @NoAutoStart annotation
-    if(NoAutoStartUtil.shouldBeStarted(patternLayoutEncoder)) {
-      ((LifeCycle) patternLayoutEncoder).start();
-    }
+    patternLayoutEncoder.start();
+
     // Inject component of type PatternLayoutEncoder into parent
     appenderRFILE.setEncoder(patternLayoutEncoder);
 
