@@ -9,7 +9,6 @@ import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.joran.spi.NoAutoStartUtil;
 import ch.qos.logback.core.rolling.RollingFileAppender;
 import ch.qos.logback.core.rolling.TimeBasedRollingPolicy;
-import ch.qos.logback.core.spi.ContextAware;
 import ch.qos.logback.core.spi.LifeCycle;
 import ch.qos.logback.core.status.OnConsoleStatusListener;
 import java.lang.Override;
@@ -81,9 +80,7 @@ class TylerConfigurator extends TylerConfiguratorBase implements Configurator {
 
     // Configure component of type TimeBasedRollingPolicy
     TimeBasedRollingPolicy timeBasedRollingPolicy = new TimeBasedRollingPolicy();
-    if (timeBasedRollingPolicy instanceof ContextAware) {
-      timeBasedRollingPolicy.setContext(context);
-    }
+    timeBasedRollingPolicy.setContext(context);
     timeBasedRollingPolicy.setFileNamePattern("logFile.%d{yyyy-MM-dd}.log");
     timeBasedRollingPolicy.setMaxHistory(30);
     timeBasedRollingPolicy.setTotalSizeCap(ch.qos.logback.core.util.FileSize.valueOf("3GB"));
@@ -98,9 +95,7 @@ class TylerConfigurator extends TylerConfiguratorBase implements Configurator {
 
     // Configure component of type PatternLayoutEncoder
     PatternLayoutEncoder patternLayoutEncoder = new PatternLayoutEncoder();
-    if (patternLayoutEncoder instanceof ContextAware) {
-      patternLayoutEncoder.setContext(context);
-    }
+    patternLayoutEncoder.setContext(context);
     patternLayoutEncoder.setPattern("%-4relative [%thread] %-5level %logger{35} -%kvp- %msg%n");
     patternLayoutEncoder.setParent(appenderRFILE);
     // start the complex property if it implements LifeCycle and is not

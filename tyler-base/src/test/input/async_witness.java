@@ -36,7 +36,6 @@ import ch.qos.logback.classic.tyler.TylerConfiguratorBase;
 import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.FileAppender;
 import ch.qos.logback.core.joran.spi.NoAutoStartUtil;
-import ch.qos.logback.core.spi.ContextAware;
 import ch.qos.logback.core.spi.LifeCycle;
 import java.lang.Override;
 
@@ -97,9 +96,7 @@ class TylerConfigurator extends TylerConfiguratorBase implements Configurator {
 
         // Configure component of type PatternLayoutEncoder
         PatternLayoutEncoder patternLayoutEncoder = new PatternLayoutEncoder();
-        if (patternLayoutEncoder instanceof ContextAware) {
-            patternLayoutEncoder.setContext(context);
-        }
+        patternLayoutEncoder.setContext(context);
         patternLayoutEncoder.setPattern("%logger{35} -%kvp -%msg%n");
         patternLayoutEncoder.setParent(appenderFILE);
         // start the complex property if it implements LifeCycle and is not

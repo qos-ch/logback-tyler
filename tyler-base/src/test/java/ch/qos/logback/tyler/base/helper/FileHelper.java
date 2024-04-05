@@ -25,44 +25,19 @@
  *
  */
 
-package ch.qos.logback.tyler.base.util;
+package ch.qos.logback.tyler.base.helper;
 
-import ch.qos.logback.core.rolling.TimeBasedRollingPolicy;
-import ch.qos.logback.core.spi.ContextAware;
-import org.junit.jupiter.api.Test;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static ch.qos.logback.core.CoreConstants.DOT;
+public class FileHelper {
 
-class ClassUtilTest {
 
-    @Test
-    void smoke() {
-        String packageName = "ch.qos";
-        String className = "Toto";
-        String fqcn = packageName+DOT+className;
-        assertEquals(packageName, ClassUtil.extractPackageName(fqcn));
-        assertEquals(className, ClassUtil.extractSimpleClassName(fqcn));
-    }
-
-    @Test
-    void classImplements() {
-        boolean result = ClassUtil.classImplements(TimeBasedRollingPolicy.class, ContextAware.class);
-        assertTrue(result);
-    }
-
-    @Test
-    void badFQCN() {
-        {
-            String fqcn = "asd";
-            assertNull(ClassUtil.extractPackageName(fqcn));
-            assertEquals(fqcn, ClassUtil.extractSimpleClassName(fqcn));
-        }
-
-        {
-            String fqcn = "asd.toto.";
-            assertEquals("asd.toto", ClassUtil.extractPackageName(fqcn));
-            assertNull(ClassUtil.extractSimpleClassName(fqcn));
-        }
+    static public List<String> readFile(String pathStr) throws IOException {
+        Path path = Path.of(pathStr);
+        List<String> lines = Files.readAllLines(path);
+        return lines;
     }
 }

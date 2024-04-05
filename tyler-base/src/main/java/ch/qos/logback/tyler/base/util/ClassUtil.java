@@ -27,12 +27,31 @@
 
 package ch.qos.logback.tyler.base.util;
 
+import ch.qos.logback.core.Context;
+import ch.qos.logback.core.spi.ContextAware;
+import ch.qos.logback.core.util.Loader;
+
 import static ch.qos.logback.core.CoreConstants.DOT;
 import static ch.qos.logback.tyler.base.TylerConstants.NOT_FOUND;
 
 public class ClassUtil {
 
 
+    public static boolean classImplements(Class<?> aClass, Class<?> otherClass) {
+        return otherClass.isAssignableFrom(aClass);
+    }
+
+
+
+    public static Class<?> restrictecLoadClass(String classStr, Context context) throws ClassNotFoundException {
+        if(!classStr.startsWith("ch.qos.logback")) {
+            throw new IllegalArgumentException("Class name "+classStr+ " not supported");
+        }
+
+
+        ClassLoader cl = Loader.getClassLoaderOfObject(context);
+        return cl.loadClass(classStr);
+    }
 
     public static String extractPackageName(String fqcn) {
         int lastDotIndex = fqcn.lastIndexOf(DOT);

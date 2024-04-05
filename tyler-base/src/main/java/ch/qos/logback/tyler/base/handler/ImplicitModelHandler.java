@@ -44,6 +44,7 @@ import ch.qos.logback.core.util.Loader;
 import ch.qos.logback.core.util.OptionHelper;
 import ch.qos.logback.core.util.StringUtil;
 import ch.qos.logback.tyler.base.TylerModelInterpretationContext;
+import ch.qos.logback.tyler.base.util.ClassUtil;
 import ch.qos.logback.tyler.base.util.StringToVariableStament;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.MethodSpec;
@@ -56,6 +57,7 @@ public class ImplicitModelHandler extends ModelHandlerBase {
     private final BeanDescriptionCache beanDescriptionCache;
     ImplicitModelHandlerData implicitModelHandlerData;
     AggregationAssessor aggregationAssessor;
+    AggregationType aggregationType;
 
     static public final String IGNORING_UNKNOWN_PROP = "Ignoring unknown property";
 
@@ -105,7 +107,7 @@ public class ImplicitModelHandler extends ModelHandlerBase {
                 tylerImplicitData.getParentObjectClass());
         aggregationAssessor.setContext(context);
 
-        AggregationType aggregationType = aggregationAssessor.computeAggregationType(nestedElementTagName);
+        this.aggregationType = aggregationAssessor.computeAggregationType(nestedElementTagName);
 
         switch (aggregationType) {
         case NOT_FOUND:
@@ -143,7 +145,7 @@ public class ImplicitModelHandler extends ModelHandlerBase {
         try {
 
             if (!OptionHelper.isNullOrEmptyOrAllSpaces(fqcn)) {
-                componentClass = Loader.loadClass(fqcn, context);
+                componentClass = ClassUtil.restrictecLoadClass(fqcn, context);
             } else {
                 // guess class name via implicit rules
                 componentClass = aggregationAssessor.getClassNameViaImplicitRules(nestedElementTagName, aggregationType,
@@ -184,9 +186,14 @@ public class ImplicitModelHandler extends ModelHandlerBase {
         methodSpecBuilder.addCode("\n");
         methodSpecBuilder.addComment("Configure component of type $T", componentCN);
         methodSpecBuilder.addStatement("$1T $2N = new $1T()", componentCN, variableName);
-        methodSpecBuilder.beginControlFlow("if ($N instanceof $T)", variableName, ContextAware.class);
-        methodSpecBuilder.addStatement("$N.setContext($N)", variableName, tmic.getContextFieldSpec());
-        methodSpecBuilder.endControlFlow();
+
+        boolean isContextAware = ClassUtil.classImplements(componentClass,  ContextAware.class);
+
+        if(isContextAware) {
+            methodSpecBuilder.addStatement("$N.setContext($N)", variableName, tmic.getContextFieldSpec());
+        } else {
+            methodSpecBuilder.addComment("$T not ContextAware", componentClass);
+        }
 
         ImplicitModelHandlerData cvnmsbt = new ImplicitModelHandlerData(parentVariableName, componentClass,
                 variableName, methodSpecBuilder);
@@ -206,7 +213,10 @@ public class ImplicitModelHandler extends ModelHandlerBase {
             setPropertyJavaStatement(classAndMethodSpecTuple, setterMethod, bodyText, paramTypes[0]);
             break;
         case AS_BASIC_PROPERTY_COLLECTION:
-            //actionData.parentBean.addBasicProperty(actionData.propertyName, finalBody);
+            Method adderMethod = aggregationAssessor.findAdderMethod(nestedElementTagName);
+            Class<?>[] addedParamTypes = adderMethod.getParameterTypes();
+            setPropertyJavaStatement(classAndMethodSpecTuple, adderMethod, bodyText, addedParamTypes[0]);
+
             break;
         default:
             addError("Unexpected aggregationType " + aggregationType);
@@ -220,8 +230,8 @@ public class ImplicitModelHandler extends ModelHandlerBase {
         String variableName = classAndMethodSpecTuple.getVariableName();
         //String setterSuffix = StringUtil.capitalizeFirstLetter(nestedElementTagName);
         String valuePart = StringToVariableStament.convertArg(type, value);
-        if(Boolean.TYPE.isAssignableFrom(type)) {
-           value = value.toLowerCase();
+        if (Boolean.TYPE.isAssignableFrom(type)) {
+            value = value.toLowerCase();
         }
         methodSpecBuilder.addStatement("$N.$N(" + valuePart + ")", variableName, setterMethod.getName(), value);
 
@@ -252,7 +262,13 @@ public class ImplicitModelHandler extends ModelHandlerBase {
             String parentVariableName = implicitModelHandlerData.getParentVariableName();
             String variableName = implicitModelHandlerData.getVariableName();
             Class objClass = implicitModelHandlerData.getParentObjectClass();
-            Method setterMethod = aggregationAssessor.findSetterMethod(implicitModel.getTag());
+
+            Method method = switch (aggregationType) {
+                case AS_COMPLEX_PROPERTY -> aggregationAssessor.findSetterMethod(implicitModel.getTag());
+                case AS_COMPLEX_PROPERTY_COLLECTION -> aggregationAssessor.findAdderMethod(implicitModel.getTag());
+                default -> throw new IllegalArgumentException("unexpected aggregationType "+aggregationType);
+            };
+
 
             AggregationAssessor nestedAggregationAssessor = new AggregationAssessor(beanDescriptionCache, objClass);
             nestedAggregationAssessor.setContext(context);
@@ -273,7 +289,7 @@ public class ImplicitModelHandler extends ModelHandlerBase {
             methodSpecBuilder.endControlFlow();
 
             methodSpecBuilder.addComment("Inject component of type $T into parent", objClass);
-            methodSpecBuilder.addStatement("$N.$N($N)", parentVariableName, setterMethod.getName(), variableName);
+            methodSpecBuilder.addStatement("$N.$N($N)", parentVariableName, method.getName(), variableName);
         }
     }
 }
