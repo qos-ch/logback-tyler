@@ -56,12 +56,21 @@ public class ClassUtil {
         return a == null;
     }
 
+    static final String[] AUTHORIZED_PREFIXES = {"ch.qos.logback", "chapters.appenders", "chapters.layouts", "chapters.filters"};
+
+    static public boolean isAuthorized(String classStr) {
+        for(String s: AUTHORIZED_PREFIXES) {
+            if (classStr.startsWith(s)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     public static Class<?> restrictecLoadClass(String classStr, Context context) throws ClassNotFoundException {
-        if(!classStr.startsWith("ch.qos.logback")) {
+        if(!isAuthorized(classStr)) {
             throw new IllegalArgumentException("Class name "+classStr+ " not supported");
         }
-
 
         ClassLoader cl = Loader.getClassLoaderOfObject(context);
         return cl.loadClass(classStr);

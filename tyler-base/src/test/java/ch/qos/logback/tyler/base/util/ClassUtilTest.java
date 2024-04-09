@@ -45,7 +45,15 @@ class ClassUtilTest {
         assertEquals(className, ClassUtil.extractSimpleClassName(fqcn));
     }
 
+
     @Test
+    void isAuthorized() {
+        assertFalse(ClassUtil.isAuthorized("tot"));
+        assertTrue(ClassUtil.isAuthorized("chapters.filters"));
+        assertTrue(ClassUtil.isAuthorized(TimeBasedRollingPolicy.class.getName()));
+    }
+
+        @Test
     void classImplements() {
         boolean result = ClassUtil.classImplements(TimeBasedRollingPolicy.class, ContextAware.class);
         assertTrue(result);
