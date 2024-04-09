@@ -77,7 +77,7 @@ public class TylerExample {
 }
 ```
 
-running the above program will output
+running the above program will produce the following output
 
 ```java
 
