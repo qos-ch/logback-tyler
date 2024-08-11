@@ -129,7 +129,7 @@ class TylerConfigurator extends TylerConfiguratorBase implements Configurator {
   /**
    * <p>This method performs configuration per {@link Configurator} interface.</p>
    *
-   * <p>If <code>TylerConfgiurator</code> is installed as a configurator service, this
+   * <p>If <code>TylerConfigurator</code> is installed as a configurator service, this
    * method will be called by logback-classic during initialization.</p>
    */
   @Override
