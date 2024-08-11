@@ -118,7 +118,7 @@
             MethodSpec.Builder msb = MethodSpec.methodBuilder(CONFIGURE_METHOD_NAME).addJavadoc("""
                             <p>This method performs configuration per {@link $T} interface.</p>
                                                 
-                            <p>If <code>TylerConfgiurator</code> is installed as a configurator service, this 
+                            <p>If <code>TylerConfigurator</code> is installed as a configurator service, this 
                             method will be called by logback-classic during initialization.</p>
                             """, Configurator.class).addAnnotation(Override.class).addModifiers(Modifier.PUBLIC)
                     .addParameter(contextParameterSpec).returns(Configurator.ExecutionStatus.class)
