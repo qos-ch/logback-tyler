@@ -48,8 +48,8 @@ class TylerConfigurator extends TylerConfiguratorBase implements Configurator {
    * method will be called by logback-classic during initialization.</p>
    */
   @Override
-  public Configurator.ExecutionStatus configure(LoggerContext loggerCoontext) {
-    setContext(loggerCoontext);
+  public Configurator.ExecutionStatus configure(LoggerContext loggerContext) {
+    setContext(loggerContext);
     setupOnConsoleStatusListener();
     propertyModelHandlerHelper.handlePropertyModel(this, "USER_HOME", "/home/alice", "", "", "");
     setContextName(subst("${APPNAME}"));

@@ -45,8 +45,8 @@ class TylerConfigurator extends TylerConfiguratorBase implements Configurator {
    * method will be called by logback-classic during initialization.</p>
    */
   @Override
-  public Configurator.ExecutionStatus configure(LoggerContext loggerCoontext) {
-    setContext(loggerCoontext);
+  public Configurator.ExecutionStatus configure(LoggerContext loggerContext) {
+    setContext(loggerContext);
     Logger logger_com_foo_Bar = setupLogger("com.foo.Bar", null, null);
     logger_com_foo_Bar.setLevel(levelStringToLevel(subst("${MOO_LEVEL}")));
     Logger logger_ROOT = setupLogger("ROOT", null, null);

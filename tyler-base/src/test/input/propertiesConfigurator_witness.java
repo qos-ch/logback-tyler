@@ -1,4 +1,4 @@
-package ch.qos.logback.tyler.base;
+package com.example;
 
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
@@ -82,4 +82,4 @@ class TylerConfigurator extends TylerConfiguratorBase implements Configurator {
         return appenderLIST;
     }
 }
-// 11:54:41,151 |-INFO in ch.qos.logback.core.model.processor.DefaultProcessor@5e17553a - End of configuration.
+// 11:56:09,016 |-INFO in ch.qos.logback.core.model.processor.DefaultProcessor@44be0077 - End of configuration.

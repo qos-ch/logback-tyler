@@ -28,6 +28,7 @@
 package ch.qos.logback.tyler.base.handler;
 
 import ch.qos.logback.classic.model.ConfigurationModel;
+import ch.qos.logback.classic.model.processor.ConfigurationModelHandlerFull;
 import ch.qos.logback.core.Context;
 import ch.qos.logback.core.model.Model;
 import ch.qos.logback.core.model.processor.ModelHandlerBase;
@@ -60,10 +61,25 @@ public class ConfigurationModelHandler extends ModelHandlerBase {
         if (debugAttrib == null) {
             debugAttrib = mic.subst(configurationModel.getDebugStr());
         }
-        if (!(OptionHelper.isNullOrEmptyOrAllSpaces(debugAttrib) || debugAttrib.equalsIgnoreCase(FALSE.toString())
-                || debugAttrib.equalsIgnoreCase(NULL_STR))) {
+        if (!(OptionHelper.isNullOrEmptyOrAllSpaces(debugAttrib) || debugAttrib.equalsIgnoreCase(FALSE.toString()) || debugAttrib.equalsIgnoreCase(NULL_STR))) {
             tmic.configureMethodSpecBuilder.addStatement("$N()", ADD_ON_CONSOLE_STATUS_LISTENER);
+        }
 
+        String scanAttribute = configurationModel.getScanStr();
+
+        // do not produce code if scanAttribute is null or empty
+        if (!OptionHelper.isNullOrEmptyOrAllSpaces(scanAttribute)) {
+            String scanPeriodAttribute = configurationModel.getScanPeriodStr();
+
+            // code to produce
+            //ConfigurationModelHandlerFull configurationModelHandlerFull = new ConfigurationModelHandlerFull(context);
+            //configurationModelHandlerFull.detachedPostProcessScanAttrib(scanStr, scanPeriodStr);
+
+            String cmhfVarName = "configurationMHF";
+            tmic.configureMethodSpecBuilder.addStatement("$1T $2N = new $1T($3N)", ConfigurationModelHandlerFull.class, cmhfVarName,
+                            tmic.getContextFieldSpec());
+            tmic.configureMethodSpecBuilder.addStatement("$N.detachedPostProcess(subst($S), subst($S))", cmhfVarName, scanAttribute, scanPeriodAttribute);
         }
     }
 }
+

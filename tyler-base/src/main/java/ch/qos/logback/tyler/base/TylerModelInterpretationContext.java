@@ -89,10 +89,6 @@
                                                 
                                   https://logback.qos.ch/translator/services/xml2Java.html </p>
                                                 
-                            <p>BEWARE: As of April 2024, TylerConfigurator generation from logback.xml 
-                            configuration files remains experimental and incomplete.
-                            </p>
-                                                
                             <p>This generated TylerConfigurator class is intended to be copied and integrated 
                             into the user's project as a custom configurator. It will configure logback 
                             without XML.</p>

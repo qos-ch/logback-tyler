@@ -33,6 +33,7 @@ import ch.qos.logback.classic.model.LevelModel;
 import ch.qos.logback.classic.model.LoggerContextListenerModel;
 import ch.qos.logback.classic.model.LoggerModel;
 import ch.qos.logback.classic.model.RootLoggerModel;
+import ch.qos.logback.classic.model.PropertiesConfiguratorModel;
 import ch.qos.logback.classic.model.processor.LogbackClassicDefaultNestedComponentRules;
 import ch.qos.logback.core.Context;
 import ch.qos.logback.core.joran.event.SaxEventRecorder;
@@ -54,24 +55,7 @@ import ch.qos.logback.core.model.conditional.ThenModel;
 import ch.qos.logback.core.model.processor.DefaultProcessor;
 import ch.qos.logback.core.model.processor.ImportModelHandler;
 import ch.qos.logback.core.util.StatusPrinter2;
-import ch.qos.logback.tyler.base.handler.AppenderModelHandler;
-import ch.qos.logback.tyler.base.handler.AppenderRefModelHandler;
-import ch.qos.logback.tyler.base.handler.ConfigurationModelHandler;
-import ch.qos.logback.tyler.base.handler.ContextNameModelHandler;
-import ch.qos.logback.tyler.base.handler.DefineModelHandler;
-import ch.qos.logback.tyler.base.handler.ElseModelHandler;
-import ch.qos.logback.tyler.base.handler.IfModelHandler;
-import ch.qos.logback.tyler.base.handler.ThenModelHandler;
-import ch.qos.logback.tyler.base.handler.ImplicitModelHandler;
-import ch.qos.logback.tyler.base.handler.LevelModelHandler;
-import ch.qos.logback.tyler.base.handler.LoggerContextListenerModelHandler;
-import ch.qos.logback.tyler.base.handler.LoggerModelHandler;
-import ch.qos.logback.tyler.base.handler.RootLoggerModelHandler;
-import ch.qos.logback.tyler.base.handler.SequenceNumberGeneratorModelHandler;
-import ch.qos.logback.tyler.base.handler.ShutdownHookModelHandler;
-import ch.qos.logback.tyler.base.handler.StatusListenerModelHandler;
-import ch.qos.logback.tyler.base.handler.TimestampModelHandler;
-import ch.qos.logback.tyler.base.handler.VariableModelHandler;
+import ch.qos.logback.tyler.base.handler.*;
 import ch.qos.logback.tyler.base.util.StringPrintStream;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
@@ -160,9 +144,7 @@ public class ModelToJava {
 
     private void addModelHandlerAssociations(DefaultProcessor defaultProcessor) {
         defaultProcessor.addHandler(ConfigurationModel.class, ConfigurationModelHandler::makeInstance);
-
         defaultProcessor.addHandler(PropertyModel.class, VariableModelHandler::makeInstance);
-
 
         defaultProcessor.addHandler(ContextNameModel.class, ContextNameModelHandler::makeInstance);
         defaultProcessor.addHandler(ImportModel.class, ImportModelHandler::makeInstance);
@@ -170,7 +152,7 @@ public class ModelToJava {
         defaultProcessor.addHandler(StatusListenerModel.class, StatusListenerModelHandler::makeInstance);
         defaultProcessor.addHandler(ShutdownHookModel.class, ShutdownHookModelHandler::makeInstance);
         defaultProcessor.addHandler(TimestampModel.class, TimestampModelHandler::makeInstance);
-
+        defaultProcessor.addHandler(PropertiesConfiguratorModel.class, TylerPropertiesConfiguratorModelHandler::makeInstance);
         defaultProcessor.addHandler(AppenderModel.class, AppenderModelHandler::makeInstance);
         defaultProcessor.addHandler(ImplicitModel.class, ImplicitModelHandler::makeInstance);
         defaultProcessor.addHandler(LoggerModel.class, LoggerModelHandler::makeInstance);

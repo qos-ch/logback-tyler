@@ -39,11 +39,11 @@ public class TylerConstants {
 
     public static final String TYLER_CONFIGURATOR = "TylerConfigurator";
     public static final String CONTEXT_FIELD_NAME = "context";
-    public static final String LOGGER_CONTEXT_PARAMETER_NAME = "loggerCoontext";
+    public static final String LOGGER_CONTEXT_PARAMETER_NAME = "loggerContext";
     public static final String LEVEL_FIELD_NAME = "level";
     public static final String LEVEL_STRING_PARAMETER_NAME = "levelString";
 
-    public static final String REQUIRED_LOGBACK_VERSION = "1.5.4";
+    public static final String REQUIRED_LOGBACK_VERSION = "1.5.10";
 
     public static final String TYLER_VERSION = VersionUtil.tylerVersion();
 

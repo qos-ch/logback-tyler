@@ -57,47 +57,57 @@ public class TylerRegressionTest {
 
     @Test
     void smoke() throws JoranException, IOException {
-        verify(INPUT_PREFIX+"smoke.xml", INPUT_PREFIX+"smoke_witness.java", false);
+        verify(INPUT_PREFIX + "smoke.xml", INPUT_PREFIX + "smoke_witness.java", false);
     }
 
     @Test
     void levelTest() throws JoranException, IOException {
-        verify(INPUT_PREFIX+"level.xml", INPUT_PREFIX+"level_witness.java", false);
+        verify(INPUT_PREFIX + "level.xml", INPUT_PREFIX + "level_witness.java", false);
     }
 
     @Test
     void sequenceGeneratorTest() throws JoranException, IOException {
-        verify(INPUT_PREFIX+"sequenceGenerator.xml", INPUT_PREFIX+"sequenceGenerator_witness.java", false);
+        verify(INPUT_PREFIX + "sequenceGenerator.xml", INPUT_PREFIX + "sequenceGenerator_witness.java", false);
     }
 
     @Test
     void contextListenerTest() throws JoranException, IOException {
-        verify(INPUT_PREFIX+"contextListener.xml", INPUT_PREFIX+"contextListener_witness.java", false);
+        verify(INPUT_PREFIX + "contextListener.xml", INPUT_PREFIX + "contextListener_witness.java", false);
+    }
+
+    @Test
+    void scanTest() throws JoranException, IOException {
+        verify(INPUT_PREFIX + "scan.xml", INPUT_PREFIX + "scan_witness.java", false);
     }
 
     @Test
     void defineTest() throws JoranException, IOException {
-        verify(INPUT_PREFIX+"define.xml", INPUT_PREFIX+"define_witness.java", false);
+        verify(INPUT_PREFIX + "define.xml", INPUT_PREFIX + "define_witness.java", false);
     }
 
     @Test
     void defineBadFQCNTest() throws JoranException, IOException {
-        verify(INPUT_PREFIX+"defineBadFQCN.xml", INPUT_PREFIX+"defineBadFQCNTest_witness.java", false);
+        verify(INPUT_PREFIX + "defineBadFQCN.xml", INPUT_PREFIX + "defineBadFQCNTest_witness.java", false);
     }
 
     @Test
     void conditionalTest() throws JoranException, IOException {
-        verify(INPUT_PREFIX+"conditional.xml", INPUT_PREFIX+"conditional_witness.java", false);
+        verify(INPUT_PREFIX + "conditional.xml", INPUT_PREFIX + "conditional_witness.java", false);
     }
 
     @Test
     void asyncTest() throws JoranException, IOException {
-        verify(INPUT_PREFIX+"async.xml", INPUT_PREFIX+"async_witness.java", false);
+        verify(INPUT_PREFIX + "async.xml", INPUT_PREFIX + "async_witness.java", false);
     }
 
     @Test
     void timestampTest() throws JoranException, IOException {
-        verify(INPUT_PREFIX+"timestamp.xml", INPUT_PREFIX+"timestamp_witness.java", false);
+        verify(INPUT_PREFIX + "timestamp.xml", INPUT_PREFIX + "timestamp_witness.java", false);
+    }
+
+    @Test
+    void propertiesConfiguratorTest() throws JoranException, IOException {
+        verify(INPUT_PREFIX + "propertiesConfigurator.xml", INPUT_PREFIX + "propertiesConfigurator_witness.java", false);
     }
 
     void verify(String path2XMLFile, String path2WitnessFile, boolean dumpResult) throws JoranException, IOException {
@@ -115,13 +125,12 @@ public class TylerRegressionTest {
         resultList.addAll(statusList);
 
         // uncomment to see filtered output
-         resultList.forEach(System.out::println);
+        resultList.forEach(System.out::println);
 
         assertTrue(outputComparator.checkForEquality(witnessLines, resultList));
 
         TylerAntlr4ErrorListener errorListener = syntaxVerifier.verify(result);
         assertEquals(0, errorListener.getSyntaxErrorCount(), errorListener.getErrorMessages().toString());
     }
-
 
 }

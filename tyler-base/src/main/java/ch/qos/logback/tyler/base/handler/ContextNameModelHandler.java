@@ -28,6 +28,7 @@
 package ch.qos.logback.tyler.base.handler;
 
 import ch.qos.logback.classic.model.ContextNameModel;
+import ch.qos.logback.classic.model.processor.ConfigurationModelHandler;
 import ch.qos.logback.core.Context;
 import ch.qos.logback.core.model.Model;
 import ch.qos.logback.core.model.processor.ModelHandlerBase;

@@ -77,8 +77,8 @@ class TylerConfigurator extends TylerConfiguratorBase implements Configurator {
      * method will be called by logback-classic during initialization.</p>
      */
     @Override
-    public Configurator.ExecutionStatus configure(LoggerContext loggerCoontext) {
-        setContext(loggerCoontext);
+    public Configurator.ExecutionStatus configure(LoggerContext loggerContext) {
+        setContext(loggerContext);
         timestamp_bySecond();
         Appender appenderFILE = setupAppenderFILE();
         Logger logger_ROOT = setupLogger("ROOT", "DEBUG", null);
