@@ -20,7 +20,7 @@ binaries, it is harder to modify and offers an even smaller attack
 surface.
 
 At runtime, `TylerConfigurator` does not have any additional
-dependencies other than logback-classic version 1.5.4. 
+dependencies other than logback-classic version 1.5.10. 
 
 Logback-tyler is located at the following Maven coordinates:
 ```xml
