@@ -105,15 +105,11 @@ import java.lang.Override;
  *
  *       https://logback.qos.ch/translator/services/xml2Java.html </p>
  *
- * <p>BEWARE: As of March 2024, TylerConfigurator generation from logback.xml
- * configuration files is still experimental and incomplete.
- * </p>
- *
  * <p>This class, i.e. TylerConfigurator, is intended to be copied and integrated
  * into the user's project as a custom configurator. It will configure logback
  * without XML.</p>
  *
- * <p>It requires logback-classic version 1.5.4 or later at runtime.</p>
+ * <p>It requires logback-classic version 1.5.10 or later at runtime.</p>
  *
  * <p>Custom configurators are looked up via Java's service-provide facility. If a
  * custom provider is found, it takes precedence over logback's own configurators,
