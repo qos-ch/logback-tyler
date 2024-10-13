@@ -99,11 +99,18 @@
                             custom provider is found, it takes precedence over logback's own configurators, 
                             e.g. DefaultJoranConfigurator.</p>
                                                 
-                            <p>See also item 1 of 'Configuration at initialization' section at 
+                            <p>To install your custom configurator to your project, add a 
+                            provider-configuration file to the following path:</p> 
+                            
+                            <pre>  META-INF/services/ch.qos.logback.classic.spi.Configurator</pre>
+                            
+                            <p>The provider-configuration  should contain a line with the fully 
+                            qualified class name of your desired configurator.</p>
+                                                                       
+                            <p>See also item 1 of 'Configuration at initialization' section at </p>
                                                 
-                                https://logback.qos.ch/manual/configuration.html#auto_configuration 
+                            <p>  https://logback.qos.ch/manual/configuration.html#auto_configuration</p> 
                                                 
-                            </p>
                             """.formatted(TYLER_VERSION, REQUIRED_LOGBACK_VERSION))
                     .addSuperinterface(Configurator.class)
                     .superclass(TylerConfiguratorBase.class);
