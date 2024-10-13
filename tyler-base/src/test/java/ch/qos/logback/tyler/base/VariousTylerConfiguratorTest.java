@@ -44,17 +44,19 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.spi.MDCAdapter;
-
+import ch.qos.logback.core.status.testUtil.StatusChecker;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @Disabled
-public class TylerConfiguratorTest {
+public class VariousTylerConfiguratorTest {
 
     LoggerContext loggerContext = new LoggerContext();
     MDCAdapter mdcAdapter = new LogbackMDCAdapter();
 
     StatusPrinter statusPrinter = new StatusPrinter();
+
+    StatusChecker statusChecker = new StatusChecker(loggerContext);
 
     @BeforeEach
     public void setUp() {
@@ -134,13 +136,19 @@ public class TylerConfiguratorTest {
     }
 
 
-    @Disabled
+
     @Test
     public void propertiesConfiguratorInclusionWithScanTest() throws InterruptedException {
         PropertiesConfiguratorInclusionWithScanTylerConfigurator tc = new PropertiesConfiguratorInclusionWithScanTylerConfigurator();
         tc.configure(loggerContext);
         Logger bazingaLogger = loggerContext.getLogger("com.bazinga");
         assertEquals(Level.INFO, bazingaLogger.getLevel());
-        Thread.sleep(100000);
+        statusChecker.assertIsWarningOrErrorFree();
+        statusChecker.assertContainsMatch("Adding \\[file:/C:/home/ceki/logback-tyler/tyler-base/src/test/input/included1.properties\\] to configuration watch list.");
+        statusChecker.assertContainsMatch("Registering a new ReconfigureOnChangeTask ReconfigureOnChangeTask");
+        statusChecker.assertContainsMatch("Will scan for changes in");
+        statusChecker.assertContainsMatch("Setting ReconfigureOnChangeTask scanning period to 30 seconds");
+        //Thread.sleep(50000);
+        //assertEquals(Level.ERROR, bazingaLogger.getLevel());
     }
 }
