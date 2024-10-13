@@ -118,7 +118,7 @@ import java.lang.Override;
  * <p>To install your custom configurator to your project, add a 
  * provider-configuration file to the following path:</p> 
  *                             
- * <pre>  META-INF/services/ch.qos.logback.classic.spi.Configurator<pre>
+ * <pre>  META-INF/services/ch.qos.logback.classic.spi.Configurator</pre>
  *                             
  * <p>The provider-configuration should contain a line with the fully
  * qualified class name of your desired configurator.</p>
