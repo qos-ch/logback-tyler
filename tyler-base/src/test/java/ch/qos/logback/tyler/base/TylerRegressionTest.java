@@ -110,6 +110,12 @@ public class TylerRegressionTest {
         verify(INPUT_PREFIX + "propertiesConfigurator.xml", INPUT_PREFIX + "propertiesConfigurator_witness.java", false);
     }
 
+    @Test
+    void propertiesConfiguratorWithScanTest() throws JoranException, IOException {
+        verify(INPUT_PREFIX + "propertiesConfiguratorWithScan.xml", INPUT_PREFIX + "propertiesConfiguratorWithScan_witness.java", false);
+    }
+
+
     void verify(String path2XMLFile, String path2WitnessFile, boolean dumpResult) throws JoranException, IOException {
         List<String> lines = FileHelper.readFile(path2XMLFile);
         List<String> witnessLines = FileHelper.readFile(path2WitnessFile);

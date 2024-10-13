@@ -27,26 +27,26 @@
 
 package ch.qos.logback.tyler.base;
 
+import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.classic.util.LogbackMDCAdapter;
-import ch.qos.logback.core.FileAppender;
 import ch.qos.logback.core.joran.spi.JoranException;
 import ch.qos.logback.core.rolling.RollingFileAppender;
 import ch.qos.logback.core.rolling.TimeBasedFileNamingAndTriggeringPolicy;
 import ch.qos.logback.core.rolling.TimeBasedRollingPolicy;
 import ch.qos.logback.core.util.StatusPrinter;
+import ch.qos.logback.tyler.base.generated.PropertiesConfiguratorInclusionTylerConfigurator;
+import ch.qos.logback.tyler.base.generated.PropertiesConfiguratorInclusionWithScanTylerConfigurator;
+import ch.qos.logback.tyler.base.generated.SmokeTylerConfigurator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.spi.MDCAdapter;
 
-import java.util.Deque;
-import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @Disabled
 public class TylerConfiguratorTest {
@@ -65,7 +65,7 @@ public class TylerConfiguratorTest {
     public void smoke() {
 
         long start = System.currentTimeMillis();
-        TylerConfigurator tc = new TylerConfigurator();
+        SmokeTylerConfigurator tc = new SmokeTylerConfigurator();
         tc.configure(loggerContext);
         long end = System.currentTimeMillis();
         long diff = end - start;
@@ -122,5 +122,25 @@ public class TylerConfiguratorTest {
             long diff = end - start;
             System.out.println("time " + diff);
         }
+    }
+
+    @Test
+    public void propertiesConfiguratorInclusionTest() throws InterruptedException {
+        PropertiesConfiguratorInclusionTylerConfigurator tc = new PropertiesConfiguratorInclusionTylerConfigurator();
+        tc.configure(loggerContext);
+        Logger bazingaLogger = loggerContext.getLogger("com.bazinga");
+        assertEquals(Level.INFO, bazingaLogger.getLevel());
+
+    }
+
+
+    @Disabled
+    @Test
+    public void propertiesConfiguratorInclusionWithScanTest() throws InterruptedException {
+        PropertiesConfiguratorInclusionWithScanTylerConfigurator tc = new PropertiesConfiguratorInclusionWithScanTylerConfigurator();
+        tc.configure(loggerContext);
+        Logger bazingaLogger = loggerContext.getLogger("com.bazinga");
+        assertEquals(Level.INFO, bazingaLogger.getLevel());
+        Thread.sleep(100000);
     }
 }

@@ -65,8 +65,14 @@ public class ConfigurationModelHandler extends ModelHandlerBase {
             tmic.configureMethodSpecBuilder.addStatement("$N()", ADD_ON_CONSOLE_STATUS_LISTENER);
         }
 
-        String scanAttribute = configurationModel.getScanStr();
+    }
 
+    @Override
+    public void postHandle(ModelInterpretationContext mic, Model model) throws ModelHandlerException {
+        ConfigurationModel configurationModel = (ConfigurationModel) model;
+        TylerModelInterpretationContext tmic = (TylerModelInterpretationContext) mic;
+
+        String scanAttribute = configurationModel.getScanStr();
         // do not produce code if scanAttribute is null or empty
         if (!OptionHelper.isNullOrEmptyOrAllSpaces(scanAttribute)) {
             String scanPeriodAttribute = configurationModel.getScanPeriodStr();
