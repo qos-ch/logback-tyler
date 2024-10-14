@@ -25,14 +25,12 @@
 package ch.qos.logback.tyler.base.handler;
 
 import ch.qos.logback.classic.model.PropertiesConfiguratorModel;
-import ch.qos.logback.classic.model.processor.ConfigurationModelHandlerFull;
 import ch.qos.logback.classic.model.processor.PropertiesConfiguratorModelHandler;
 import ch.qos.logback.core.Context;
 import ch.qos.logback.core.model.Model;
 import ch.qos.logback.core.model.processor.ModelHandlerBase;
 import ch.qos.logback.core.model.processor.ModelHandlerException;
 import ch.qos.logback.core.model.processor.ModelInterpretationContext;
-import ch.qos.logback.core.spi.ContextAwarePropertyContainer;
 import ch.qos.logback.core.util.OptionHelper;
 import ch.qos.logback.tyler.base.TylerModelInterpretationContext;
 

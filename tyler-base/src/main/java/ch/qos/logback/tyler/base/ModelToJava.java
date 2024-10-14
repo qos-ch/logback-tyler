@@ -38,17 +38,7 @@ import ch.qos.logback.classic.model.processor.LogbackClassicDefaultNestedCompone
 import ch.qos.logback.core.Context;
 import ch.qos.logback.core.joran.event.SaxEventRecorder;
 import ch.qos.logback.core.joran.spi.JoranException;
-import ch.qos.logback.core.model.AppenderModel;
-import ch.qos.logback.core.model.AppenderRefModel;
-import ch.qos.logback.core.model.DefineModel;
-import ch.qos.logback.core.model.ImplicitModel;
-import ch.qos.logback.core.model.ImportModel;
-import ch.qos.logback.core.model.Model;
-import ch.qos.logback.core.model.PropertyModel;
-import ch.qos.logback.core.model.SequenceNumberGeneratorModel;
-import ch.qos.logback.core.model.ShutdownHookModel;
-import ch.qos.logback.core.model.StatusListenerModel;
-import ch.qos.logback.core.model.TimestampModel;
+import ch.qos.logback.core.model.*;
 import ch.qos.logback.core.model.conditional.ElseModel;
 import ch.qos.logback.core.model.conditional.IfModel;
 import ch.qos.logback.core.model.conditional.ThenModel;
@@ -159,6 +149,8 @@ public class ModelToJava {
         defaultProcessor.addHandler(RootLoggerModel.class, RootLoggerModelHandler::makeInstance);
         defaultProcessor.addHandler(LevelModel.class, LevelModelHandler::makeInstance);
         defaultProcessor.addHandler(AppenderRefModel.class, AppenderRefModelHandler::makeInstance);
+
+        defaultProcessor.addHandler(IncludeModel.class, TylerIncludeModelHandler::makeInstance);
 
         defaultProcessor.addHandler(LoggerContextListenerModel.class, LoggerContextListenerModelHandler::makeInstance);
         defaultProcessor.addHandler(SequenceNumberGeneratorModel.class, SequenceNumberGeneratorModelHandler::makeInstance);

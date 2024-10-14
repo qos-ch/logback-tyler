@@ -1,0 +1,3 @@
+<included>
+    <logger name="com.bazinga" level="INFO"/>
+</included>

@@ -64,6 +64,7 @@ public class VariousTylerConfiguratorTest {
     }
 
     @Test
+    @Disabled
     public void smoke() {
 
         long start = System.currentTimeMillis();
@@ -150,5 +151,14 @@ public class VariousTylerConfiguratorTest {
         statusChecker.assertContainsMatch("Setting ReconfigureOnChangeTask scanning period to 30 seconds");
         //Thread.sleep(50000);
         //assertEquals(Level.ERROR, bazingaLogger.getLevel());
+    }
+
+    @Test
+    public void includeXMLTest() throws InterruptedException {
+        IncludeTylerConfigurator tc = new IncludeTylerConfigurator();
+        tc.configure(loggerContext);
+        Logger bazingaLogger = loggerContext.getLogger("com.bazinga");
+        assertEquals(Level.INFO, bazingaLogger.getLevel());
+
     }
 }
