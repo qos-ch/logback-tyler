@@ -55,6 +55,7 @@
 
         final public TypeSpec.Builder tylerConfiguratorTSB;
         final public MethodSpec.Builder configureMethodSpecBuilder;
+        final public List<MethodSpec.Builder> listOfMethodSpecBuilders = new ArrayList<>();
 
         final FieldSpec contextFieldSpec = FieldSpec.builder(LoggerContext.class, CONTEXT_FIELD_NAME, Modifier.PRIVATE)
                 .build();

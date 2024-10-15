@@ -119,6 +119,10 @@ public class TylerRegressionTest {
     void topIncludingTest() throws JoranException, IOException {
         verify(INPUT_PREFIX + "topIncluding.xml", INPUT_PREFIX + "topIncluding_witness.java", false);
     }
+    @Test
+    void insertFromJNDITest() throws JoranException, IOException {
+        verify(INPUT_PREFIX + "insertFromJNDI.xml", INPUT_PREFIX + "insertFromJNDI_witness.java", false);
+    }
 
     void verify(String path2XMLFile, String path2WitnessFile, boolean dumpResult) throws JoranException, IOException {
         List<String> lines = FileHelper.readFile(path2XMLFile);

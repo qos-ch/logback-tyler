@@ -99,6 +99,10 @@ public class ModelToJava {
 
         tmic.tylerConfiguratorTSB.methodSpecs.addFirst(configureMethodSpec);
 
+        for(MethodSpec.Builder methodSpecBuilder: tmic.listOfMethodSpecBuilders) {
+            MethodSpec methodSpec = methodSpecBuilder.build();
+            tmic.tylerConfiguratorTSB.methodSpecs.add(methodSpec);
+        }
 
         TypeSpec tylerConfiguratorTypeSpec = tmic.tylerConfiguratorTSB.build();
 
@@ -139,6 +143,8 @@ public class ModelToJava {
         defaultProcessor.addHandler(ContextNameModel.class, ContextNameModelHandler::makeInstance);
         defaultProcessor.addHandler(ImportModel.class, ImportModelHandler::makeInstance);
         defaultProcessor.addHandler(DefineModel.class, DefineModelHandler::makeInstance);
+        defaultProcessor.addHandler(InsertFromJNDIModel.class, TylerInsertFromJNDIModelHandler::makeInstance);
+
         defaultProcessor.addHandler(StatusListenerModel.class, StatusListenerModelHandler::makeInstance);
         defaultProcessor.addHandler(ShutdownHookModel.class, ShutdownHookModelHandler::makeInstance);
         defaultProcessor.addHandler(TimestampModel.class, TimestampModelHandler::makeInstance);
