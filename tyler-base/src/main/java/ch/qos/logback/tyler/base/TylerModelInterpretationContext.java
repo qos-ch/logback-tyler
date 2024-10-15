@@ -86,13 +86,13 @@
                             <p>Eventual errors and warnings are appended at the end.</p>                    
                                                 
                             <p>You may experiment with logback.xml to Java translation, i.e. 
-                            TylerConfigurator generation, at the following URL:
+                            TylerConfigurator generation, at the following URL:</p>
                                                 
-                                  https://logback.qos.ch/translator/services/xml2Java.html </p>
+                            <p>     https://logback.qos.ch/translator/services/xml2Java.html </p>
                                                 
                             <p>This generated TylerConfigurator class is intended to be copied and integrated 
                             into the user's project as a custom configurator. It will configure logback 
-                            without XML.</p>
+                            without XML. You are free to rename TylerConfigurator as you wish.</p>
                                                 
                             <p>It requires logback-classic version %s or later at runtime.</p>
                                                 
@@ -105,12 +105,23 @@
                             
                             <pre>  META-INF/services/ch.qos.logback.classic.spi.Configurator</pre>
                             
-                            <p>The provider-configuration  should contain a line with the fully 
-                            qualified class name of your desired configurator.</p>
+                            <p>This provider-configuration file should contain a line with the fully 
+                            qualified class name of your tyler configurator.</p>
                                                                        
                             <p>See also item 1 of 'Configuration at initialization' section at </p>
                                                 
                             <p>  https://logback.qos.ch/manual/configuration.html#auto_configuration</p> 
+                            
+                            <p>With recent versions of logback and logback-tyler you can still
+                            configure logger levels dynamically using properties files. Note that
+                            configuration files in properties format can be watched for
+                            changes. See the documentation on PropertiesConfigurator for more details.</p>
+                               
+                            <p>https://logback.qos.ch/manual/configuration.html#propertiesConfigurator</p>
+                            
+                            <p>Keep in mind that by integrating a .properties configuration file info 
+                            your tyler configurator, you can still change logger levels dynamically, without 
+                            redeploying your application.</p>
                                                 
                             """.formatted(TYLER_VERSION, REQUIRED_LOGBACK_VERSION))
                     .addSuperinterface(Configurator.class)
