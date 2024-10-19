@@ -23,11 +23,17 @@ surface.
 At runtime, `TylerConfigurator` does not have any additional
 dependencies other than logback-classic version 1.5.10. 
 
+## Online instance
+A instance of logback-tyler translator is available [**online**](https://logback.qos.ch/translator/services/xml2Java.html). 
+Do not hesitate to experiment with it.
+
+## Running the translator locally
+
 Logback-tyler is located at the following Maven coordinates:
 ```xml
  <groupId>ch.qos.logback.tyler</groupId>
  <artifactId>tyler-base</artifactId>
- <version>0.7</version>
+ <version>0.9</version>
 ```
 
 Here is a sample program to translate a logback.xml as string into Java.
