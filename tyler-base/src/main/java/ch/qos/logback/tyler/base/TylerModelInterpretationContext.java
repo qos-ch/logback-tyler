@@ -41,8 +41,7 @@
 
     import javax.lang.model.element.Modifier;
 
-    import java.util.ArrayList;
-    import java.util.List;
+    import java.util.*;
 
     import static ch.qos.logback.tyler.base.TylerConstants.CONFIGURE_METHOD_NAME;
     import static ch.qos.logback.tyler.base.TylerConstants.CONTEXT_FIELD_NAME;
@@ -55,7 +54,7 @@
 
         final public TypeSpec.Builder tylerConfiguratorTSB;
         final public MethodSpec.Builder configureMethodSpecBuilder;
-        final public List<MethodSpec.Builder> listOfMethodSpecBuilders = new ArrayList<>();
+        final public Map<String, MethodSpec.Builder> mapOfMethodSpecBuilders = new LinkedHashMap<>();
 
         final FieldSpec contextFieldSpec = FieldSpec.builder(LoggerContext.class, CONTEXT_FIELD_NAME, Modifier.PRIVATE)
                 .build();

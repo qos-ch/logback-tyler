@@ -35,8 +35,14 @@ import ch.qos.logback.core.model.processor.ModelHandlerException;
 import ch.qos.logback.core.model.processor.ModelInterpretationContext;
 import ch.qos.logback.core.util.OptionHelper;
 import ch.qos.logback.tyler.base.TylerModelInterpretationContext;
+import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.ParameterSpec;
+
+import javax.lang.model.element.Modifier;
 
 public class TylerIncludeModelHandler extends ModelHandlerBase {
+
+    final static String INCLUDE_METHOD_NAME = "include";
 
     public TylerIncludeModelHandler(Context context) {
         super(context);
@@ -59,44 +65,91 @@ public class TylerIncludeModelHandler extends ModelHandlerBase {
     }
 
     protected void addJavaStatement(TylerModelInterpretationContext tmic, IncludeModel originalModel) {
+
+        addIncludeMethod(tmic);
+        tmic.configureMethodSpecBuilder.addStatement("$N($S, $S, $S, $S)", INCLUDE_METHOD_NAME, originalModel.getFile(), originalModel.getUrl(),
+                        originalModel.getResource(), originalModel.getOptional());
+
+    }
+
+    void addIncludeMethod(TylerModelInterpretationContext tmic) {
+
+
+        // insert method at most once
+        if(tmic.mapOfMethodSpecBuilders.containsKey(INCLUDE_METHOD_NAME))
+            return;
+
         // code to produce
-        //  IncludeModel includeModel = new IncludeModel();
         //
-        //  includeModel.setFile(originalModel.getFile());  // use actual string value of pcModel.getFile()
+        // void include(String fileStr, String urlStr, String resourceStr, String optionalStr) {
+
+        //    IncludeModel includeModel = new IncludeModel();
         //
-        //  includeModel.setUrl(originalModel.getUrl()); // use actual string value of pcModel.getUrl()
-        //  includeModel.setResource(originalModel.getResource());
-        //  includeModel.setOptional(originalModel.getOptional());
-        //  IncludeModelHandler includeModelHandler = new IncludeModelHandler(context);
-        //  try {
-        //    Model modelFromIncludedFile = includeModelHandler.buildModelFromIncludedFile(this, includeModel);
-        //    processModelFromIncludedFile(modelFromIncludedFile);
-        //  } catch(ModelHandlerException e) {
-        //     addError("Failed to process IncludeModelHandler", e);
-        //  }
+        //    includeModel.setFile(fileStr);  // use actual string value of pcModel.getFile()
+        //
+        //    includeModel.setUrl(urlStr); // use actual string value of pcModel.getUrl()
+        //    includeModel.setResource(resourceStr);
+        //    includeModel.setOptional(optionalStr);
+        //    IncludeModelHandler includeModelHandler = new IncludeModelHandler(context);
+        //    try {
+        //      Model modelFromIncludedFile = includeModelHandler.buildModelFromIncludedFile(this, includeModel);
+        //      processModelFromIncludedFile(modelFromIncludedFile);
+        //    } catch(ModelHandlerException e) {
+        //       addError("Failed to process IncludeModelHandler", e);
+        //    }
+        // }
+
         String includeModelVarName = "includeModel";
         String imhVarName = "includeModelHandler";
         String mfifVarName = "modelFromIncludedFile";
-        tmic.configureMethodSpecBuilder.addStatement("$1T $2N = new $1T()", IncludeModel.class, includeModelVarName);
-        if (!OptionHelper.isNullOrEmptyOrAllSpaces(originalModel.getFile())) {
-            tmic.configureMethodSpecBuilder.addStatement("$N.setFile(subst($S))", includeModelVarName, originalModel.getFile());
-        }
-        if (!OptionHelper.isNullOrEmptyOrAllSpaces(originalModel.getUrl())) {
-            tmic.configureMethodSpecBuilder.addStatement("$N.setUrl(subst($S))", includeModelVarName, originalModel.getUrl());
-        }
-        if (!OptionHelper.isNullOrEmptyOrAllSpaces(originalModel.getResource())) {
-            tmic.configureMethodSpecBuilder.addStatement("$N.setResource(subst($S))", includeModelVarName, originalModel.getResource());
-        }
-        if (!OptionHelper.isNullOrEmptyOrAllSpaces(originalModel.getOptional())) {
-            tmic.configureMethodSpecBuilder.addStatement("$N.setOptional(subst($S))", includeModelVarName, originalModel.getOptional());
-        }
-        tmic.configureMethodSpecBuilder.addStatement("$1T $2N = new $1T($3N)", IncludeModelHandler.class, imhVarName, tmic.getContextFieldSpec());
+
+        final String fileStrVarName = "fileStr";
+        final String urlStrVarName = "urlStr";
+        final String resourceStrVarName = "resourceStr";
+        final String optionalStrVarName = "optionalStr";
+
+
+        final ParameterSpec fileStr_ParameterSpec = ParameterSpec.builder(String.class, fileStrVarName).build();
+        final ParameterSpec urStr_ParameterSpec = ParameterSpec.builder(String.class, urlStrVarName).build();
+        final ParameterSpec resourceStr_ParameterSpec = ParameterSpec.builder(String.class, resourceStrVarName).build();
+        final ParameterSpec optionalStr_ParameterSpec = ParameterSpec.builder(String.class, optionalStrVarName).build();
+
+        MethodSpec.Builder msBuilder = MethodSpec.methodBuilder(INCLUDE_METHOD_NAME).addModifiers(Modifier.PRIVATE).addParameter(fileStr_ParameterSpec)
+                        .addParameter(urStr_ParameterSpec).addParameter(resourceStr_ParameterSpec).addParameter(optionalStr_ParameterSpec).returns(void.class);
+
+        msBuilder.addStatement("$1T $2N = new $1T()", IncludeModel.class, includeModelVarName);
+        msBuilder.addStatement("$N.setFile(subst($N))", includeModelVarName, fileStrVarName);
+        msBuilder.addStatement("$N.setUrl(subst($N))", includeModelVarName, urlStrVarName);
+        msBuilder.addStatement("$N.setResource(subst($N))", includeModelVarName, resourceStrVarName);
+        msBuilder.addStatement("$N.setOptional(subst($N))", includeModelVarName, optionalStrVarName);
+        msBuilder.addStatement("$1T $2N = new $1T($3N)", IncludeModelHandler.class, imhVarName, tmic.getContextFieldSpec());
+
         // "this is the calling TylerConfigurator instance of type ContextAwarePropertyContainer"
-        tmic.configureMethodSpecBuilder.beginControlFlow("try");
-        tmic.configureMethodSpecBuilder.addStatement("$T $N = $N.buildModelFromIncludedFile(this, $N)", Model.class, mfifVarName, imhVarName, includeModelVarName);
-        tmic.configureMethodSpecBuilder.addStatement("processModelFromIncludedFile($N)", mfifVarName);
-        tmic.configureMethodSpecBuilder.nextControlFlow("catch($T e)", ModelHandlerException.class);
-        tmic.configureMethodSpecBuilder.addStatement("addError(\"Failed to process IncludeModelHandler\", e)");
-        tmic.configureMethodSpecBuilder.endControlFlow();
+        msBuilder.beginControlFlow("try");
+        msBuilder.addStatement("$T $N = $N.buildModelFromIncludedFile(this, $N)", Model.class, mfifVarName, imhVarName, includeModelVarName);
+        msBuilder.addStatement("processModelFromIncludedFile($N)", mfifVarName);
+        msBuilder.nextControlFlow("catch($T e)", ModelHandlerException.class);
+        msBuilder.addStatement("addError(\"Failed to process IncludeModelHandler\", e)");
+        msBuilder.endControlFlow();
+
+        tmic.mapOfMethodSpecBuilders.put(INCLUDE_METHOD_NAME, msBuilder);
+
+        msBuilder.addJavadoc("""
+        <p>Warning: please note at translation time logback-tyler usually does not have access to 
+        the included file.<p>
+        
+        <p>It follows that the code in this method produced by logback-tyler falls back to invoking 
+        logback-classic's default configurator, i.e. JoranConfigurator which will invoke an XML 
+        parser in the process.</p>
+        
+        <p>If you wish to avoid calling JoranConfigurator, then you can insert the contents of the 
+        included XML file into the containing file manually before performing the translation.</p>
+        
+        <p>Also note that PropertiesConfigurator introduced in version 1.5.8, allows for setting 
+        logger levels via a properties file. The location of properties files can be specified 
+        as a file path as well a URL via HTTP or HTTPS protocols. Watching files and 
+        reconfiguration upon change is also supported. Logback-tyler supports PropertiesConfigurator.</p>
+                
+        """);
     }
 }

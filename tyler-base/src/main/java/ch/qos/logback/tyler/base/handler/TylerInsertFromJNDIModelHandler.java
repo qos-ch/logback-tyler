@@ -76,7 +76,7 @@ public class TylerInsertFromJNDIModelHandler extends ModelHandlerBase {
 
         String asStr = originalModel.getAs();
 
-        String jndiMethodName = "insertFromJNDIAs_" + asStr;
+        String jndiMethodName_As = "insertFromJNDIAs_" + asStr;
         String asStrVarName = "asStr";
         String envEntryStrVarName = "envEntryStr";
         String scopeStrVarName = "scopeStr";
@@ -85,7 +85,7 @@ public class TylerInsertFromJNDIModelHandler extends ModelHandlerBase {
         final ParameterSpec envEntryStr_ParameterSpec = ParameterSpec.builder(String.class, envEntryStrVarName).build();
         final ParameterSpec scopeStr_ParameterSpec = ParameterSpec.builder(String.class, scopeStrVarName).build();
 
-        MethodSpec.Builder msBuilder = MethodSpec.methodBuilder(jndiMethodName).addModifiers(Modifier.PRIVATE)
+        MethodSpec.Builder msBuilder = MethodSpec.methodBuilder(jndiMethodName_As).addModifiers(Modifier.PRIVATE)
                         .addParameter(asStr_ParameterSpec)
                         .addParameter(envEntryStr_ParameterSpec)
                         .addParameter(scopeStr_ParameterSpec)
@@ -99,9 +99,9 @@ public class TylerInsertFromJNDIModelHandler extends ModelHandlerBase {
         msBuilder.addStatement("$1T $2N = new $1T($3N)", InsertFromJNDIModelHandler.class, ifjmVarName, tmic.getContextFieldSpec());
         msBuilder.addStatement("$N.detachedHandle(this, $N)", ifjmVarName, insertFromJNDIModelVarName);
 
-        tmic.listOfMethodSpecBuilders.add(msBuilder);
+        tmic.mapOfMethodSpecBuilders.put(jndiMethodName_As, msBuilder);
 
-        tmic.configureMethodSpecBuilder.addStatement("$N($S, $S, $S)", jndiMethodName, originalModel.getAs(), originalModel.getEnvEntryName(), originalModel.getScopeStr());
+        tmic.configureMethodSpecBuilder.addStatement("$N($S, $S, $S)", jndiMethodName_As, originalModel.getAs(), originalModel.getEnvEntryName(), originalModel.getScopeStr());
 
     }
 }

@@ -99,7 +99,8 @@ public class ModelToJava {
 
         tmic.tylerConfiguratorTSB.methodSpecs.addFirst(configureMethodSpec);
 
-        for(MethodSpec.Builder methodSpecBuilder: tmic.listOfMethodSpecBuilders) {
+        for(String methodName: tmic.mapOfMethodSpecBuilders.keySet()) {
+            MethodSpec.Builder methodSpecBuilder = tmic.mapOfMethodSpecBuilders.get(methodName);
             MethodSpec methodSpec = methodSpecBuilder.build();
             tmic.tylerConfiguratorTSB.methodSpecs.add(methodSpec);
         }
