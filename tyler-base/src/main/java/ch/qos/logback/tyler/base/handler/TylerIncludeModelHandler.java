@@ -135,20 +135,22 @@ public class TylerIncludeModelHandler extends ModelHandlerBase {
         tmic.mapOfMethodSpecBuilders.put(INCLUDE_METHOD_NAME, msBuilder);
 
         msBuilder.addJavadoc("""
-        <p>Warning: please note at translation time logback-tyler usually does not have access to 
-        the included file.<p>
+        <p>Warning: please note that at translation time logback-tyler usually does not have  
+        access to the included file.<p>
         
-        <p>It follows that the code in this method produced by logback-tyler falls back to invoking 
+        <p>It follows that the code in this method (produced by logback-tyler) falls back to invoking 
         logback-classic's default configurator, i.e. JoranConfigurator which will invoke an XML 
-        parser in the process.</p>
+        parser.</p>
         
-        <p>If you wish to avoid calling JoranConfigurator, then you can insert the contents of the 
-        included XML file into the containing file manually before performing the translation.</p>
+        <p>If you wish to avoid calling <code>JoranConfigurator</code>, then you can insert 
+        the contents of the included XML file into the encompassing file manually before performing 
+        the translation.</p>
         
         <p>Also note that PropertiesConfigurator introduced in version 1.5.8, allows for setting 
         logger levels via a properties file. The location of properties files can be specified 
         as a file path as well a URL via HTTP or HTTPS protocols. Watching files and 
-        reconfiguration upon change is also supported. Logback-tyler supports PropertiesConfigurator.</p>
+        reconfiguration upon change are also supported. Logback-tyler supports 
+        <code>PropertiesConfigurator</code>.</p>
                 
         """);
     }
