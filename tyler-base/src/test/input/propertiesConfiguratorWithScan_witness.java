@@ -47,7 +47,7 @@ import java.lang.Override;
  * <p>  https://logback.qos.ch/manual/configuration.html#auto_configuration</p>
  *
  */
-class TylerConfigurator extends TylerConfiguratorBase implements Configurator {
+public class TylerConfigurator extends TylerConfiguratorBase implements Configurator {
   /**
    * <p>This method performs configuration per {@link Configurator} interface.</p>
    *

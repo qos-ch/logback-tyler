@@ -40,7 +40,7 @@ import java.lang.Override;
  *
  * </p>
  */
-class TylerConfigurator extends TylerConfiguratorBase implements Configurator {
+public class TylerConfigurator extends TylerConfiguratorBase implements Configurator {
   /**
    * <p>This method performs configuration per {@link Configurator} interface.</p>
    *
