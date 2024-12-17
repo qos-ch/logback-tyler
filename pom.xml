@@ -8,7 +8,7 @@
     <groupId>ch.qos.logback.tyler</groupId>
     <artifactId>tyler-parent</artifactId>
     <name>parent</name>
-    <version>1.0.1-SNAPSHOT</version>
+    <version>1.0.1</version>
     <packaging>pom</packaging>
 
     <description>logback tyler pom.xml file</description>
@@ -36,6 +36,9 @@
         <connection>scm:git@github.com:qos-ch/logback-tyler.git</connection>
     </scm>
     <properties>
+        <!-- yyyy-MM-dd'T'HH:mm:ss'Z' -->
+        <project.build.outputTimestamp>2024-12-17T20:07:00Z</project.build.outputTimestamp>
+
         <jdk.version>21</jdk.version>
         <maven.compiler.source>${jdk.version}</maven.compiler.source>
         <maven.compiler.target>${jdk.version}</maven.compiler.target>
