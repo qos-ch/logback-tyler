@@ -71,7 +71,7 @@ public class DefineModelHandler extends ComponentModelHandler {
 
         methodSpec.addStatement("$T $N  = $T.stringToScope($S)", ActionUtil.Scope.class,  SCOPE_VARIABLE_NAME,  ActionUtil.class, scopeStr);
         methodSpec.addStatement("String propertyValue = $N.getPropertyValue()", variableName);
-        methodSpec.beginControlFlow("if(propertyValue != null)", variableName);
+        methodSpec.beginControlFlow("if(propertyValue != null)");
         methodSpec.addStatement("addInfo(\"Setting property '$N' to '\"+$N+\"' in scope \"+$N)", propertyName, PROPERTY_VALUE_VARIABLE_NAME, SCOPE_VARIABLE_NAME);
         methodSpec.addStatement("$T.setProperty(this, $S, $N, $N)", ActionUtil.class, propertyName, PROPERTY_VALUE_VARIABLE_NAME, SCOPE_VARIABLE_NAME);
         methodSpec.endControlFlow();

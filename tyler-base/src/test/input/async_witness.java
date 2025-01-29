@@ -35,7 +35,8 @@ import ch.qos.logback.classic.spi.Configurator;
 import ch.qos.logback.classic.tyler.TylerConfiguratorBase;
 import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.FileAppender;
-import java.lang.Override;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
@@ -70,6 +71,11 @@ import java.lang.Override;
  */
 public class TylerConfigurator extends TylerConfiguratorBase implements Configurator {
     /**
+     * A map used to reference appenders during configuration.
+     */
+    protected final Map<String, Appender> tylerAppenderBag = new HashMap<>();
+
+    /**
      * <p>This method performs configuration per {@link Configurator} interface.</p>
      *
      * <p>If <code>TylerConfgiurator</code> is installed as a configurator service, this
@@ -80,7 +86,6 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
         setContext(loggerContext);
         Appender appenderFILE = setupAppenderFILE();
         Appender appenderASYNC = setupAppenderASYNC();
-        appenderASYNC.addAppender(appenderFILE);
         Logger logger_ROOT = setupLogger("ROOT", "DEBUG", null);
         logger_ROOT.addAppender(appenderASYNC);
         return ExecutionStatus.DO_NOT_INVOKE_NEXT_IF_ANY;
@@ -90,6 +95,7 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
         FileAppender appenderFILE = new FileAppender();
         appenderFILE.setContext(context);
         appenderFILE.setName("FILE");
+        this.tylerAppenderBag.put("FILE", appenderFILE);
         appenderFILE.setFile("myapp.log");
 
         // Configure component of type PatternLayoutEncoder
@@ -110,6 +116,13 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
         AsyncAppender appenderASYNC = new AsyncAppender();
         appenderASYNC.setContext(context);
         appenderASYNC.setName("ASYNC");
+        this.tylerAppenderBag.put("ASYNC", appenderASYNC);
+        Appender appender = tylerAppenderBag.get(FILE);
+        if(appender == null) {
+            addInfo("Could not find appender named 'FILE'");
+        } else {
+            appenderASYNC.addAppender(appender);
+        }
 
         appenderASYNC.start();
         return appenderASYNC;

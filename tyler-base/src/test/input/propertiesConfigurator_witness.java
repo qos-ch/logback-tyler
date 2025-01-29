@@ -10,7 +10,8 @@ import ch.qos.logback.classic.tyler.TylerConfiguratorBase;
 import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.model.processor.ModelHandlerException;
 import ch.qos.logback.core.testUtil.StringListAppender;
-import java.lang.Override;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
@@ -41,6 +42,11 @@ import java.lang.Override;
  */
 public class TylerConfigurator extends TylerConfiguratorBase implements Configurator {
     /**
+     * A map used to reference appenders during configuration.
+     */
+    protected final Map<String, Appender> tylerAppenderBag = new HashMap<>();
+
+    /**
      * <p>This method performs configuration per {@link Configurator} interface.</p>
      *
      * <p>If <code>TylerConfigurator</code> is installed as a configurator service, this
@@ -68,6 +74,7 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
         StringListAppender appenderLIST = new StringListAppender();
         appenderLIST.setContext(context);
         appenderLIST.setName("LIST");
+        this.tylerAppenderBag.put("LIST", appenderLIST);
 
         // Configure component of type PatternLayout
         PatternLayout patternLayout = new PatternLayout();

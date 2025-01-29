@@ -10,7 +10,8 @@ import ch.qos.logback.core.rolling.RollingFileAppender;
 import ch.qos.logback.core.rolling.TimeBasedRollingPolicy;
 import ch.qos.logback.core.spi.LifeCycle;
 import ch.qos.logback.core.status.OnConsoleStatusListener;
-import java.lang.Override;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
@@ -41,6 +42,11 @@ import java.lang.Override;
  * </p>
  */
 public class TylerConfigurator extends TylerConfiguratorBase implements Configurator {
+  /**
+   * A map used to reference appenders during configuration.
+   */
+  protected final Map<String, Appender> tylerAppenderBag = new HashMap<>();
+
   /**
    * <p>This method performs configuration per {@link Configurator} interface.</p>
    *
@@ -75,6 +81,7 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
     RollingFileAppender appenderRFILE = new RollingFileAppender();
     appenderRFILE.setContext(context);
     appenderRFILE.setName("RFILE");
+    this.tylerAppenderBag.put("RFILE", appenderRFILE);
     appenderRFILE.setFile(subst("${USER_HOME}/logFile.log"));
 
     // Configure component of type TimeBasedRollingPolicy

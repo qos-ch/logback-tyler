@@ -6,8 +6,9 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.spi.Configurator;
 import ch.qos.logback.classic.tyler.TylerConfiguratorBase;
-
-import java.lang.Override;
+import ch.qos.logback.core.Appender;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
@@ -38,6 +39,11 @@ import java.lang.Override;
  * </p>
  */
 public class TylerConfigurator extends TylerConfiguratorBase implements Configurator {
+  /**
+   * A map used to reference appenders during configuration.
+   */
+  protected final Map<String, Appender> tylerAppenderBag = new HashMap<>();
+
   /**
    * <p>This method performs configuration per {@link Configurator} interface.</p>
    *

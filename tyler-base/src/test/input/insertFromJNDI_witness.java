@@ -10,8 +10,8 @@ import ch.qos.logback.core.ConsoleAppender;
 import ch.qos.logback.core.model.InsertFromJNDIModel;
 import ch.qos.logback.core.model.processor.InsertFromJNDIModelHandler;
 
-import java.lang.Override;
-import java.lang.String;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
@@ -49,6 +49,11 @@ import java.lang.String;
  */
 public class TylerConfigurator extends TylerConfiguratorBase implements Configurator {
     /**
+     * A map used to reference appenders during configuration.
+     */
+    protected final Map<String, Appender> tylerAppenderBag = new HashMap<>();
+
+    /**
      * <p>This method performs configuration per {@link Configurator} interface.</p>
      *
      * <p>If <code>TylerConfigurator</code> is installed as a configurator service, this
@@ -69,6 +74,7 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
         ConsoleAppender appenderCONSOLE = new ConsoleAppender();
         appenderCONSOLE.setContext(context);
         appenderCONSOLE.setName("CONSOLE");
+        this.tylerAppenderBag.put("CONSOLE", appenderCONSOLE);
 
         // Configure component of type PatternLayoutEncoder
         PatternLayoutEncoder patternLayoutEncoder = new PatternLayoutEncoder();

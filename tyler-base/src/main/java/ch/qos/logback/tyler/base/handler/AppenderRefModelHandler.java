@@ -35,6 +35,9 @@ import ch.qos.logback.core.model.processor.ModelHandlerException;
 import ch.qos.logback.core.model.processor.ModelInterpretationContext;
 import ch.qos.logback.tyler.base.TylerModelInterpretationContext;
 import ch.qos.logback.tyler.base.util.VariableNameUtil;
+import com.squareup.javapoet.MethodSpec;
+
+import static ch.qos.logback.tyler.base.TylerConstants.TYLER_APPENDER_BAG_FIELD_NAME;
 
 public class AppenderRefModelHandler extends ModelHandlerBase {
 
@@ -63,24 +66,34 @@ public class AppenderRefModelHandler extends ModelHandlerBase {
         if(o instanceof String) {
             String loggerName  = (String) o;
             String variableName = VariableNameUtil.loggerNameToVariableName(loggerName);
-            addJavaStatement(tmic, variableName, appenderRefModel.getRef());
+            addJavaStatement(tmic.configureMethodSpecBuilder, variableName, appenderRefModel.getRef());
         } else if(o instanceof ImplicitModelHandlerData) {
             ImplicitModelHandlerData implicitModelHandlerData = (ImplicitModelHandlerData) o;
-            String variableName = implicitModelHandlerData.variableName;
-            addJavaStatement(tmic, variableName, appenderRefModel.getRef());
+             String variableName = implicitModelHandlerData.variableName;
+             addJavaStatementForNestedAppender(implicitModelHandlerData.methodSpecBuilder, variableName, appenderRefModel.getRef());
         } else {
             inError = true;
             addError("Was expecting an object of type AppenderAttachableData");
             return;
         }
 
-
     }
 
-    private void addJavaStatement(TylerModelInterpretationContext tmic, String variableName, String ref) {
+    private void addJavaStatement(MethodSpec.Builder methodSpecBuilder, String variableName, String ref) {
         String appenderVariableName = VariableNameUtil.appenderNameToVariableName(ref);
-        tmic.configureMethodSpecBuilder.addStatement("$N.addAppender($N)", variableName, appenderVariableName);
-
-
+        methodSpecBuilder.addStatement("$N.addAppender($N)", variableName, appenderVariableName);
     }
+
+    private void addJavaStatementForNestedAppender(MethodSpec.Builder methodSpecBuilder, String variableName, String ref) {
+        //String appenderVariableName = VariableNameUtil.appenderNameToVariableName(ref);
+        String nestedAppenderVariableName = "appender";
+        methodSpecBuilder.addStatement("Appender $N = $N.get($N)", nestedAppenderVariableName, TYLER_APPENDER_BAG_FIELD_NAME, ref);
+        methodSpecBuilder.beginControlFlow("if($N == null)", nestedAppenderVariableName);
+        methodSpecBuilder.addStatement("addInfo(\"Could not find appender named '$N'\")", ref);
+        methodSpecBuilder.nextControlFlow("else");
+        methodSpecBuilder.addStatement("$N.addAppender($N)", variableName, nestedAppenderVariableName);
+        methodSpecBuilder.endControlFlow();
+    }
+
+
 }

@@ -34,7 +34,7 @@ import java.util.regex.Pattern;
 
 public class OutputComparator {
 
-    boolean checkForEquality(List<String> witnessList, List<String> subjectList) {
+    public boolean checkForEquality(List<String> witnessList, List<String> subjectList) {
         List<String> cleanWitnessList = clean(witnessList);
         List<String> cleanSubjectList = clean(subjectList);
 

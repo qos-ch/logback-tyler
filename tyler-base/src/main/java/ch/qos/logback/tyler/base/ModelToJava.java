@@ -47,6 +47,7 @@ import ch.qos.logback.core.model.processor.ImportModelHandler;
 import ch.qos.logback.core.util.StatusPrinter2;
 import ch.qos.logback.tyler.base.handler.*;
 import ch.qos.logback.tyler.base.util.StringPrintStream;
+import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeSpec;
@@ -97,6 +98,9 @@ public class ModelToJava {
         tmic.configureMethodSpecBuilder.addStatement("return ExecutionStatus.DO_NOT_INVOKE_NEXT_IF_ANY");
         MethodSpec configureMethodSpec = tmic.configureMethodSpecBuilder.build();
 
+        FieldSpec appenderBagSpec = tmic.createAppenderBagSpec();
+
+        tmic.tylerConfiguratorTSB.fieldSpecs.addFirst(appenderBagSpec);
         tmic.tylerConfiguratorTSB.methodSpecs.addFirst(configureMethodSpec);
 
         for(String methodName: tmic.mapOfMethodSpecBuilders.keySet()) {
@@ -108,6 +112,7 @@ public class ModelToJava {
         TypeSpec tylerConfiguratorTypeSpec = tmic.tylerConfiguratorTSB.build();
 
         JavaFile.Builder javaFileBuilder = JavaFile.builder("com.example", tylerConfiguratorTypeSpec);
+        javaFileBuilder.skipJavaLangImports(true);
 
         tmic.staticImportsList.forEach(sid -> javaFileBuilder.addStaticImport(sid.aClass(), sid.methodName()));
 

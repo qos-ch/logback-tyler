@@ -31,24 +31,17 @@
     import ch.qos.logback.classic.LoggerContext;
     import ch.qos.logback.classic.spi.Configurator;
     import ch.qos.logback.classic.tyler.TylerConfiguratorBase;
+    import ch.qos.logback.core.Appender;
     import ch.qos.logback.core.Context;
     import ch.qos.logback.core.model.processor.ModelInterpretationContext;
     import ch.qos.logback.tyler.base.spi.StaticImportData;
-    import com.squareup.javapoet.FieldSpec;
-    import com.squareup.javapoet.MethodSpec;
-    import com.squareup.javapoet.ParameterSpec;
-    import com.squareup.javapoet.TypeSpec;
+    import com.squareup.javapoet.*;
 
     import javax.lang.model.element.Modifier;
 
     import java.util.*;
 
-    import static ch.qos.logback.tyler.base.TylerConstants.CONFIGURE_METHOD_NAME;
-    import static ch.qos.logback.tyler.base.TylerConstants.CONTEXT_FIELD_NAME;
-    import static ch.qos.logback.tyler.base.TylerConstants.LEVEL_FIELD_NAME;
-    import static ch.qos.logback.tyler.base.TylerConstants.LOGGER_CONTEXT_PARAMETER_NAME;
-    import static ch.qos.logback.tyler.base.TylerConstants.REQUIRED_LOGBACK_VERSION;
-    import static ch.qos.logback.tyler.base.TylerConstants.TYLER_VERSION;
+    import static ch.qos.logback.tyler.base.TylerConstants.*;
 
     public class TylerModelInterpretationContext extends ModelInterpretationContext {
 
@@ -142,5 +135,14 @@
 
         public FieldSpec getContextFieldSpec() {
             return contextFieldSpec;
+        }
+
+        public FieldSpec createAppenderBagSpec() {
+            ParameterizedTypeName mapTypeName = ParameterizedTypeName.get(Map.class, String.class, Appender.class);
+            FieldSpec.Builder fieldSpecBuilder = FieldSpec.builder(mapTypeName, TYLER_APPENDER_BAG_FIELD_NAME).addModifiers(Modifier.PROTECTED, Modifier.FINAL);
+            fieldSpecBuilder.initializer("new $T<>()", HashMap.class);
+            fieldSpecBuilder.addJavadoc("A map used to reference appenders during configuration.");
+
+            return fieldSpecBuilder.build();
         }
     }

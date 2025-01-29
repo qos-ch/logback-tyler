@@ -34,10 +34,13 @@ import java.util.List;
 
 public class FileHelper {
 
+    static public List<String> readFile(Path path) throws IOException {
+        List<String> lines = Files.readAllLines(path);
+        return lines;
+    }
 
     static public List<String> readFile(String pathStr) throws IOException {
         Path path = Path.of(pathStr);
-        List<String> lines = Files.readAllLines(path);
-        return lines;
+        return readFile(path);
     }
 }

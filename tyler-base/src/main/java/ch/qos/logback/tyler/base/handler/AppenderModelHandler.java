@@ -42,6 +42,7 @@ import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.MethodSpec;
 
 import static ch.qos.logback.tyler.base.TylerConstants.SETUP_APPENDER;
+import static ch.qos.logback.tyler.base.TylerConstants.TYLER_APPENDER_BAG_FIELD_NAME;
 
 public class AppenderModelHandler extends ModelHandlerBase {
 
@@ -106,6 +107,8 @@ public class AppenderModelHandler extends ModelHandlerBase {
                 .addStatement("$1T $2N = new $1T()", desiredAppenderCN, appenderVariableName)
                 .addStatement(this.appenderVariableName + ".setContext($N)", tmic.getContextFieldSpec())
                 .addStatement(this.appenderVariableName + ".setName($S)", appenderName);
+
+        appenderSetupMethodSpec.addStatement("this.$N.put($S, $N)", TYLER_APPENDER_BAG_FIELD_NAME, appenderName, this.appenderVariableName);
 
         return appenderSetupMethodSpec;
     }
