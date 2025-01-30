@@ -85,9 +85,9 @@ public class AppenderRefModelHandler extends ModelHandlerBase {
 
     private void addJavaStatementForNestedAppender(MethodSpec.Builder methodSpecBuilder, String variableName, String ref) {
         String nestedAppenderVariableName = VariableNameUtil.appenderNameToVariableName(ref);
-
+        methodSpecBuilder.addComment("WARNING: It is assumed at this stage that the appender named $S was setup earlier.", ref);
         methodSpecBuilder.beginControlFlow("if($N == null)", nestedAppenderVariableName);
-        methodSpecBuilder.addStatement("addInfo(\"Could not find appender named '$N'\")", ref);
+        methodSpecBuilder.addStatement("addError(\"Could not find appender named '$N'\")", ref);
         methodSpecBuilder.nextControlFlow("else");
         methodSpecBuilder.addStatement("$N.addAppender($N)", variableName, nestedAppenderVariableName);
         methodSpecBuilder.endControlFlow();

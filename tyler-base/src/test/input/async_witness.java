@@ -119,8 +119,9 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
         AsyncAppender appender = new AsyncAppender();
         appender.setContext(context);
         appender.setName("ASYNC");
+        // WARNING: It is assumed at this stage that the appender named "FILE" was setup earlier.
         if(appenderFILE == null) {
-            addInfo("Could not find appender named 'FILE'");
+            addError("Could not find appender named 'FILE'");
         } else {
             appender.addAppender(appenderFILE);
         }
