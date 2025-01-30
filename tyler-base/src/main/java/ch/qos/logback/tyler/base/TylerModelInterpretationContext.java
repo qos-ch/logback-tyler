@@ -31,10 +31,10 @@
     import ch.qos.logback.classic.LoggerContext;
     import ch.qos.logback.classic.spi.Configurator;
     import ch.qos.logback.classic.tyler.TylerConfiguratorBase;
-    import ch.qos.logback.core.Appender;
     import ch.qos.logback.core.Context;
     import ch.qos.logback.core.model.processor.ModelInterpretationContext;
     import ch.qos.logback.tyler.base.spi.StaticImportData;
+    import ch.qos.logback.tyler.base.util.VariableNameUtil;
     import com.squareup.javapoet.*;
 
     import javax.lang.model.element.Modifier;
@@ -52,6 +52,8 @@
         final FieldSpec contextFieldSpec = FieldSpec.builder(LoggerContext.class, CONTEXT_FIELD_NAME, Modifier.PRIVATE).build();
         final ParameterSpec contextParameterSpec = ParameterSpec.builder(LoggerContext.class, LOGGER_CONTEXT_PARAMETER_NAME).build();
         final ParameterSpec levelParameterSpec = ParameterSpec.builder(Level.class, LEVEL_FIELD_NAME).build();
+
+        final List<FieldSpec> appenderFieldSpecs = new ArrayList<>();
 
         final List<StaticImportData> staticImportsList = new ArrayList<>();
 
@@ -137,12 +139,25 @@
             return contextFieldSpec;
         }
 
-        public FieldSpec createAppenderBagSpec() {
-            ParameterizedTypeName mapTypeName = ParameterizedTypeName.get(Map.class, String.class, Appender.class);
-            FieldSpec.Builder fieldSpecBuilder = FieldSpec.builder(mapTypeName, TYLER_APPENDER_BAG_FIELD_NAME).addModifiers(Modifier.PROTECTED, Modifier.FINAL);
-            fieldSpecBuilder.initializer("new $T<>()", HashMap.class);
-            fieldSpecBuilder.addJavadoc("A map used to reference appenders during configuration.");
+//        Shows how to build fields with generic types
+//
+//        public FieldSpec createAppenderBagSpec() {
+//            ParameterizedTypeName mapTypeName = ParameterizedTypeName.get(Map.class, String.class, Appender.class);
+//            FieldSpec.Builder fieldSpecBuilder = FieldSpec.builder(mapTypeName, TYLER_APPENDER_BAG_FIELD_NAME).addModifiers(Modifier.PROTECTED, Modifier.FINAL);
+//            fieldSpecBuilder.initializer("new $T<>()", HashMap.class);
+//            fieldSpecBuilder.addJavadoc("A map used to reference appenders during configuration.");
+//
+//            return fieldSpecBuilder.build();
+//        }
 
+        public FieldSpec createAppenderFieldSpec(ClassName desiredAppenderCN, String appenderName) {
+            String appenderVariableName = VariableNameUtil.appenderNameToVariableName(appenderName);
+            FieldSpec.Builder fieldSpecBuilder = FieldSpec.builder(desiredAppenderCN, appenderVariableName).addModifiers(Modifier.PROTECTED);
+            fieldSpecBuilder.addJavadoc("Appender variable referencing the appender named $S.", appenderName);
             return fieldSpecBuilder.build();
+        }
+
+        public Collection<FieldSpec> getAppenderFieldSpecs() {
+            return appenderFieldSpecs;
         }
     }

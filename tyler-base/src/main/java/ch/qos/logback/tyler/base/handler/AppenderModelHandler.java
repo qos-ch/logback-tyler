@@ -39,14 +39,14 @@ import ch.qos.logback.tyler.base.TylerModelInterpretationContext;
 import ch.qos.logback.tyler.base.util.ClassUtil;
 import ch.qos.logback.tyler.base.util.VariableNameUtil;
 import com.squareup.javapoet.ClassName;
+import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.MethodSpec;
 
-import static ch.qos.logback.tyler.base.TylerConstants.SETUP_APPENDER;
-import static ch.qos.logback.tyler.base.TylerConstants.TYLER_APPENDER_BAG_FIELD_NAME;
+import static ch.qos.logback.tyler.base.TylerConstants.*;
 
 public class AppenderModelHandler extends ModelHandlerBase {
 
-    String appenderVariableName;
+    //String appenderVariableName;
 
     ImplicitModelHandlerData implicitModelHandlerData;
 
@@ -74,13 +74,11 @@ public class AppenderModelHandler extends ModelHandlerBase {
 
         String originalClassName = appenderModel.getClassName();
         String className = mic.getImport(originalClassName);
-        this.appenderVariableName = VariableNameUtil.appenderNameToVariableName(appenderName);
+
         MethodSpec.Builder methodSpec = addJavaStatementForAppenderInitialization(tmic, appenderName, className);
         try {
             Class appenderClass = Class.forName(className);
-            implicitModelHandlerData = new ImplicitModelHandlerData(appenderClass, appenderVariableName,
-                    methodSpec);
-
+            implicitModelHandlerData = new ImplicitModelHandlerData(appenderClass, LOCAL_APPENDER_FIELD_NAME, methodSpec);
 
             mic.pushObject(implicitModelHandlerData);
         } catch (ClassNotFoundException e) {
@@ -90,25 +88,25 @@ public class AppenderModelHandler extends ModelHandlerBase {
 
     }
 
-    MethodSpec.Builder addJavaStatementForAppenderInitialization(TylerModelInterpretationContext tmic,
-            String appenderName, String fullyQualifiedAppenderClassName) {
+    MethodSpec.Builder addJavaStatementForAppenderInitialization(TylerModelInterpretationContext tmic, String appenderName,
+                    String fullyQualifiedAppenderClassName) {
 
         ClassName desiredAppenderCN = ClassName.get(ClassUtil.extractPackageName(fullyQualifiedAppenderClassName),
-                ClassUtil.extractSimpleClassName(fullyQualifiedAppenderClassName));
+                        ClassUtil.extractSimpleClassName(fullyQualifiedAppenderClassName));
 
         String fistLetterCapitalizedAppenderName = StringUtil.capitalizeFirstLetter(appenderName);
 
         String methodName = SETUP_APPENDER + fistLetterCapitalizedAppenderName;
+        String appenderVariableName = VariableNameUtil.appenderNameToVariableName(appenderName);
+        FieldSpec fieldSpec = tmic.createAppenderFieldSpec(desiredAppenderCN, appenderName);
+        tmic.getAppenderFieldSpecs().add(fieldSpec);
 
-        tmic.configureMethodSpecBuilder.addStatement("$T $N = $N()", Appender.class, appenderVariableName,
-                methodName);
+        tmic.configureMethodSpecBuilder.addStatement("this.$N = $N()", appenderVariableName, methodName);
 
-        MethodSpec.Builder appenderSetupMethodSpec = MethodSpec.methodBuilder(methodName).returns(Appender.class)
-                .addStatement("$1T $2N = new $1T()", desiredAppenderCN, appenderVariableName)
-                .addStatement(this.appenderVariableName + ".setContext($N)", tmic.getContextFieldSpec())
-                .addStatement(this.appenderVariableName + ".setName($S)", appenderName);
-
-        appenderSetupMethodSpec.addStatement("this.$N.put($S, $N)", TYLER_APPENDER_BAG_FIELD_NAME, appenderName, this.appenderVariableName);
+        MethodSpec.Builder appenderSetupMethodSpec = MethodSpec.methodBuilder(methodName).returns(desiredAppenderCN)
+                        .addStatement("$1T $2N = new $1T()", desiredAppenderCN, LOCAL_APPENDER_FIELD_NAME)
+                        .addStatement("$N.setContext($N)", LOCAL_APPENDER_FIELD_NAME, tmic.getContextFieldSpec())
+                        .addStatement("$N.setName($S)", LOCAL_APPENDER_FIELD_NAME, appenderName);
 
         return appenderSetupMethodSpec;
     }
@@ -130,12 +128,11 @@ public class AppenderModelHandler extends ModelHandlerBase {
 
             // start the appender
             appenderMethodBuilder.addCode("\n");
-            appenderMethodBuilder.addStatement("$N.start()", appenderVariableName);
-            appenderMethodBuilder.addStatement("return $N", appenderVariableName);
+            appenderMethodBuilder.addStatement("$N.start()", LOCAL_APPENDER_FIELD_NAME);
+            appenderMethodBuilder.addStatement("return $N", LOCAL_APPENDER_FIELD_NAME);
             MethodSpec appenderMethodSpec = appenderMethodBuilder.build();
 
             tmic.tylerConfiguratorTSB.addMethod(appenderMethodSpec);
-
 
         }
 

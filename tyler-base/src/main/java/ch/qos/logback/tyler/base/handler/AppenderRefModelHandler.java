@@ -37,7 +37,6 @@ import ch.qos.logback.tyler.base.TylerModelInterpretationContext;
 import ch.qos.logback.tyler.base.util.VariableNameUtil;
 import com.squareup.javapoet.MethodSpec;
 
-import static ch.qos.logback.tyler.base.TylerConstants.TYLER_APPENDER_BAG_FIELD_NAME;
 
 public class AppenderRefModelHandler extends ModelHandlerBase {
 
@@ -85,9 +84,8 @@ public class AppenderRefModelHandler extends ModelHandlerBase {
     }
 
     private void addJavaStatementForNestedAppender(MethodSpec.Builder methodSpecBuilder, String variableName, String ref) {
-        //String appenderVariableName = VariableNameUtil.appenderNameToVariableName(ref);
-        String nestedAppenderVariableName = "appender";
-        methodSpecBuilder.addStatement("Appender $N = $N.get($N)", nestedAppenderVariableName, TYLER_APPENDER_BAG_FIELD_NAME, ref);
+        String nestedAppenderVariableName = VariableNameUtil.appenderNameToVariableName(ref);
+
         methodSpecBuilder.beginControlFlow("if($N == null)", nestedAppenderVariableName);
         methodSpecBuilder.addStatement("addInfo(\"Could not find appender named '$N'\")", ref);
         methodSpecBuilder.nextControlFlow("else");

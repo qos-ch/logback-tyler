@@ -5,13 +5,9 @@ import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.classic.spi.Configurator;
 import ch.qos.logback.classic.tyler.TylerConfiguratorBase;
-import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.ConsoleAppender;
 import ch.qos.logback.core.model.InsertFromJNDIModel;
 import ch.qos.logback.core.model.processor.InsertFromJNDIModelHandler;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  *
@@ -49,10 +45,9 @@ import java.util.Map;
  */
 public class TylerConfigurator extends TylerConfiguratorBase implements Configurator {
     /**
-     * A map used to reference appenders during configuration.
+     * Appender variable referencing the appender named "CONSOLE".
      */
-    protected final Map<String, Appender> tylerAppenderBag = new HashMap<>();
-
+    protected ConsoleAppender appenderCONSOLE;
     /**
      * <p>This method performs configuration per {@link Configurator} interface.</p>
      *
@@ -64,29 +59,28 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
         setContext(loggerContext);
         insertFromJNDIAs_appName("appName", "java:comp/env/appName", null);
         setContextName(subst("${appName}"));
-        Appender appenderCONSOLE = setupAppenderCONSOLE();
+        this.appenderCONSOLE = setupAppenderCONSOLE();
         Logger logger_ROOT = setupLogger("ROOT", "DEBUG", null);
         logger_ROOT.addAppender(appenderCONSOLE);
         return ExecutionStatus.DO_NOT_INVOKE_NEXT_IF_ANY;
     }
 
-    Appender setupAppenderCONSOLE() {
-        ConsoleAppender appenderCONSOLE = new ConsoleAppender();
-        appenderCONSOLE.setContext(context);
-        appenderCONSOLE.setName("CONSOLE");
-        this.tylerAppenderBag.put("CONSOLE", appenderCONSOLE);
+    ConsoleAppender setupAppenderCONSOLE() {
+        ConsoleAppender appender = new ConsoleAppender();
+        appender.setContext(context);
+        appender.setName("CONSOLE");
 
         // Configure component of type PatternLayoutEncoder
         PatternLayoutEncoder patternLayoutEncoder = new PatternLayoutEncoder();
         patternLayoutEncoder.setContext(context);
         patternLayoutEncoder.setPattern(subst("%d ${CONTEXT_NAME} %level -%kvp- %msg %logger{50}%n"));
-        patternLayoutEncoder.setParent(appenderCONSOLE);
+        patternLayoutEncoder.setParent(appender);
         patternLayoutEncoder.start();
         // Inject component of type PatternLayoutEncoder into parent
-        appenderCONSOLE.setEncoder(patternLayoutEncoder);
+        appender.setEncoder(patternLayoutEncoder);
 
-        appenderCONSOLE.start();
-        return appenderCONSOLE;
+        appender.start();
+        return appender;
     }
 
     private void insertFromJNDIAs_appName(String asStr, String envEntryStr, String scopeStr) {

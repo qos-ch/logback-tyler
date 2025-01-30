@@ -5,14 +5,12 @@ import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.PatternLayout;
 import ch.qos.logback.classic.spi.Configurator;
 import ch.qos.logback.classic.tyler.TylerConfiguratorBase;
-import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.model.IncludeModel;
 import ch.qos.logback.core.model.Model;
 import ch.qos.logback.core.model.processor.IncludeModelHandler;
 import ch.qos.logback.core.model.processor.ModelHandlerException;
 import ch.qos.logback.core.testUtil.StringListAppender;
-import java.util.HashMap;
-import java.util.Map;
+
 
 /**
  *
@@ -61,9 +59,9 @@ import java.util.Map;
  */
 public class TylerConfigurator extends TylerConfiguratorBase implements Configurator {
     /**
-     * A map used to reference appenders during configuration.
+     * Appender variable referencing the appender named "LIST".
      */
-    protected final Map<String, Appender> tylerAppenderBag = new HashMap<>();
+    protected StringListAppender appenderLIST;
 
     /**
      * <p>This method performs configuration per {@link Configurator} interface.</p>
@@ -74,7 +72,7 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
     @Override
     public Configurator.ExecutionStatus configure(LoggerContext loggerContext) {
         setContext(loggerContext);
-        Appender appenderLIST = setupAppenderLIST();
+        this.appenderLIST = setupAppenderLIST();
         propertyModelHandlerHelper.handlePropertyModel(this, "JO_PREFIX", "src/test/input/joran", "", "", "");
         include("${JO_PREFIX}/included.xml", null, null, null);
         Logger logger_ROOT = setupLogger("ROOT", "debug", null);
@@ -82,11 +80,10 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
         return ExecutionStatus.DO_NOT_INVOKE_NEXT_IF_ANY;
     }
 
-    Appender setupAppenderLIST() {
-        StringListAppender appenderLIST = new StringListAppender();
-        appenderLIST.setContext(context);
-        appenderLIST.setName("LIST");
-        this.tylerAppenderBag.put("LIST", appenderLIST);
+    StringListAppender setupAppenderLIST() {
+        StringListAppender appender = new StringListAppender();
+        appender.setContext(context);
+        appender.setName("LIST");
 
         // Configure component of type PatternLayout
         PatternLayout patternLayout = new PatternLayout();
@@ -95,10 +92,10 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
         // ===========no parent setter
         patternLayout.start();
         // Inject component of type PatternLayout into parent
-        appenderLIST.setLayout(patternLayout);
+        appender.setLayout(patternLayout);
 
-        appenderLIST.start();
-        return appenderLIST;
+        appender.start();
+        return appender;
     }
 
     private void include(String fileStr, String urlStr, String resourceStr, String optionalStr) {

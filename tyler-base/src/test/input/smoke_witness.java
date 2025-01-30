@@ -5,13 +5,10 @@ import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.classic.spi.Configurator;
 import ch.qos.logback.classic.tyler.TylerConfiguratorBase;
-import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.rolling.RollingFileAppender;
 import ch.qos.logback.core.rolling.TimeBasedRollingPolicy;
 import ch.qos.logback.core.spi.LifeCycle;
 import ch.qos.logback.core.status.OnConsoleStatusListener;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  *
@@ -43,9 +40,9 @@ import java.util.Map;
  */
 public class TylerConfigurator extends TylerConfiguratorBase implements Configurator {
   /**
-   * A map used to reference appenders during configuration.
+   * Appender variable referencing the appender named "appenderRFILE".
    */
-  protected final Map<String, Appender> tylerAppenderBag = new HashMap<>();
+  protected RollingFileAppender appenderRFILE;
 
   /**
    * <p>This method performs configuration per {@link Configurator} interface.</p>
@@ -59,7 +56,7 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
     setupOnConsoleStatusListener();
     propertyModelHandlerHelper.handlePropertyModel(this, "USER_HOME", "/home/alice", "", "", "");
     setContextName(subst("${APPNAME}"));
-    Appender appenderRFILE = setupAppenderRFILE();
+    this.appenderRFILE = setupAppenderRFILE();
     Logger logger_com_foo_Bar = setupLogger("com.foo.Bar", "DEBUG", null);
     Logger logger_ROOT = setupLogger("ROOT", "DEBUG", null);
     logger_ROOT.addAppender(appenderRFILE);
@@ -77,12 +74,11 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
     }
   }
 
-  Appender setupAppenderRFILE() {
-    RollingFileAppender appenderRFILE = new RollingFileAppender();
-    appenderRFILE.setContext(context);
-    appenderRFILE.setName("RFILE");
-    this.tylerAppenderBag.put("RFILE", appenderRFILE);
-    appenderRFILE.setFile(subst("${USER_HOME}/logFile.log"));
+  RollingFileAppender setupAppenderRFILE() {
+    RollingFileAppender appender = new RollingFileAppender();
+    appender.setContext(context);
+    appender.setName("RFILE");
+    appender.setFile(subst("${USER_HOME}/logFile.log"));
 
     // Configure component of type TimeBasedRollingPolicy
     TimeBasedRollingPolicy timeBasedRollingPolicy = new TimeBasedRollingPolicy();
@@ -90,24 +86,24 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
     timeBasedRollingPolicy.setFileNamePattern("logFile.%d{yyyy-MM-dd}.log");
     timeBasedRollingPolicy.setMaxHistory(30);
     timeBasedRollingPolicy.setTotalSizeCap(ch.qos.logback.core.util.FileSize.valueOf("3GB"));
-    timeBasedRollingPolicy.setParent(appenderRFILE);
+    timeBasedRollingPolicy.setParent(appender);
     timeBasedRollingPolicy.start();
 
     // Inject component of type TimeBasedRollingPolicy into parent
-    appenderRFILE.setRollingPolicy(timeBasedRollingPolicy);
+    appender.setRollingPolicy(timeBasedRollingPolicy);
 
     // Configure component of type PatternLayoutEncoder
     PatternLayoutEncoder patternLayoutEncoder = new PatternLayoutEncoder();
     patternLayoutEncoder.setContext(context);
     patternLayoutEncoder.setPattern("%-4relative [%thread] %-5level %logger{35} -%kvp- %msg%n");
-    patternLayoutEncoder.setParent(appenderRFILE);
+    patternLayoutEncoder.setParent(appender);
     patternLayoutEncoder.start();
 
     // Inject component of type PatternLayoutEncoder into parent
-    appenderRFILE.setEncoder(patternLayoutEncoder);
+    appender.setEncoder(patternLayoutEncoder);
 
-    appenderRFILE.start();
-    return appenderRFILE;
+    appender.start();
+    return appender;
   }
 }
 // 21:32:27,561 |-INFO in ch.qos.logback.core.model.processor.DefaultProcessor@5f20155b - End of configuration.

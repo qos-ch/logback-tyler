@@ -52,11 +52,12 @@ public class TylerConstants {
     public static final String LOGGER_NAME_FIELD_NAME = "loggerName";
     public static final String ADDITIVITY_FIELD_NAME = "additivity";
     public static final String CONFIGURE_METHOD_NAME = "configure";
-    public static final String TYLER_APPENDER_BAG_FIELD_NAME = "tylerAppenderBag";
 
     public static final String SETUP_APPENDER = "setupAppender";
     public static final String SETUP = "setup";
     public static final String ADD_ON_CONSOLE_STATUS_LISTENER = "addOnConsoleStatusListener";
+
+    public static final String LOCAL_APPENDER_FIELD_NAME = "appender";
 
 
 

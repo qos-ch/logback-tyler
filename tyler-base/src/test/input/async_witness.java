@@ -33,10 +33,8 @@ import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.classic.spi.Configurator;
 import ch.qos.logback.classic.tyler.TylerConfiguratorBase;
-import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.FileAppender;
-import java.util.HashMap;
-import java.util.Map;
+
 
 /**
  *
@@ -71,9 +69,15 @@ import java.util.Map;
  */
 public class TylerConfigurator extends TylerConfiguratorBase implements Configurator {
     /**
-     * A map used to reference appenders during configuration.
+     * Appender variable referencing the appender named "ASYNC".
      */
-    protected final Map<String, Appender> tylerAppenderBag = new HashMap<>();
+    protected AsyncAppender appenderASYNC;
+
+    /**
+     * Appender variable referencing the appender named "FILE".
+     */
+    protected FileAppender appenderFILE;
+
 
     /**
      * <p>This method performs configuration per {@link Configurator} interface.</p>
@@ -84,48 +88,45 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
     @Override
     public Configurator.ExecutionStatus configure(LoggerContext loggerContext) {
         setContext(loggerContext);
-        Appender appenderFILE = setupAppenderFILE();
-        Appender appenderASYNC = setupAppenderASYNC();
+        this.appenderFILE = setupAppenderFILE();
+        this.appenderASYNC = setupAppenderASYNC();
         Logger logger_ROOT = setupLogger("ROOT", "DEBUG", null);
         logger_ROOT.addAppender(appenderASYNC);
         return ExecutionStatus.DO_NOT_INVOKE_NEXT_IF_ANY;
     }
 
-    Appender setupAppenderFILE() {
-        FileAppender appenderFILE = new FileAppender();
-        appenderFILE.setContext(context);
-        appenderFILE.setName("FILE");
-        this.tylerAppenderBag.put("FILE", appenderFILE);
-        appenderFILE.setFile("myapp.log");
+    FileAppender setupAppenderFILE() {
+        FileAppender appender = new FileAppender();
+        appender.setContext(context);
+        appender.setName("FILE");
+        appender.setFile("myapp.log");
 
         // Configure component of type PatternLayoutEncoder
         PatternLayoutEncoder patternLayoutEncoder = new PatternLayoutEncoder();
         patternLayoutEncoder.setContext(context);
         patternLayoutEncoder.setPattern("%logger{35} -%kvp -%msg%n");
-        patternLayoutEncoder.setParent(appenderFILE);
+        patternLayoutEncoder.setParent(appender);
         patternLayoutEncoder.start();
 
         // Inject component of type PatternLayoutEncoder into parent
-        appenderFILE.setEncoder(patternLayoutEncoder);
+        appender.setEncoder(patternLayoutEncoder);
 
-        appenderFILE.start();
-        return appenderFILE;
+        appender.start();
+        return appender;
     }
 
-    Appender setupAppenderASYNC() {
-        AsyncAppender appenderASYNC = new AsyncAppender();
-        appenderASYNC.setContext(context);
-        appenderASYNC.setName("ASYNC");
-        this.tylerAppenderBag.put("ASYNC", appenderASYNC);
-        Appender appender = tylerAppenderBag.get(FILE);
-        if(appender == null) {
+    AsyncAppender setupAppenderASYNC() {
+        AsyncAppender appender = new AsyncAppender();
+        appender.setContext(context);
+        appender.setName("ASYNC");
+        if(appenderFILE == null) {
             addInfo("Could not find appender named 'FILE'");
         } else {
-            appenderASYNC.addAppender(appender);
+            appender.addAppender(appenderFILE);
         }
 
-        appenderASYNC.start();
-        return appenderASYNC;
+        appender.start();
+        return appender;
     }
 }
 // 15:28:18,264 |-INFO in ch.qos.logback.core.model.processor.DefaultProcessor@2415fc55 - End of configuration.
