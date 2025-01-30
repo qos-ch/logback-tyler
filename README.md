@@ -33,7 +33,7 @@ Logback-tyler is located at the following Maven coordinates:
 ```xml
  <groupId>ch.qos.logback.tyler</groupId>
  <artifactId>tyler-base</artifactId>
- <version>0.9</version>
+ <version>1.0.2</version>
 ```
 
 Here is a sample program to translate a logback.xml as string into Java.
