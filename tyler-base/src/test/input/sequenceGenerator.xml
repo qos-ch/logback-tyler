@@ -1,24 +1,18 @@
 <configuration>
     <import class="ch.qos.logback.core.spi.BasicSequenceNumberGenerator"/>
-    <import class="ch.qos.logback.classic.encoder.PatternLayoutEncoder"/>
-    <import class="ch.qos.logback.core.rolling.RollingFileAppender"/>
-    <import class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy"/>
+    <import class="ch.qos.logback.core.testUtil.StringListAppender"/>
+    <import class="ch.qos.logback.classic.PatternLayout"/>
 
     <sequenceNumberGenerator class="BasicSequenceNumberGenerator"/>
 
-    <appender name="RFILE" class="RollingFileAppender">
-        <file>/tmp/logFile.log</file>
-        <rollingPolicy class="TimeBasedRollingPolicy">
-            <fileNamePattern>logFile.%d{yyyy-MM-dd}.log</fileNamePattern>
-            <maxHistory>30</maxHistory>
-            <totalSizeCap>3GB</totalSizeCap>
-        </rollingPolicy>
-        <encoder class="PatternLayoutEncoder">
-            <pattern>%-4relative [%thread] %-5level %logger{35} -%kvp- %msg%n</pattern>
-        </encoder>
+    <appender name="LIST" class="StringListAppender">
+        <layout class="PatternLayout">
+            <Pattern>%msg</Pattern>
+        </layout>
     </appender>
 
+
     <root level="DEBUG">
-        <appender-ref ref="RFILE"/>
+        <appender-ref ref="LIST"/>
     </root>
 </configuration>

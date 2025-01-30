@@ -1,5 +1,7 @@
 package ch.qos.logback.tyler.base.compiler;
 
+import ch.qos.logback.core.util.EnvUtil;
+
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.Charset;
@@ -18,8 +20,11 @@ public class CompilationVerifier {
     static {
         String systemClasspath = System.getProperty("java.class.path");
         String modulePath = System.getProperty("jdk.module.path");
+
+        char separatorChar = EnvUtil.isWindows() ? ';' : ':';
+
         if (modulePath != null && !modulePath.isBlank()) {
-            systemClasspath += ":" + modulePath;
+            systemClasspath += separatorChar + modulePath;
         }
         classpath = systemClasspath;
     }
