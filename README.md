@@ -21,7 +21,7 @@ binaries, it is harder to modify and offers an even smaller attack
 surface.
 
 At runtime, `TylerConfigurator` does not have any additional
-dependencies other than logback-classic version 1.5.10. 
+dependencies other than logback-classic version 1.5.11. 
 
 ## Online instance
 A instance of logback-tyler translator is available [**online**](https://logback.qos.ch/translator/services/xml2Java.html). 
