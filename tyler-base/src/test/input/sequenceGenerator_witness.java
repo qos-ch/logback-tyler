@@ -2,11 +2,13 @@ package com.example;
 
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.classic.spi.Configurator;
 import ch.qos.logback.classic.tyler.TylerConfiguratorBase;
+import ch.qos.logback.core.rolling.RollingFileAppender;
+import ch.qos.logback.core.rolling.TimeBasedRollingPolicy;
 import ch.qos.logback.core.spi.BasicSequenceNumberGenerator;
 import ch.qos.logback.core.spi.LifeCycle;
-
 
 /**
  *
@@ -38,6 +40,11 @@ import ch.qos.logback.core.spi.LifeCycle;
  */
 public class TylerConfigurator extends TylerConfiguratorBase implements Configurator {
     /**
+     * Appender variable referencing the appender named "appenderRFILE".
+     */
+    protected RollingFileAppender appenderRFILE;
+
+    /**
      * <p>This method performs configuration per {@link Configurator} interface.</p>
      *
      * <p>If <code>TylerConfgiurator</code> is installed as a configurator service, this
@@ -47,6 +54,7 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
     public Configurator.ExecutionStatus configure(LoggerContext loggerContext) {
         setContext(loggerContext);
         setupBasicSequenceNumberGenerator();
+        this.appenderRFILE = setupAppenderRFILE();
         Logger logger_ROOT = setupLogger("ROOT", "DEBUG", null);
         logger_ROOT.addAppender(appenderRFILE);
         return ExecutionStatus.DO_NOT_INVOKE_NEXT_IF_ANY;
@@ -59,6 +67,38 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
         if(basicSequenceNumberGenerator instanceof LifeCycle) {
             ((LifeCycle)basicSequenceNumberGenerator).start();
         }
+    }
+
+    RollingFileAppender setupAppenderRFILE() {
+        RollingFileAppender appender = new RollingFileAppender();
+        appender.setContext(context);
+        appender.setName("RFILE");
+        appender.setFile("/tmp/logFile.log");
+
+        // Configure component of type TimeBasedRollingPolicy
+        TimeBasedRollingPolicy timeBasedRollingPolicy = new TimeBasedRollingPolicy();
+        timeBasedRollingPolicy.setContext(context);
+        timeBasedRollingPolicy.setFileNamePattern("logFile.%d{yyyy-MM-dd}.log");
+        timeBasedRollingPolicy.setMaxHistory(30);
+        timeBasedRollingPolicy.setTotalSizeCap(ch.qos.logback.core.util.FileSize.valueOf("3GB"));
+        timeBasedRollingPolicy.setParent(appender);
+        timeBasedRollingPolicy.start();
+
+        // Inject component of type TimeBasedRollingPolicy into parent
+        appender.setRollingPolicy(timeBasedRollingPolicy);
+
+        // Configure component of type PatternLayoutEncoder
+        PatternLayoutEncoder patternLayoutEncoder = new PatternLayoutEncoder();
+        patternLayoutEncoder.setContext(context);
+        patternLayoutEncoder.setPattern("%-4relative [%thread] %-5level %logger{35} -%kvp- %msg%n");
+        patternLayoutEncoder.setParent(appender);
+        patternLayoutEncoder.start();
+
+        // Inject component of type PatternLayoutEncoder into parent
+        appender.setEncoder(patternLayoutEncoder);
+
+        appender.start();
+        return appender;
     }
 }
 // 11:42:18,534 |-INFO in ch.qos.logback.tyler.base.handler.SequenceNumberGeneratorModelHandler - About to configure SequenceNumberGenerator of type [ch.qos.logback.core.spi.BasicSequenceNumberGenerator]
