@@ -32,6 +32,8 @@ import ch.qos.logback.core.joran.spi.JoranException;
 import ch.qos.logback.core.model.Model;
 import ch.qos.logback.tyler.base.antlr4.SyntaxVerifier;
 import ch.qos.logback.tyler.base.antlr4.TylerAntlr4ErrorListener;
+import ch.qos.logback.tyler.base.compiler.CompilationVerifier;
+import ch.qos.logback.tyler.base.compiler.CompilerVerificationResult;
 import ch.qos.logback.tyler.base.helper.FileHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -48,6 +50,7 @@ public class TylerRegressionTest {
 
     ContextBase context = new ContextBase();
     SyntaxVerifier syntaxVerifier = new SyntaxVerifier();
+    CompilationVerifier compilationVerifier = new CompilationVerifier();
     ModelToJava m2j = new ModelToJava(context);
     OutputComparator outputComparator = new OutputComparator();
 
@@ -127,10 +130,8 @@ public class TylerRegressionTest {
     void verify(String path2XMLFile, String path2WitnessFile, boolean dumpResult) throws JoranException, IOException {
         List<String> lines = FileHelper.readFile(path2XMLFile);
         List<String> witnessLines = FileHelper.readFile(path2WitnessFile);
-        StringBuffer buf = new StringBuffer();
-        lines.forEach(l -> buf.append(l).append("\n"));
 
-        Model model = m2j.extractModel(buf.toString());
+        Model model = m2j.extractModel(String.join("\n", lines));
         String result = m2j.toJava(model);
         String[] resultArray = result.split("\n");
         List<String> resultList = new ArrayList<>(List.of(resultArray));
@@ -145,6 +146,9 @@ public class TylerRegressionTest {
 
         TylerAntlr4ErrorListener errorListener = syntaxVerifier.verify(result);
         assertEquals(0, errorListener.getSyntaxErrorCount(), errorListener.getErrorMessages().toString());
+
+        CompilerVerificationResult compilationResult = compilationVerifier.verify("com.example.TylerConfigurator", String.join("\n", witnessLines));
+        assertTrue(compilationResult.successfullyCompiled(), () -> "Compilation verification failed:\n" + compilationResult.diagnosticsMessages());
     }
 
 }

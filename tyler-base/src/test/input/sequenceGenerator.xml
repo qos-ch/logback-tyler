@@ -1,8 +1,18 @@
 <configuration>
     <import class="ch.qos.logback.core.spi.BasicSequenceNumberGenerator"/>
+    <import class="ch.qos.logback.core.testUtil.StringListAppender"/>
+    <import class="ch.qos.logback.classic.PatternLayout"/>
+
     <sequenceNumberGenerator class="BasicSequenceNumberGenerator"/>
 
+    <appender name="LIST" class="StringListAppender">
+        <layout class="PatternLayout">
+            <Pattern>%msg</Pattern>
+        </layout>
+    </appender>
+
+
     <root level="DEBUG">
-        <appender-ref ref="RFILE"/>
+        <appender-ref ref="LIST"/>
     </root>
 </configuration>
