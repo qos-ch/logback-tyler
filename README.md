@@ -2,16 +2,20 @@
 
 Logback-tyler translates logback-classic XML configuration files into Java.
 
-The resulting java class named `TylerConfigurator` implements the
+The resulting java class, namely `TylerConfigurator`, can be used to
+configure logback.  It implements the
 [`Configurator`](https://logback.qos.ch/xref/ch/qos/logback/classic/spi/Configurator.html)
 interface. It can thus be declared as a custom configuration provider
 using Java's standard
 [service-provider](https://docs.oracle.com/javase/6/docs/api/java/util/ServiceLoader.html)
-meachanism. Custom configurators are searched by looking up a provider-configuration file
-resource located under the
+meachanism.
+
+Custom configurators are searched by looking up a
+provider-configuration file resource located under the
 _META-INF/services/ch.qos.logback.classic.spi.Configurator_ file in
-your project. This provider-configuration should contain a line with the fully
-qualified class name of your desired configurator.
+your project. This provider-configuration should contain a line with
+the fully qualified class name of your desired configurator, e.g
+`TylerConfigurator`.
 
 Running `TylerConfigurator` does not require XML parsers and usually
 executes noticeably faster than `JoranConfigurator`, logback's XML
