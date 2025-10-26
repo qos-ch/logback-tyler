@@ -46,16 +46,22 @@ import static ch.qos.logback.tyler.base.TylerConstants.SETUP;
 public class StatusListenerModelHandler extends ModelHandlerBase {
 
     static final String EFFECTIVELY_ADDED_VARIABLE_NAME = "effectivelyAdded";
-
+    static int COUNT = 0;
+    final int instanceCount;
     boolean inError = false;
     ImplicitModelHandlerData implicitModelHandlerData;
 
     public StatusListenerModelHandler(Context context) {
         super(context);
+        instanceCount = COUNT++;
     }
 
     static public ModelHandlerBase makeInstance(Context context, ModelInterpretationContext mic) {
         return new StatusListenerModelHandler(context);
+    }
+
+    public static void resetCount() {
+        COUNT = 0;
     }
 
     @Override
@@ -97,7 +103,7 @@ public class StatusListenerModelHandler extends ModelHandlerBase {
         String variableName = VariableNameUtil.fullyQualifiedClassNameToVariableName(statusListenerFQCN);
 
         MethodSpec.Builder statusListenerSetupMethodSpec = MethodSpec.methodBuilder(
-                        SETUP + simpleName).returns(void.class)
+                        SETUP + simpleName + "_" +instanceCount).returns(void.class)
                 .addStatement("$1T $2N = new $1T()", desiredStatusListenerCN, variableName)
                 .addStatement("$N.setContext($N)", variableName, tmic.getContextFieldSpec())
                 .addStatement("boolean $N = $N.getStatusManager().add($N)", EFFECTIVELY_ADDED_VARIABLE_NAME,

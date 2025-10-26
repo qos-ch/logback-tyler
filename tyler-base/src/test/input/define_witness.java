@@ -75,12 +75,12 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
     @Override
     public Configurator.ExecutionStatus configure(LoggerContext loggerContext) {
         setContext(loggerContext);
-        setupShapePropertyDefiner();
+        setupShapePropertyDefiner_0();
         Logger logger_ROOT = setupLogger("ROOT", subst("${rootLevel}"), null);
         return ExecutionStatus.DO_NOT_INVOKE_NEXT_IF_ANY;
     }
 
-    void setupShapePropertyDefiner() {
+    void setupShapePropertyDefiner_0() {
         ShapePropertyDefiner shapePropertyDefiner = new ShapePropertyDefiner();
         shapePropertyDefiner.setContext(context);
         ActionUtil.Scope scope  = ActionUtil.stringToScope(null);

@@ -34,14 +34,22 @@ import ch.qos.logback.core.spi.SequenceNumberGenerator;
 
 public class SequenceNumberGeneratorModelHandler extends ComponentModelHandler {
 
+    static int COUNT;
+
 
     public SequenceNumberGeneratorModelHandler(Context context) {
         super(context);
+        instanceNum = COUNT++;
     }
 
     @Override
     String getTargetType() {
         return SequenceNumberGenerator.class.getSimpleName();
+    }
+
+    @Override
+    protected int getInstanceNumber() {
+        return 0;
     }
 
     static public ModelHandlerBase makeInstance(Context context, ModelInterpretationContext mic) {

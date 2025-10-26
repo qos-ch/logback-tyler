@@ -48,8 +48,15 @@ public abstract class ComponentModelHandler extends ModelHandlerBase {
     private boolean inError;
     ImplicitModelHandlerData implicitModelHandlerData;
 
+
+    protected int instanceNum;
+
     public ComponentModelHandler(Context context) {
         super(context);
+    }
+
+    protected int getInstanceNumber() {
+        return instanceNum;
     }
 
     abstract String getTargetType();
@@ -70,7 +77,7 @@ public abstract class ComponentModelHandler extends ModelHandlerBase {
         }
 
         addInfo("About to configure " + getTargetType() + " of type [" + componentClassName + "]");
-        MethodSpec.Builder methodSpec = addJavaStatement(tmic, componentClassName);
+        MethodSpec.Builder methodSpec = addJavaStatement(tmic, componentModel, componentClassName);
         addAdditionalJavaStatement(methodSpec, componentModel);
         this.implicitModelHandlerData = ImplicitModelHandlerData.makeInstance(this, methodSpec, componentClassName);
         if(implicitModelHandlerData != null) {
@@ -87,22 +94,29 @@ public abstract class ComponentModelHandler extends ModelHandlerBase {
     }
 
     MethodSpec.Builder addJavaStatement(TylerModelInterpretationContext tmic,
-            String componentClassName) {
+                                        ComponentModel componentModel, String componentClassName) {
 
 
         String simpleName = ClassUtil.extractSimpleClassName(componentClassName);
+
 
         ClassName desiredComponentCN = ClassName.get(ClassUtil.extractPackageName(componentClassName),
                 simpleName);
 
         String variableName = VariableNameUtil.fullyQualifiedClassNameToVariableName(componentClassName);
 
+        String methodName = getMethodNameForComponent(simpleName);
         MethodSpec.Builder methodSpecBuilder = MethodSpec.methodBuilder(
-                        SETUP + simpleName).returns(void.class)
+                        methodName).returns(void.class)
                 .addStatement("$1T $2N = new $1T()", desiredComponentCN, variableName)
                 .addStatement("$N.setContext($N)", variableName, tmic.getContextFieldSpec());
 
         return methodSpecBuilder;
+    }
+
+    protected String getMethodNameForComponent(String simpleName) {
+        // append instance number to method name to avoid name clashes
+        return SETUP + simpleName + "_" + instanceNum;
     }
 
     @Override
@@ -126,12 +140,17 @@ public abstract class ComponentModelHandler extends ModelHandlerBase {
             componentMethodBuilder.beginControlFlow("if($N instanceof $T)", variableName, LifeCycle.class);
             componentMethodBuilder.addStatement("(($T)$N).start()", LifeCycle.class, variableName);
             componentMethodBuilder.endControlFlow();
-            MethodSpec statusListenerMethodSpec = componentMethodBuilder.build();
+            MethodSpec componentMethodSpec = componentMethodBuilder.build();
 
-            tmic.tylerConfiguratorTSB.addMethod(statusListenerMethodSpec);
+            tmic.tylerConfiguratorTSB.addMethod(componentMethodSpec);
 
-            tmic.configureMethodSpecBuilder.addStatement("$N()", statusListenerMethodSpec);
+            linkMethodSpecWithConfigureMethod(tmic, componentMethodSpec);
+
         }
 
+    }
+
+    protected void linkMethodSpecWithConfigureMethod(TylerModelInterpretationContext tmic, MethodSpec componentMethodSpec) {
+        tmic.configureMethodSpecBuilder.addStatement("$N()", componentMethodSpec);
     }
 }

@@ -35,8 +35,11 @@ import ch.qos.logback.core.model.processor.ModelInterpretationContext;
 public class LoggerContextListenerModelHandler extends ComponentModelHandler {
 
 
+    static int COUNT;
+
     public LoggerContextListenerModelHandler(Context context) {
         super(context);
+        instanceNum = COUNT++;
     }
 
 

@@ -39,6 +39,7 @@ import ch.qos.logback.core.Context;
 import ch.qos.logback.core.joran.event.SaxEventRecorder;
 import ch.qos.logback.core.joran.spi.JoranException;
 import ch.qos.logback.core.model.*;
+import ch.qos.logback.core.model.conditional.ByPropertiesConditionModel;
 import ch.qos.logback.core.model.conditional.ElseModel;
 import ch.qos.logback.core.model.conditional.IfModel;
 import ch.qos.logback.core.model.conditional.ThenModel;
@@ -89,6 +90,7 @@ public class ModelToJava {
         LogbackClassicDefaultNestedComponentRules.addDefaultNestedComponentRegistryRules(tmic.getDefaultNestedComponentRegistry());
 
         DefaultProcessor defaultProcessor = new DefaultProcessor(context, tmic);
+        // this is where we link model classes to their Tyler-specific handlers
         addModelHandlerAssociations(defaultProcessor);
 
         defaultProcessor.process(topModel);
@@ -139,6 +141,12 @@ public class ModelToJava {
         return resultList;
     }
 
+    /**
+     * Associate model classes with their respective handlers. This is where ModelHandlers specific to
+     * Tyler are linked to the model processing.
+     *
+     * @param defaultProcessor
+     */
     private void addModelHandlerAssociations(DefaultProcessor defaultProcessor) {
         defaultProcessor.addHandler(ConfigurationModel.class, ConfigurationModelHandler::makeInstance);
         defaultProcessor.addHandler(PropertyModel.class, VariableModelHandler::makeInstance);
@@ -165,6 +173,7 @@ public class ModelToJava {
         defaultProcessor.addHandler(SequenceNumberGeneratorModel.class, SequenceNumberGeneratorModelHandler::makeInstance);
 
 
+        defaultProcessor.addHandler(ByPropertiesConditionModel.class, ByPropertiesConditionModelHandler::makeInstance);
         defaultProcessor.addHandler(IfModel.class, IfModelHandler::makeInstance);
         defaultProcessor.addHandler(ThenModel.class, ThenModelHandler::makeInstance);
         defaultProcessor.addHandler(ElseModel.class, ElseModelHandler::makeInstance);

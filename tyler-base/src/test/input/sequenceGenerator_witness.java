@@ -69,14 +69,14 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
     @Override
     public Configurator.ExecutionStatus configure(LoggerContext loggerContext) {
         setContext(loggerContext);
-        setupBasicSequenceNumberGenerator();
+        setupBasicSequenceNumberGenerator_0();
         this.appenderLIST = setupAppenderLIST();
         Logger logger_ROOT = setupLogger("ROOT", "DEBUG", null);
         logger_ROOT.addAppender(appenderLIST);
         return ExecutionStatus.DO_NOT_INVOKE_NEXT_IF_ANY;
     }
 
-    void setupBasicSequenceNumberGenerator() {
+    void setupBasicSequenceNumberGenerator_0() {
         BasicSequenceNumberGenerator basicSequenceNumberGenerator = new BasicSequenceNumberGenerator();
         basicSequenceNumberGenerator.setContext(context);
 

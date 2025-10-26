@@ -34,8 +34,10 @@ import ch.qos.logback.tyler.base.antlr4.SyntaxVerifier;
 import ch.qos.logback.tyler.base.antlr4.TylerAntlr4ErrorListener;
 import ch.qos.logback.tyler.base.compiler.CompilationVerifier;
 import ch.qos.logback.tyler.base.compiler.CompilerVerificationResult;
+import ch.qos.logback.tyler.base.handler.StatusListenerModelHandler;
 import ch.qos.logback.tyler.base.helper.FileHelper;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -56,7 +58,9 @@ public class TylerRegressionTest {
 
     @BeforeEach
     public void setUp() {
+        StatusListenerModelHandler.resetCount();
     }
+
 
     @Test
     void smoke() throws JoranException, IOException {
@@ -97,6 +101,13 @@ public class TylerRegressionTest {
     void conditionalTest() throws JoranException, IOException {
         verify(INPUT_PREFIX + "conditional.xml", INPUT_PREFIX + "conditional_witness.java", false);
     }
+
+    @Disabled
+    @Test
+    void conditionalElementTest() throws JoranException, IOException {
+        verify(INPUT_PREFIX + "conditionalElement.xml", INPUT_PREFIX + "conditional_element_witness.java", false);
+    }
+
 
     @Test
     void asyncTest() throws JoranException, IOException {

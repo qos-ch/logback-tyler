@@ -57,6 +57,7 @@
 
         final List<StaticImportData> staticImportsList = new ArrayList<>();
 
+
         public TylerModelInterpretationContext(Context context) {
             super(context);
             this.configureMethodSpecBuilder = initializeConfigureMethodSpecBuilder();

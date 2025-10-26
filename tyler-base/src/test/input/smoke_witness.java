@@ -53,7 +53,7 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
   @Override
   public Configurator.ExecutionStatus configure(LoggerContext loggerContext) {
     setContext(loggerContext);
-    setupOnConsoleStatusListener();
+    setupOnConsoleStatusListener_0();
     propertyModelHandlerHelper.handlePropertyModel(this, "USER_HOME", "/home/alice", "", "", "");
     setContextName(subst("${APPNAME}"));
     this.appenderRFILE = setupAppenderRFILE();
@@ -63,7 +63,7 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
     return ExecutionStatus.DO_NOT_INVOKE_NEXT_IF_ANY;
   }
 
-  void setupOnConsoleStatusListener() {
+  void setupOnConsoleStatusListener_0() {
     OnConsoleStatusListener onConsoleStatusListener = new OnConsoleStatusListener();
     onConsoleStatusListener.setContext(context);
     boolean effectivelyAdded = context.getStatusManager().add(onConsoleStatusListener);

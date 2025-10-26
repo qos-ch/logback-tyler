@@ -41,13 +41,16 @@ public class DefineModelHandler extends ComponentModelHandler {
 
     static String PROPERTY_VALUE_VARIABLE_NAME = "propertyValue";
     static String SCOPE_VARIABLE_NAME = "scope";
+    static int COUNT = 0;
 
     public DefineModelHandler(Context context) {
         super(context);
+        instanceNum = COUNT++;
     }
 
     static public ModelHandlerBase makeInstance(Context context, ModelInterpretationContext mic) {
         return new DefineModelHandler(context);
+
     }
 
     @Override
