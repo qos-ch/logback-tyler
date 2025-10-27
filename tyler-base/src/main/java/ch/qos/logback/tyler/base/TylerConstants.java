@@ -43,7 +43,7 @@ public class TylerConstants {
     public static final String LEVEL_FIELD_NAME = "level";
     public static final String LEVEL_STRING_PARAMETER_NAME = "levelString";
 
-    public static final String REQUIRED_LOGBACK_VERSION = "1.5.11";
+    public static final String REQUIRED_LOGBACK_VERSION = "1.5.20";
 
     public static final String TYLER_VERSION = VersionUtil.tylerVersion();
 

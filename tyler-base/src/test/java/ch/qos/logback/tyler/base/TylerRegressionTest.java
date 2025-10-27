@@ -60,6 +60,7 @@ public class TylerRegressionTest {
 
     @BeforeEach
     public void setUp() {
+        //StatusListenerConfigHelper.addOnConsoleListenerInstance(context, new OnConsoleStatusListener());
         StatusListenerModelHandler.resetCount();
     }
 
@@ -106,8 +107,6 @@ public class TylerRegressionTest {
 
     @Test
     void conditionalElementTest() throws JoranException, IOException {
-
-        StatusListenerConfigHelper.addOnConsoleListenerInstance(context, new OnConsoleStatusListener());
         verify(INPUT_PREFIX + "conditionalElement.xml", INPUT_PREFIX + "conditional_element_witness.java", false);
     }
 
@@ -158,8 +157,8 @@ public class TylerRegressionTest {
 
         assertTrue(outputComparator.checkForEquality(witnessLines, resultList));
 
-        //TylerAntlr4ErrorListener errorListener = syntaxVerifier.verify(result);
-        //assertEquals(0, errorListener.getSyntaxErrorCount(), errorListener.getErrorMessages().toString());
+        TylerAntlr4ErrorListener errorListener = syntaxVerifier.verify(result);
+        assertEquals(0, errorListener.getSyntaxErrorCount(), errorListener.getErrorMessages().toString());
 
         CompilerVerificationResult compilationResult = compilationVerifier.verify("com.example.TylerConfigurator", String.join("\n", witnessLines));
         assertTrue(compilationResult.successfullyCompiled(), () -> "Compilation verification failed:\n" + compilationResult.diagnosticsMessages());

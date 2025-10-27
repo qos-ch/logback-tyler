@@ -161,6 +161,7 @@
 
         public FieldSpec createPropertyConditionFieldSpec(ClassName className, String variableName) {
             FieldSpec.Builder fieldSpecBuilder = FieldSpec.builder(className, variableName).addModifiers(Modifier.PROTECTED);
+            fieldSpecBuilder.addJavadoc("Variable used in conditional processing");
             return fieldSpecBuilder.build();
         }
 
