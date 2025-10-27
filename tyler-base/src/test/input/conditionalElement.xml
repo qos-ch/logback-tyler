@@ -27,7 +27,7 @@
 
 <configuration>
 
-    <condition name="isDefined" class="ch.qos.logback.core.boolex.IsPropertyDefinedCondition">
+    <condition class="ch.qos.logback.core.boolex.IsPropertyDefinedCondition">
         <key>j</key>
     </condition>
     <if>

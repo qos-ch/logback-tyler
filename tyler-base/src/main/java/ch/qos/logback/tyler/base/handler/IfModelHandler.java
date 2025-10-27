@@ -28,41 +28,81 @@
 package ch.qos.logback.tyler.base.handler;
 
 import ch.qos.logback.core.Context;
-import ch.qos.logback.core.model.ComponentModel;
 import ch.qos.logback.core.model.Model;
 import ch.qos.logback.core.model.conditional.IfModel;
 import ch.qos.logback.core.model.processor.ModelHandlerBase;
 import ch.qos.logback.core.model.processor.ModelHandlerException;
 import ch.qos.logback.core.model.processor.ModelInterpretationContext;
-import ch.qos.logback.core.spi.ScanException;
 import ch.qos.logback.core.util.OptionHelper;
 import ch.qos.logback.tyler.base.TylerModelInterpretationContext;
-import com.squareup.javapoet.MethodSpec;
 
+/**
+ * Handler responsible for processing IfModel instances encountered during model interpretation.
+ * <p>
+ * This handler pushes the IfModel onto the interpretation stack, validates the condition
+ * string and emits the corresponding Java "if" control flow into the Tyler configuration
+ * method being built (via MethodSpec).
+ * </p>
+ */
 public class IfModelHandler extends ModelHandlerBase {
 
+    /**
+     * Create a new IfModelHandler.
+     *
+     * @param context the Logback context used for this handler
+     */
     public IfModelHandler(Context context) {
         super(context);
     }
 
-
-
+    /**
+     * Factory method used by the model processing infrastructure.
+     *
+     * @param context the Logback context
+     * @param ic the current ModelInterpretationContext (unused by this factory)
+     * @return a new instance of IfModelHandler
+     */
     static public ModelHandlerBase makeInstance(Context context, ModelInterpretationContext ic) {
         return new IfModelHandler(context);
     }
 
+    /**
+     * Return the model class that this handler supports.
+     *
+     * @return the supported model class (IfModel.class)
+     */
     @Override
     protected Class<IfModel> getSupportedModelClass() {
         return IfModel.class;
     }
 
+    /**
+     * Handle an {@link IfModel} by validating its condition and emitting the
+     * corresponding Java "if" statement into the Tyler method spec builder.
+     *
+     * @param mic the model interpretation context
+     * @param model the model to handle (expected to be {@link IfModel})
+     * @throws ModelHandlerException if an error occurs while handling the model
+     */
     @Override
     public void handle(ModelInterpretationContext mic, Model model) throws ModelHandlerException {
         IfModel ifModel = (IfModel) model;
         TylerModelInterpretationContext tmic = (TylerModelInterpretationContext) mic;
 
+
+        Object o = tmic.peekObject();
+        String conditionStr = null;
+
+        if(o instanceof ConditionStringRecord conditionStringRecord) {
+            conditionStr = conditionStringRecord.value();
+            mic.popObject();
+        }
+
         mic.pushModel(ifModel);
-        String conditionStr = ifModel.getCondition();
+        if(conditionStr ==  null) {
+            conditionStr = ifModel.getCondition();
+        }
+
         int lineNum = model.getLineNumber();
 
         if (!OptionHelper.isNullOrEmptyOrAllSpaces(conditionStr)) {
@@ -72,10 +112,24 @@ public class IfModelHandler extends ModelHandlerBase {
         }
     }
 
+    /**
+     * Emit the Java "if" control flow for the given condition into the supplied
+     * TylerModelInterpretationContext's MethodSpec builder.
+     *
+     * @param tmic the Tyler model interpretation context containing the MethodSpec builder
+     * @param conditionStr the Java expression to use as the if condition
+     */
     protected void addJavaStatement(TylerModelInterpretationContext tmic, String conditionStr) {
         tmic.configureMethodSpecBuilder.beginControlFlow("if($N)", conditionStr);
     }
 
+    /**
+     * Finalize handling of the {@link IfModel}: verify the model stack, end the
+     * emitted control flow and pop the model from the stack.
+     *
+     * @param mic the model interpretation context
+     * @param model the model that was handled
+     */
     @Override
     public void postHandle(ModelInterpretationContext mic, Model model) {
         if(mic.isModelStackEmpty()) {

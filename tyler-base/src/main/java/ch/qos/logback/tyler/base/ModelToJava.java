@@ -99,7 +99,7 @@ public class ModelToJava {
         tmic.configureMethodSpecBuilder.addStatement("return ExecutionStatus.DO_NOT_INVOKE_NEXT_IF_ANY");
         MethodSpec configureMethodSpec = tmic.configureMethodSpecBuilder.build();
 
-        tmic.appenderFieldSpecs.forEach(tmic.tylerConfiguratorTSB.fieldSpecs::addFirst);
+        tmic.fieldSpecs.forEach(tmic.tylerConfiguratorTSB.fieldSpecs::addFirst);
         tmic.tylerConfiguratorTSB.methodSpecs.addFirst(configureMethodSpec);
 
         for(String methodName: tmic.mapOfMethodSpecBuilders.keySet()) {
@@ -116,9 +116,8 @@ public class ModelToJava {
         tmic.staticImportsList.forEach(sid -> javaFileBuilder.addStaticImport(sid.aClass(), sid.methodName()));
 
         JavaFile javaFile = javaFileBuilder.indent("  ").build();
-
         StringBuffer sb = new StringBuffer();
-
+        String s = javaFile.toString();
         javaFile.writeTo(sb);
         return sb;
     }

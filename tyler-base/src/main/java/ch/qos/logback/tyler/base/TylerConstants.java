@@ -60,5 +60,7 @@ public class TylerConstants {
     public static final String LOCAL_APPENDER_FIELD_NAME = "appender";
 
 
+    public static final String LOCAL_PROPERTY_CONDITION_FIELD_NAME = "propertyCondition";
+
 
 }

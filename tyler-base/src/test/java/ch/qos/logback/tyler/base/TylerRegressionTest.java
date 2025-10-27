@@ -30,6 +30,8 @@ package ch.qos.logback.tyler.base;
 import ch.qos.logback.core.ContextBase;
 import ch.qos.logback.core.joran.spi.JoranException;
 import ch.qos.logback.core.model.Model;
+import ch.qos.logback.core.status.OnConsoleStatusListener;
+import ch.qos.logback.core.util.StatusListenerConfigHelper;
 import ch.qos.logback.tyler.base.antlr4.SyntaxVerifier;
 import ch.qos.logback.tyler.base.antlr4.TylerAntlr4ErrorListener;
 import ch.qos.logback.tyler.base.compiler.CompilationVerifier;
@@ -102,9 +104,10 @@ public class TylerRegressionTest {
         verify(INPUT_PREFIX + "conditional.xml", INPUT_PREFIX + "conditional_witness.java", false);
     }
 
-    @Disabled
     @Test
     void conditionalElementTest() throws JoranException, IOException {
+
+        StatusListenerConfigHelper.addOnConsoleListenerInstance(context, new OnConsoleStatusListener());
         verify(INPUT_PREFIX + "conditionalElement.xml", INPUT_PREFIX + "conditional_element_witness.java", false);
     }
 

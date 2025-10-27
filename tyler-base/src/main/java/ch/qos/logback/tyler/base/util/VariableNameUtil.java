@@ -27,6 +27,7 @@
 
 package ch.qos.logback.tyler.base.util;
 //import static ch.qos.logback.core.CoreConstants.DOT;
+import ch.qos.logback.core.model.conditional.ByPropertiesConditionModel;
 import ch.qos.logback.core.util.StringUtil;
 
 import static ch.qos.logback.core.CoreConstants.DOT;
@@ -51,5 +52,10 @@ public class VariableNameUtil {
     static public String fullyQualifiedClassNameToVariableName(String fqcn) {
         String simpleClassName = ClassUtil.extractSimpleClassName(fqcn);
         return StringUtil.lowercaseFirstLetter(simpleClassName);
+    }
+
+    public static String conditionModelToVariableName(String className, int instanceNum) {
+        String simpleClassName = ClassUtil.extractSimpleClassName(className);
+        return StringUtil.lowercaseFirstLetter(simpleClassName) + "_" + instanceNum;
     }
 }

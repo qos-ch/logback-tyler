@@ -34,6 +34,7 @@
     import ch.qos.logback.core.Context;
     import ch.qos.logback.core.model.processor.ModelInterpretationContext;
     import ch.qos.logback.tyler.base.spi.StaticImportData;
+    import ch.qos.logback.tyler.base.util.ClassUtil;
     import ch.qos.logback.tyler.base.util.VariableNameUtil;
     import com.squareup.javapoet.*;
 
@@ -53,7 +54,7 @@
         final ParameterSpec contextParameterSpec = ParameterSpec.builder(LoggerContext.class, LOGGER_CONTEXT_PARAMETER_NAME).build();
         final ParameterSpec levelParameterSpec = ParameterSpec.builder(Level.class, LEVEL_FIELD_NAME).build();
 
-        final List<FieldSpec> appenderFieldSpecs = new ArrayList<>();
+        final List<FieldSpec> fieldSpecs = new ArrayList<>();
 
         final List<StaticImportData> staticImportsList = new ArrayList<>();
 
@@ -158,7 +159,19 @@
             return fieldSpecBuilder.build();
         }
 
-        public Collection<FieldSpec> getAppenderFieldSpecs() {
-            return appenderFieldSpecs;
+        public FieldSpec createPropertyConditionFieldSpec(ClassName className, String variableName) {
+            FieldSpec.Builder fieldSpecBuilder = FieldSpec.builder(className, variableName).addModifiers(Modifier.PROTECTED);
+            return fieldSpecBuilder.build();
+        }
+
+
+        public Collection<FieldSpec> getFieldSpecs() {
+            return fieldSpecs;
+        }
+
+        public ClassName makeClassName(String fqcn) {
+            String packageName = ClassUtil.extractPackageName(fqcn);
+            String simpleName = ClassUtil.extractSimpleClassName(fqcn);
+            return ClassName.get(packageName, simpleName);
         }
     }

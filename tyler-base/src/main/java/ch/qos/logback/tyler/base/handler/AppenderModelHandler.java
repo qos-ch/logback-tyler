@@ -46,8 +46,6 @@ import static ch.qos.logback.tyler.base.TylerConstants.*;
 
 public class AppenderModelHandler extends ModelHandlerBase {
 
-    //String appenderVariableName;
-
     ImplicitModelHandlerData implicitModelHandlerData;
 
     private boolean skipped = false;
@@ -91,15 +89,14 @@ public class AppenderModelHandler extends ModelHandlerBase {
     MethodSpec.Builder addJavaStatementForAppenderInitialization(TylerModelInterpretationContext tmic, String appenderName,
                     String fullyQualifiedAppenderClassName) {
 
-        ClassName desiredAppenderCN = ClassName.get(ClassUtil.extractPackageName(fullyQualifiedAppenderClassName),
-                        ClassUtil.extractSimpleClassName(fullyQualifiedAppenderClassName));
+        ClassName desiredAppenderCN = tmic.makeClassName(fullyQualifiedAppenderClassName);
 
         String fistLetterCapitalizedAppenderName = StringUtil.capitalizeFirstLetter(appenderName);
 
         String methodName = SETUP_APPENDER + fistLetterCapitalizedAppenderName;
         String appenderVariableName = VariableNameUtil.appenderNameToVariableName(appenderName);
         FieldSpec fieldSpec = tmic.createAppenderFieldSpec(desiredAppenderCN, appenderName);
-        tmic.getAppenderFieldSpecs().add(fieldSpec);
+        tmic.getFieldSpecs().add(fieldSpec);
 
         tmic.configureMethodSpecBuilder.addStatement("this.$N = $N()", appenderVariableName, methodName);
 
