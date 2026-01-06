@@ -106,16 +106,17 @@
                                             
                                             <p>  https://logback.qos.ch/manual/configuration.html#auto_configuration</p> 
                                             
-                                            <p>With recent versions of logback and logback-tyler you can still
-                                            configure logger levels dynamically using properties files. Note that
-                                            configuration files in properties format can be watched for
-                                            changes. See the documentation on PropertiesConfigurator for more details.</p>
+                                            <p>Configurations using TylerConfigurator can still dynamically configure 
+                                            logger levels with the help of properties files. Moreover, configuration 
+                                            files in properties format can be watched for changes. See the 
+                                            documentation on PropertiesConfigurator for more details.</p>
                                             
                                             <p>https://logback.qos.ch/manual/configuration.html#propertiesConfigurator</p>
                                             
-                                            <p>Keep in mind that by integrating a .properties configuration file info 
-                                            your tyler configurator, you can still change logger levels dynamically, without 
-                                            redeploying your application.</p>
+                                            <p>Please note that when logback-tyler transforms XML to Java, it performs 
+                                            runtime analysis of classes using Java's class reflection. Thus, 
+                                            if your logback.xml mentions classes which are not on the classpath, 
+                                            logback-tyler will fail during the translation.</p>
                                             
                                             """.formatted(TYLER_VERSION, REQUIRED_LOGBACK_VERSION))
                             .addSuperinterface(Configurator.class)

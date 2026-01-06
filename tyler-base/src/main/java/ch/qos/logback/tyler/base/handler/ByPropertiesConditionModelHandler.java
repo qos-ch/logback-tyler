@@ -29,6 +29,9 @@ public class ByPropertiesConditionModelHandler extends ModelHandlerBase {
         instanceNum = COUNT++;
     }
 
+    public static void resetCount() {
+        COUNT = 0;
+    }
 
     static public ModelHandlerBase makeInstance(Context context, ModelInterpretationContext mic) {
         return new ByPropertiesConditionModelHandler(context);

@@ -36,6 +36,7 @@ import ch.qos.logback.tyler.base.antlr4.SyntaxVerifier;
 import ch.qos.logback.tyler.base.antlr4.TylerAntlr4ErrorListener;
 import ch.qos.logback.tyler.base.compiler.CompilationVerifier;
 import ch.qos.logback.tyler.base.compiler.CompilerVerificationResult;
+import ch.qos.logback.tyler.base.handler.ByPropertiesConditionModelHandler;
 import ch.qos.logback.tyler.base.handler.StatusListenerModelHandler;
 import ch.qos.logback.tyler.base.helper.FileHelper;
 import org.junit.jupiter.api.BeforeEach;
@@ -62,6 +63,7 @@ public class TylerRegressionTest {
     public void setUp() {
         //StatusListenerConfigHelper.addOnConsoleListenerInstance(context, new OnConsoleStatusListener());
         StatusListenerModelHandler.resetCount();
+        ByPropertiesConditionModelHandler.resetCount();
     }
 
 
@@ -108,6 +110,11 @@ public class TylerRegressionTest {
     @Test
     void conditionalElementTest() throws JoranException, IOException {
         verify(INPUT_PREFIX + "conditionalElement.xml", INPUT_PREFIX + "conditional_element_witness.java", false);
+    }
+
+    @Test
+    void conditionalExpTest() throws JoranException, IOException {
+        verify(INPUT_PREFIX + "conditionalExp.xml", INPUT_PREFIX + "conditional_exp_witness.java", false);
     }
 
 
