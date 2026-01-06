@@ -18,7 +18,9 @@ import static ch.qos.logback.tyler.base.TylerConstants.*;
 
 public class ByPropertiesConditionModelHandler extends ModelHandlerBase {
 
-    static int COUNT;
+
+    static private final String BY_PROPERTIES_CONDITION_MH_COUNTER_KEY = "BY_PROPERTIES_CONDITION_MH_COUNTER_KEY";
+
     int instanceNum;
     boolean inError = false;
     ImplicitModelHandlerData implicitModelHandlerData;
@@ -26,11 +28,7 @@ public class ByPropertiesConditionModelHandler extends ModelHandlerBase {
 
     public ByPropertiesConditionModelHandler(Context context) {
         super(context);
-        instanceNum = COUNT++;
-    }
-
-    public static void resetCount() {
-        COUNT = 0;
+        instanceNum = HandlerInstanceCounterHelper.inc(context, BY_PROPERTIES_CONDITION_MH_COUNTER_KEY);
     }
 
     static public ModelHandlerBase makeInstance(Context context, ModelInterpretationContext mic) {
@@ -57,6 +55,7 @@ public class ByPropertiesConditionModelHandler extends ModelHandlerBase {
         } catch (ClassNotFoundException e) {
             addError("Could not find class", e);
             inError = true;
+            throw new ModelHandlerException(e);
         }
     }
 

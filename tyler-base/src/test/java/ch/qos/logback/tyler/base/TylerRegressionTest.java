@@ -30,8 +30,6 @@ package ch.qos.logback.tyler.base;
 import ch.qos.logback.core.ContextBase;
 import ch.qos.logback.core.joran.spi.JoranException;
 import ch.qos.logback.core.model.Model;
-import ch.qos.logback.core.status.OnConsoleStatusListener;
-import ch.qos.logback.core.util.StatusListenerConfigHelper;
 import ch.qos.logback.tyler.base.antlr4.SyntaxVerifier;
 import ch.qos.logback.tyler.base.antlr4.TylerAntlr4ErrorListener;
 import ch.qos.logback.tyler.base.compiler.CompilationVerifier;
@@ -62,97 +60,110 @@ public class TylerRegressionTest {
     @BeforeEach
     public void setUp() {
         //StatusListenerConfigHelper.addOnConsoleListenerInstance(context, new OnConsoleStatusListener());
-        StatusListenerModelHandler.resetCount();
-        ByPropertiesConditionModelHandler.resetCount();
     }
 
 
     @Test
     void smoke() throws JoranException, IOException {
-        verify(INPUT_PREFIX + "smoke.xml", INPUT_PREFIX + "smoke_witness.java", false);
+        verify(INPUT_PREFIX + "smoke.xml", INPUT_PREFIX + "smoke_witness.java");
     }
 
     @Test
     void levelTest() throws JoranException, IOException {
-        verify(INPUT_PREFIX + "level.xml", INPUT_PREFIX + "level_witness.java", false);
+        verify(INPUT_PREFIX + "level.xml", INPUT_PREFIX + "level_witness.java");
     }
 
     @Test
     void sequenceGeneratorTest() throws JoranException, IOException {
-        verify(INPUT_PREFIX + "sequenceGenerator.xml", INPUT_PREFIX + "sequenceGenerator_witness.java", false);
+        verify(INPUT_PREFIX + "sequenceGenerator.xml", INPUT_PREFIX + "sequenceGenerator_witness.java");
     }
 
     @Test
     void contextListenerTest() throws JoranException, IOException {
-        verify(INPUT_PREFIX + "contextListener.xml", INPUT_PREFIX + "contextListener_witness.java", false);
+        verify(INPUT_PREFIX + "contextListener.xml", INPUT_PREFIX + "contextListener_witness.java");
     }
 
     @Test
     void scanTest() throws JoranException, IOException {
-        verify(INPUT_PREFIX + "scan.xml", INPUT_PREFIX + "scan_witness.java", false);
+        verify(INPUT_PREFIX + "scan.xml", INPUT_PREFIX + "scan_witness.java");
     }
 
     @Test
     void defineTest() throws JoranException, IOException {
-        verify(INPUT_PREFIX + "define.xml", INPUT_PREFIX + "define_witness.java", false);
+        verify(INPUT_PREFIX + "define.xml", INPUT_PREFIX + "define_witness.java");
     }
 
     @Test
     void defineBadFQCNTest() throws JoranException, IOException {
-        verify(INPUT_PREFIX + "defineBadFQCN.xml", INPUT_PREFIX + "defineBadFQCNTest_witness.java", false);
+        verify(INPUT_PREFIX + "defineBadFQCN.xml", INPUT_PREFIX + "defineBadFQCNTest_witness.java");
     }
 
     @Test
     void conditionalTest() throws JoranException, IOException {
-        verify(INPUT_PREFIX + "conditional.xml", INPUT_PREFIX + "conditional_witness.java", false);
+        verify(INPUT_PREFIX + "conditional.xml", INPUT_PREFIX + "conditional_witness.java");
     }
 
     @Test
     void conditionalElementTest() throws JoranException, IOException {
-        verify(INPUT_PREFIX + "conditionalElement.xml", INPUT_PREFIX + "conditional_element_witness.java", false);
+        verify(INPUT_PREFIX + "conditionalElement.xml", INPUT_PREFIX + "conditional_element_witness.java");
     }
 
     @Test
     void conditionalExpTest() throws JoranException, IOException {
-        verify(INPUT_PREFIX + "conditionalExp.xml", INPUT_PREFIX + "conditional_exp_witness.java", false);
+        verify(INPUT_PREFIX + "conditionalExp.xml", INPUT_PREFIX + "conditional_exp_witness.java");
     }
 
 
     @Test
     void asyncTest() throws JoranException, IOException {
-        verify(INPUT_PREFIX + "async.xml", INPUT_PREFIX + "async_witness.java", false);
+        verify(INPUT_PREFIX + "async.xml", INPUT_PREFIX + "async_witness.java");
     }
 
     @Test
     void timestampTest() throws JoranException, IOException {
-        verify(INPUT_PREFIX + "timestamp.xml", INPUT_PREFIX + "timestamp_witness.java", false);
+        verify(INPUT_PREFIX + "timestamp.xml", INPUT_PREFIX + "timestamp_witness.java");
     }
 
     @Test
     void propertiesConfiguratorTest() throws JoranException, IOException {
-        verify(INPUT_PREFIX + "propertiesConfigurator.xml", INPUT_PREFIX + "propertiesConfigurator_witness.java", false);
+        verify(INPUT_PREFIX + "propertiesConfigurator.xml", INPUT_PREFIX + "propertiesConfigurator_witness.java");
     }
 
     @Test
     void propertiesConfiguratorWithScanTest() throws JoranException, IOException {
-        verify(INPUT_PREFIX + "propertiesConfiguratorWithScan.xml", INPUT_PREFIX + "propertiesConfiguratorWithScan_witness.java", false);
+        verify(INPUT_PREFIX + "propertiesConfiguratorWithScan.xml", INPUT_PREFIX + "propertiesConfiguratorWithScan_witness.java");
     }
 
     @Test
     void topIncludingTest() throws JoranException, IOException {
-        verify(INPUT_PREFIX + "topIncluding.xml", INPUT_PREFIX + "topIncluding_witness.java", false);
+        verify(INPUT_PREFIX + "topIncluding.xml", INPUT_PREFIX + "topIncluding_witness.java");
     }
     @Test
     void insertFromJNDITest() throws JoranException, IOException {
-        verify(INPUT_PREFIX + "insertFromJNDI.xml", INPUT_PREFIX + "insertFromJNDI_witness.java", false);
+        verify(INPUT_PREFIX + "insertFromJNDI.xml", INPUT_PREFIX + "insertFromJNDI_witness.java");
     }
 
-    void verify(String path2XMLFile, String path2WitnessFile, boolean dumpResult) throws JoranException, IOException {
+    @Disabled
+    @Test
+    void unavailableTest() throws JoranException, IOException {
+        runTransformation(INPUT_PREFIX + "unavailableClass.xml");
+    }
+
+
+    String runTransformation(String path2XMLFile) throws JoranException, IOException {
         List<String> lines = FileHelper.readFile(path2XMLFile);
-        List<String> witnessLines = FileHelper.readFile(path2WitnessFile);
 
         Model model = m2j.extractModel(String.join("\n", lines));
         String result = m2j.toJava(model);
+        return result;
+    }
+
+    void verify(String path2XMLFile, String path2WitnessFile) throws JoranException, IOException {
+
+        String result = runTransformation(path2XMLFile);
+
+        List<String> witnessLines = FileHelper.readFile(path2WitnessFile);
+
         String[] resultArray = result.split("\n");
         List<String> resultList = new ArrayList<>(List.of(resultArray));
 

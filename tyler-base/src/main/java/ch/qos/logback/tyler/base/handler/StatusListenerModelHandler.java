@@ -46,23 +46,22 @@ import static ch.qos.logback.tyler.base.TylerConstants.SETUP;
 public class StatusListenerModelHandler extends ModelHandlerBase {
 
     static final String EFFECTIVELY_ADDED_VARIABLE_NAME = "effectivelyAdded";
-    static int COUNT = 0;
+    static private final String STATUS_LISTENER_MH_COUNTER_KEY = "STATUS_LISTENER_MH_COUNTER_KEY";
+
+
     final int instanceCount;
     boolean inError = false;
     ImplicitModelHandlerData implicitModelHandlerData;
 
     public StatusListenerModelHandler(Context context) {
         super(context);
-        instanceCount = COUNT++;
+        instanceCount = HandlerInstanceCounterHelper.inc(context, STATUS_LISTENER_MH_COUNTER_KEY);
     }
 
     static public ModelHandlerBase makeInstance(Context context, ModelInterpretationContext mic) {
         return new StatusListenerModelHandler(context);
     }
 
-    public static void resetCount() {
-        COUNT = 0;
-    }
 
     @Override
     public void handle(ModelInterpretationContext mic, Model model) throws ModelHandlerException {

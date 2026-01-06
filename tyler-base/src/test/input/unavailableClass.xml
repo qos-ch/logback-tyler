@@ -1,0 +1,34 @@
+<configuration>
+    <import class="ch.qos.logback.classic.encoder.PatternLayoutEncoder"/>
+    <import class="com.foo.UnavailableAppender"/>
+    <import class="ch.qos.logback.core.rolling.RollingFileAppender"/>
+    <import class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy"/>
+    <import class="com.foo.UnavailableStatusListener"/>
+
+    <statusListener class="UnavailableStatusListener">
+        <prefix>moo</prefix>
+    </statusListener>
+
+    <condition class="com.foo.ExpressionPropertyCondition">
+    </condition>
+    <if>
+        <then>
+        <param name="test" value="true"/>
+        </then>
+    </if>
+    <appender name="UA" class="UnavailableAppender">
+        <file>${USER_HOME}/logFile.log</file>
+        <rollingPolicy class="TimeBasedRollingPolicy">
+            <fileNamePattern>logFile.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>3GB</totalSizeCap>
+        </rollingPolicy>
+        <encoder class="PatternLayoutEncoder">
+            <pattern>%-4relative [%thread] %-5level %logger{35} -%kvp- %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <root level="DEBUG">
+        <appender-ref ref="UA"/>
+    </root>
+</configuration>
