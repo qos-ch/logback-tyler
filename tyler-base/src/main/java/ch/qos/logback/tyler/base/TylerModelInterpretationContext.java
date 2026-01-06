@@ -115,7 +115,7 @@
                                             
                                             <p>Please note that when logback-tyler transforms XML to Java, it performs 
                                             runtime analysis of classes using Java's class reflection. Thus, 
-                                            if your logback.xml mentions classes which are not on the classpath, 
+                                            if your logback.xml mentions classes which are unavailable on the classpath, 
                                             logback-tyler will fail during the translation.</p>
                                             
                                             """.formatted(TYLER_VERSION, REQUIRED_LOGBACK_VERSION))
