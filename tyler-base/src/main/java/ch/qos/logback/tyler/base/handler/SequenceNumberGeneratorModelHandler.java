@@ -34,12 +34,12 @@ import ch.qos.logback.core.spi.SequenceNumberGenerator;
 
 public class SequenceNumberGeneratorModelHandler extends ComponentModelHandler {
 
-    static int COUNT;
 
+    static String SEQUENCE_NUMBER_GENERATOR_MH_COUNTER_KEY = "SEQUENCE_NUMBER_GENERATOR_MH_COUNTER_KEY";
 
     public SequenceNumberGeneratorModelHandler(Context context) {
         super(context);
-        instanceNum = COUNT++;
+        instanceNum = HandlerInstanceCounterHelper.inc(context, SEQUENCE_NUMBER_GENERATOR_MH_COUNTER_KEY);
     }
 
     @Override

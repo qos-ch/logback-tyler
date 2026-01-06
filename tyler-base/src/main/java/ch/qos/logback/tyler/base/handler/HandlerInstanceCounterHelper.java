@@ -20,7 +20,7 @@ public class HandlerInstanceCounterHelper {
         if (counter == null)
             counter = 0;
         else
-            counter++;
+            counter+=1;
         context.putObject(counterKey, counter);
         return counter;
     }
