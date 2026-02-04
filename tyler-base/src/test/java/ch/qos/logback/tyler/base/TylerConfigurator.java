@@ -55,7 +55,8 @@ class TylerConfigurator extends TylerConfiguratorBase implements Configurator {
         propertyConfiguratorModel.setFile(subst("${JO_PREFIX}/propertiesConfigurator/smoke.properties"));
         PropertiesConfiguratorModelHandler propertiesConfiguratorModelHandler = new PropertiesConfiguratorModelHandler(context);
         try {
-            propertiesConfiguratorModelHandler.detachedHandle(this, propertyConfiguratorModel);
+            // TODO: check value for topScanBoolean
+            propertiesConfiguratorModelHandler.detachedHandle(this, propertyConfiguratorModel, true);
         } catch(ModelHandlerException e) {
             addError("Failed to process PropertyConfiguratorModel", e);
         }

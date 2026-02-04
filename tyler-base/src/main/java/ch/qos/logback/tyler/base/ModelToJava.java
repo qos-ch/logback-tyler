@@ -48,6 +48,7 @@ import ch.qos.logback.core.model.processor.ImportModelHandler;
 import ch.qos.logback.core.util.StatusPrinter2;
 import ch.qos.logback.tyler.base.handler.*;
 import ch.qos.logback.tyler.base.util.StringPrintStream;
+import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeSpec;
@@ -59,6 +60,8 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import static ch.qos.logback.tyler.base.util.StringToVariableStament.booleanObjectToString;
 
 public class ModelToJava {
 
@@ -86,6 +89,9 @@ public class ModelToJava {
     public StringBuffer toJavaAsStringBuffer(Model topModel) throws IOException {
         TylerModelInterpretationContext tmic = new TylerModelInterpretationContext(context);
         tmic.setTopModel(topModel);
+
+        FieldSpec topURLFieldSpec = tmic.createTopURLFieldSpec();
+        tmic.getFieldSpecs().add(topURLFieldSpec);
 
         LogbackClassicDefaultNestedComponentRules.addDefaultNestedComponentRegistryRules(tmic.getDefaultNestedComponentRegistry());
 

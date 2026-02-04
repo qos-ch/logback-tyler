@@ -10,7 +10,7 @@ import ch.qos.logback.core.model.Model;
 import ch.qos.logback.core.model.processor.IncludeModelHandler;
 import ch.qos.logback.core.model.processor.ModelHandlerException;
 import ch.qos.logback.core.testUtil.StringListAppender;
-
+import java.net.URL;
 
 /**
  *
@@ -64,6 +64,20 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
     protected StringListAppender appenderLIST;
 
     /**
+     * Stands for the 'scan' attribute of <configuration> element. Can be true, false or null.
+     * If true, scanning is activated. Can be overridden by the 'scan' attribute of
+     * <propertiesConfigurator> element.
+     */
+    protected Boolean topScan = null;
+
+    /**
+     * Since TylerConfigurator is java based, the topURL is always null.
+     * However, it is still possible tos scan for changes using the
+     * <propertiesConfigurator> element.
+     */
+    protected final URL topURL = null;
+
+    /**
      * <p>This method performs configuration per {@link Configurator} interface.</p>
      *
      * <p>If <code>TylerConfigurator</code> is installed as a configurator service, this
@@ -74,6 +88,7 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
         setContext(loggerContext);
         this.appenderLIST = setupAppenderLIST();
         propertyModelHandlerHelper.handlePropertyModel(this, "JO_PREFIX", "src/test/input/joran", "", "", "");
+        URL topURL = null;
         include("${JO_PREFIX}/included.xml", null, null, null);
         Logger logger_ROOT = setupLogger("ROOT", "debug", null);
         logger_ROOT.addAppender(appenderLIST);
@@ -106,7 +121,7 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
         includeModel.setOptional(subst(optionalStr));
         IncludeModelHandler includeModelHandler = new IncludeModelHandler(context);
         try {
-            Model modelFromIncludedFile = includeModelHandler.buildModelFromIncludedFile(this, includeModel);
+            Model modelFromIncludedFile = includeModelHandler.buildModelFromIncludedFile(this, topURL, topScan, includeModel);
             processModelFromIncludedFile(modelFromIncludedFile);
         } catch(ModelHandlerException e) {
             addError("Failed to process IncludeModelHandler", e);

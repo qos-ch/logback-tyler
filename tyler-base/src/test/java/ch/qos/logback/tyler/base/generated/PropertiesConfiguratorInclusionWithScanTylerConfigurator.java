@@ -55,8 +55,9 @@ public class PropertiesConfiguratorInclusionWithScanTylerConfigurator extends Ty
         PropertiesConfiguratorModel propertyConfiguratorModel = new PropertiesConfiguratorModel();
         propertyConfiguratorModel.setFile(subst("${JO_PREFIX}/included1.properties"));
         PropertiesConfiguratorModelHandler propertiesConfiguratorModelHandler = new PropertiesConfiguratorModelHandler(context);
+        Boolean topScanModel = true;
         try {
-            propertiesConfiguratorModelHandler.detachedHandle(this, propertyConfiguratorModel);
+            propertiesConfiguratorModelHandler.detachedHandle(this, propertyConfiguratorModel, topScanModel);
         } catch(ModelHandlerException e) {
             addError("Failed to process PropertyConfiguratorModel", e);
         }

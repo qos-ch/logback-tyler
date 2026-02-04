@@ -40,6 +40,7 @@
 
     import javax.lang.model.element.Modifier;
 
+    import java.net.URL;
     import java.util.*;
 
     import static ch.qos.logback.tyler.base.TylerConstants.*;
@@ -53,6 +54,8 @@
         final FieldSpec contextFieldSpec = FieldSpec.builder(LoggerContext.class, CONTEXT_FIELD_NAME, Modifier.PRIVATE).build();
         final ParameterSpec contextParameterSpec = ParameterSpec.builder(LoggerContext.class, LOGGER_CONTEXT_PARAMETER_NAME).build();
         final ParameterSpec levelParameterSpec = ParameterSpec.builder(Level.class, LEVEL_FIELD_NAME).build();
+        final public String topScanFieldName = "topScan";
+        final public String topURLFieldName = "topURL";
 
         final List<FieldSpec> fieldSpecs = new ArrayList<>();
 
@@ -152,6 +155,29 @@
 //
 //            return fieldSpecBuilder.build();
 //        }
+
+        public FieldSpec createTopScanFieldSpec(String boolStr) {
+            FieldSpec.Builder fieldSpecBuilder = FieldSpec.builder(Boolean.class, topScanFieldName).addModifiers(Modifier.PROTECTED).initializer("$L", boolStr);
+            String javadocStr = """
+            Stands for the 'scan' attribute of <configuration> element. Can be true, false or null.
+            If true, scanning is activated. Can be overridden by the 'scan' attribute of 
+            <propertiesConfigurator> element.
+            """;
+            fieldSpecBuilder.addJavadoc(javadocStr);
+            return fieldSpecBuilder.build();
+        }
+
+        public FieldSpec createTopURLFieldSpec() {
+            FieldSpec.Builder fieldSpecBuilder = FieldSpec.builder(URL.class, topURLFieldName).addModifiers(Modifier.PROTECTED).addModifiers(Modifier.FINAL).initializer("$L", "null");
+            String javadocStr = """
+            Since TylerConfigurator is java based, the topURL is always null.
+            However, it is still possible tos scan for changes using the 
+            <propertiesConfigurator> element.
+            """;
+            fieldSpecBuilder.addJavadoc(javadocStr);
+            return fieldSpecBuilder.build();
+        }
+
 
         public FieldSpec createAppenderFieldSpec(ClassName desiredAppenderCN, String appenderName) {
             String appenderVariableName = VariableNameUtil.appenderNameToVariableName(appenderName);

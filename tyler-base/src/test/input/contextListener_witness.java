@@ -5,7 +5,7 @@ import ch.qos.logback.classic.jul.LevelChangePropagator;
 import ch.qos.logback.classic.spi.Configurator;
 import ch.qos.logback.classic.tyler.TylerConfiguratorBase;
 import ch.qos.logback.core.spi.LifeCycle;
-
+import java.net.URL;
 
 /**
  *
@@ -36,7 +36,19 @@ import ch.qos.logback.core.spi.LifeCycle;
  * </p>
  */
 public class TylerConfigurator extends TylerConfiguratorBase implements Configurator {
+    /**
+     * Stands for the 'scan' attribute of <configuration> element. Can be true, false or null.
+     * If true, scanning is activated. Can be overridden by the 'scan' attribute of
+     * <propertiesConfigurator> element.
+     */
+    protected Boolean topScan = null;
 
+    /**
+     * Since TylerConfigurator is java based, the topURL is always null.
+     * However, it is still possible tos scan for changes using the
+     * <propertiesConfigurator> element.
+     */
+    protected final URL topURL = null;
 
     /**
      * <p>This method performs configuration per {@link Configurator} interface.</p>

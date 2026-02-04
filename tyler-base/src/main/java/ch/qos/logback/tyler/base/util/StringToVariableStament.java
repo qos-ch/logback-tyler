@@ -73,4 +73,12 @@ public class StringToVariableStament {
         return Charset.class.isAssignableFrom(type);
     }
 
+
+    public static String booleanObjectToString(Boolean bool) {
+        if(bool == null)
+            return "null";
+        else
+            return bool.toString();
+    }
+
 }

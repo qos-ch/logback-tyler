@@ -9,7 +9,7 @@ import ch.qos.logback.classic.spi.Configurator;
 import ch.qos.logback.classic.tyler.TylerConfiguratorBase;
 import ch.qos.logback.core.model.processor.ModelHandlerException;
 import ch.qos.logback.core.testUtil.StringListAppender;
-
+import java.net.URL;
 
 /**
  *
@@ -45,6 +45,19 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
     protected StringListAppender appenderLIST;
 
     /**
+     * Stands for the 'scan' attribute of <configuration> element. Can be true, false or null.
+     * If true, scanning is activated. Can be overridden by the 'scan' attribute of
+     * <propertiesConfigurator> element.
+     */
+    protected Boolean topScan = null;
+
+    /**
+     * Since TylerConfigurator is java based, the topURL is always null.
+     * However, it is still possible tos scan for changes using the
+     * <propertiesConfigurator> element.
+     */
+    protected final URL topURL = null;
+    /**
      * <p>This method performs configuration per {@link Configurator} interface.</p>
      *
      * <p>If <code>TylerConfigurator</code> is installed as a configurator service, this
@@ -59,7 +72,7 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
         propertyConfiguratorModel.setFile(subst("${JO_PREFIX}/propertiesConfigurator/smoke.properties"));
         PropertiesConfiguratorModelHandler propertiesConfiguratorModelHandler = new PropertiesConfiguratorModelHandler(context);
         try {
-            propertiesConfiguratorModelHandler.detachedHandle(this, propertyConfiguratorModel);
+            propertiesConfiguratorModelHandler.detachedHandle(this, propertyConfiguratorModel, topScan);
         } catch(ModelHandlerException e) {
             addError("Failed to process PropertyConfiguratorModel", e);
         }

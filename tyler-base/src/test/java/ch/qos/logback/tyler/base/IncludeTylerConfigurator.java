@@ -41,6 +41,7 @@ import ch.qos.logback.core.status.OnConsoleStatusListener;
 import ch.qos.logback.core.spi.LifeCycle;
 
 import java.lang.Override;
+import java.net.URL;
 import java.util.function.Supplier;
 
 class IncludeTylerConfigurator extends TylerConfiguratorBase implements Configurator {
@@ -59,8 +60,11 @@ class IncludeTylerConfigurator extends TylerConfiguratorBase implements Configur
         IncludeModel includeModel = new IncludeModel();
         includeModel.setFile(subst("${JO_PREFIX}/included0.xml"));
         IncludeModelHandler includeModelHandler = new IncludeModelHandler(context);
+        URL topURL = null;
+
+        Boolean topScan = true;
         try {
-            Model modelFromIncludedFile = includeModelHandler.buildModelFromIncludedFile(this, includeModel);
+            Model modelFromIncludedFile = includeModelHandler.buildModelFromIncludedFile(this, topURL, topScan, includeModel);
             processModelFromIncludedFile(modelFromIncludedFile);
         } catch (ModelHandlerException e) {
             addError("Failed to process IncludeModelHandler", e);

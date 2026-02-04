@@ -9,6 +9,7 @@ import ch.qos.logback.core.rolling.RollingFileAppender;
 import ch.qos.logback.core.rolling.TimeBasedRollingPolicy;
 import ch.qos.logback.core.spi.LifeCycle;
 import ch.qos.logback.core.status.OnConsoleStatusListener;
+import java.net.URL;
 
 /**
  *
@@ -44,6 +45,19 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
    */
   protected RollingFileAppender appenderRFILE;
 
+    /**
+     * Stands for the 'scan' attribute of <configuration> element. Can be true, false or null.
+     * If true, scanning is activated. Can be overridden by the 'scan' attribute of
+     * <propertiesConfigurator> element.
+     */
+    protected Boolean topScan = null;
+
+    /**
+     * Since TylerConfigurator is java based, the topURL is always null.
+     * However, it is still possible tos scan for changes using the
+     * <propertiesConfigurator> element.
+     */
+    protected final URL topURL = null;
   /**
    * <p>This method performs configuration per {@link Configurator} interface.</p>
    *

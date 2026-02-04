@@ -82,8 +82,10 @@ class IncludeTylerConfigurator extends TylerConfiguratorBase implements Configur
         includeModel.setResource(subst(resourceStr));
         includeModel.setOptional(subst(optionalStr));
         IncludeModelHandler includeModelHandler = new IncludeModelHandler(context);
+
         try {
-            Model modelFromIncludedFile = includeModelHandler.buildModelFromIncludedFile(this, includeModel);
+            // TODO: topURL should be passed here
+            Model modelFromIncludedFile = includeModelHandler.buildModelFromIncludedFile(this, null, true, includeModel);
             processModelFromIncludedFile(modelFromIncludedFile);
         } catch(ModelHandlerException e) {
             addError("Failed to process IncludeModelHandler", e);

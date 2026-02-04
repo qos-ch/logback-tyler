@@ -34,6 +34,8 @@ import ch.qos.logback.core.model.processor.ModelInterpretationContext;
 import ch.qos.logback.core.util.OptionHelper;
 import ch.qos.logback.tyler.base.TylerModelInterpretationContext;
 
+import static ch.qos.logback.tyler.base.util.StringToVariableStament.booleanObjectToString;
+
 public class TylerPropertiesConfiguratorModelHandler extends ModelHandlerBase {
 
     public TylerPropertiesConfiguratorModelHandler(Context context) {
@@ -53,6 +55,7 @@ public class TylerPropertiesConfiguratorModelHandler extends ModelHandlerBase {
     public void handle(ModelInterpretationContext mic, Model model) throws ModelHandlerException {
         PropertiesConfiguratorModel propertyConfiguratorModel = (PropertiesConfiguratorModel) model;
         TylerModelInterpretationContext tmic  = (TylerModelInterpretationContext) mic;
+
         addJavaStatement(tmic, propertyConfiguratorModel);
     }
 
@@ -65,10 +68,13 @@ public class TylerPropertiesConfiguratorModelHandler extends ModelHandlerBase {
         //propertyConfiguratorModel.setResource(pcModel.getResource());
         //propertyConfiguratorModel.setOptional(pcModel.getOptional());
         //PropertiesConfiguratorModelHandler propertiesConfiguratorModelHandler = new PropertiesConfiguratorModelHandler(context);
-        //propertiesConfiguratorModelHandler.handle((ContextAwarePropertyContainer) this, propertyConfiguratorModel);
+        //propertiesConfiguratorModelHandler.detachedHandle((ContextAwarePropertyContainer) this, propertyConfiguratorModel, topScanBoolean);
+
+        Boolean topScanBoolean = tmic.getTopScanBoolean();
 
         String pcmVarName = "propertyConfiguratorModel";
         String pcmhVarName = "propertiesConfiguratorModelHandler";
+
         tmic.configureMethodSpecBuilder.addStatement("$1T $2N = new $1T()", PropertiesConfiguratorModel.class, pcmVarName);
         if (!OptionHelper.isNullOrEmptyOrAllSpaces(pcModel.getFile())) {
             tmic.configureMethodSpecBuilder.addStatement("$N.setFile(subst($S))", pcmVarName, pcModel.getFile());
@@ -86,7 +92,8 @@ public class TylerPropertiesConfiguratorModelHandler extends ModelHandlerBase {
                         tmic.getContextFieldSpec());
         // "this is the calling TylerConfigurator instance of type ContextAwarePropertyContainer"
         tmic.configureMethodSpecBuilder.beginControlFlow("try");
-        tmic.configureMethodSpecBuilder.addStatement("$N.detachedHandle(this, $N)", pcmhVarName, pcmVarName);
+
+        tmic.configureMethodSpecBuilder.addStatement("$N.detachedHandle(this, $N, $N)", pcmhVarName, pcmVarName, tmic.topScanFieldName);
         tmic.configureMethodSpecBuilder.nextControlFlow("catch($T e)", ModelHandlerException.class);
         tmic.configureMethodSpecBuilder.addStatement("addError(\"Failed to process PropertyConfiguratorModel\", e)");
         tmic.configureMethodSpecBuilder.endControlFlow();

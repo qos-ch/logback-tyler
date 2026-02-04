@@ -40,6 +40,10 @@ import com.squareup.javapoet.ParameterSpec;
 
 import javax.lang.model.element.Modifier;
 
+import java.net.URL;
+
+import static ch.qos.logback.tyler.base.util.StringToVariableStament.booleanObjectToString;
+
 public class TylerIncludeModelHandler extends ModelHandlerBase {
 
     final static String INCLUDE_METHOD_NAME = "include";
@@ -108,7 +112,13 @@ public class TylerIncludeModelHandler extends ModelHandlerBase {
         final String resourceStrVarName = "resourceStr";
         final String optionalStrVarName = "optionalStr";
 
+        Boolean topScanBoolean = tmic.getTopScanBoolean();
+        String booleanObjectStr = booleanObjectToString(topScanBoolean);
 
+        URL topURL = tmic.getTopURL();
+        String topURLStr = topURL != null ? topURL.toString() : "null";
+        String topURLVarName = "topURL";
+        tmic.configureMethodSpecBuilder.addStatement("$T $N = $L", URL.class, topURLVarName, topURLStr);
         final ParameterSpec fileStr_ParameterSpec = ParameterSpec.builder(String.class, fileStrVarName).build();
         final ParameterSpec urStr_ParameterSpec = ParameterSpec.builder(String.class, urlStrVarName).build();
         final ParameterSpec resourceStr_ParameterSpec = ParameterSpec.builder(String.class, resourceStrVarName).build();
@@ -124,9 +134,11 @@ public class TylerIncludeModelHandler extends ModelHandlerBase {
         msBuilder.addStatement("$N.setOptional(subst($N))", includeModelVarName, optionalStrVarName);
         msBuilder.addStatement("$1T $2N = new $1T($3N)", IncludeModelHandler.class, imhVarName, tmic.getContextFieldSpec());
 
+
         // "this is the calling TylerConfigurator instance of type ContextAwarePropertyContainer"
         msBuilder.beginControlFlow("try");
-        msBuilder.addStatement("$T $N = $N.buildModelFromIncludedFile(this, $N)", Model.class, mfifVarName, imhVarName, includeModelVarName);
+        msBuilder.addStatement("$T $N = $N.buildModelFromIncludedFile(this, $N, $N, $N)", Model.class, mfifVarName,
+                imhVarName, topURLVarName, tmic.topScanFieldName, includeModelVarName);
         msBuilder.addStatement("processModelFromIncludedFile($N)", mfifVarName);
         msBuilder.nextControlFlow("catch($T e)", ModelHandlerException.class);
         msBuilder.addStatement("addError(\"Failed to process IncludeModelHandler\", e)");
