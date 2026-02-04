@@ -1,6 +1,8 @@
 /*
- * Copyright (c) 2024 QOS.ch Sarl (Switzerland)
- * All rights reserved.
+ * Logback-tyler translates logback-classic XML configuration files into
+ * Java.
+ *
+ * Copyright (C) 2024-2024-2026, QOS.ch. All rights reserved.
  *
  * Permission is hereby granted, free  of charge, to any person obtaining
  * a  copy  of this  software  and  associated  documentation files  (the
@@ -20,9 +22,6 @@
  * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
  * OF CONTRACT, TORT OR OTHERWISE,  ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- *
- *
- *
  */
 
 package ch.qos.logback.tyler.base.handler;

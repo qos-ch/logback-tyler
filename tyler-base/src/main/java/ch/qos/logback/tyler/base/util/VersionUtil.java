@@ -1,5 +1,7 @@
 /*
- * Copyright (c) 2024 QOS.ch Sarl (Switzerland)
+ * Logback-tyler translates logback-classic XML configuration files into Java.
+ *
+ * Copyright (C) 2024-2026, QOS.ch.
  * All rights reserved.
  *
  * Permission is hereby granted, free  of charge, to any person obtaining
@@ -21,17 +23,17 @@
  * OF CONTRACT, TORT OR OTHERWISE,  ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
- *
- *
  */
 
 package ch.qos.logback.tyler.base.util;
 
-import ch.qos.logback.core.util.EnvUtil;
 
 import java.lang.module.ModuleDescriptor;
 import java.util.Optional;
 
+/**
+ * Utility class for determining and retrieving version information related to the current module or package.
+ */
 public class VersionUtil {
 
     static public String tylerVersion() {
