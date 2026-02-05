@@ -76,7 +76,7 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
   public Configurator.ExecutionStatus configure(LoggerContext loggerContext) {
     setContext(loggerContext);
     this.appenderLIST = setupAppenderLIST();
-    propertyModelHandlerHelper.handlePropertyModel(this, "JO_PREFIX", "src/test/input/joran", "", "", "");
+    this.propertyModelHandlerHelper.handlePropertyModel(this, "JO_PREFIX", "src/test/input/joran", "", "", "");
     PropertiesConfiguratorModel propertyConfiguratorModel = new PropertiesConfiguratorModel();
     propertyConfiguratorModel.setFile(subst("${JO_PREFIX}/propertiesConfigurator/smoke.properties"));
     PropertiesConfiguratorModelHandler propertiesConfiguratorModelHandler = new PropertiesConfiguratorModelHandler(context);

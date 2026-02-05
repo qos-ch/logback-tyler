@@ -67,6 +67,7 @@ public class TylerPropertiesConfiguratorModelHandler extends ModelHandlerBase {
         //propertyConfiguratorModel.setUrl(pcModel.getUrl()); // use actual string value of pcModel.getUrl()
         //propertyConfiguratorModel.setResource(pcModel.getResource());
         //propertyConfiguratorModel.setOptional(pcModel.getOptional());
+        //propertyConfiguratorModel.setScan(pcModel.getScan());
         //PropertiesConfiguratorModelHandler propertiesConfiguratorModelHandler = new PropertiesConfiguratorModelHandler(context);
         //propertiesConfiguratorModelHandler.detachedHandle((ContextAwarePropertyContainer) this, propertyConfiguratorModel, topScanBoolean);
 
@@ -87,6 +88,9 @@ public class TylerPropertiesConfiguratorModelHandler extends ModelHandlerBase {
         }
         if (!OptionHelper.isNullOrEmptyOrAllSpaces(pcModel.getOptional())) {
             tmic.configureMethodSpecBuilder.addStatement("$N.setOptional(subst($S))", pcmVarName, pcModel.getOptional());
+        }
+        if (!OptionHelper.isNullOrEmptyOrAllSpaces(pcModel.getScanStr())) {
+            tmic.configureMethodSpecBuilder.addStatement("$N.setScanStr(subst($S))", pcmVarName, pcModel.getScanStr());
         }
         tmic.configureMethodSpecBuilder.addStatement("$1T $2N = new $1T($3N)", PropertiesConfiguratorModelHandler.class, pcmhVarName,
                         tmic.getContextFieldSpec());

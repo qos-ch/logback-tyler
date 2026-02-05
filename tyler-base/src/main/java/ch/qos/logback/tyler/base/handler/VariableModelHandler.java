@@ -67,7 +67,7 @@ public class VariableModelHandler extends ModelHandlerBase  {
         String scopeStr = StringUtil.nullStringToEmpty(propertyModel.getScopeStr());
 
 
-        tmic.configureMethodSpecBuilder.addStatement("$N.$N(this, $S, $S, $S, $S, $S)",
+        tmic.configureMethodSpecBuilder.addStatement("this.$N.$N(this, $S, $S, $S, $S, $S)",
                 PROPERTY_MODEL_HANDLER_HELPER_FIELD_NAME, HANDLE_PROPERTY_MODEL_METHOD_NAME, nameStr, valueStr,
                 fileStr, resoureStr, scopeStr );
         // propertyModelHandlerHelper.handlePropertyModel(this, propertyModel.getName(), ..)

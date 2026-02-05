@@ -135,6 +135,11 @@ public class TylerRegressionTest {
     }
 
     @Test
+    void propertiesConfiguratorWithScanLocalTest() throws JoranException, IOException {
+        verify(INPUT_PREFIX + "propertiesConfiguratorWithLocalScan.xml", INPUT_PREFIX + "propertiesConfiguratorWithLocalScan_witness.java");
+    }
+
+    @Test
     void topIncludingTest() throws JoranException, IOException {
         verify(INPUT_PREFIX + "topIncluding.xml", INPUT_PREFIX + "topIncluding_witness.java");
     }

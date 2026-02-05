@@ -3,11 +3,10 @@ package com.example;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.PatternLayout;
+import ch.qos.logback.classic.model.PropertiesConfiguratorModel;
+import ch.qos.logback.classic.model.processor.PropertiesConfiguratorModelHandler;
 import ch.qos.logback.classic.spi.Configurator;
 import ch.qos.logback.classic.tyler.TylerConfiguratorBase;
-import ch.qos.logback.core.model.IncludeModel;
-import ch.qos.logback.core.model.Model;
-import ch.qos.logback.core.model.processor.IncludeModelHandler;
 import ch.qos.logback.core.model.processor.ModelHandlerException;
 import ch.qos.logback.core.testUtil.StringListAppender;
 import java.net.URL;
@@ -27,7 +26,7 @@ import java.net.URL;
  * into the user's project as a custom configurator. It will configure logback
  * without XML. You are free to rename TylerConfigurator as you wish.</p>
  *
- * <p>It requires logback-classic version 1.5.11 or later at runtime.</p>
+ * <p>It requires logback-classic version 1.5.20 or later at runtime.</p>
  *
  * <p>Custom configurators are looked up via Java's service-provide facility. If a
  * custom provider is found, it takes precedence over logback's own configurators,
@@ -45,16 +44,17 @@ import java.net.URL;
  *
  * <p>  https://logback.qos.ch/manual/configuration.html#auto_configuration</p>
  *
- * <p>With recent versions of logback and logback-tyler you can still
- * configure logger levels dynamically using properties files. Note that
- * configuration files in properties format can be watched for
- * changes. See the documentation on PropertiesConfigurator for more details.</p>
+ * <p>Configurations using TylerConfigurator can still dynamically configure
+ * logger levels with the help of properties files. Moreover, configuration
+ * files in properties format can be watched for changes. See the
+ * documentation on PropertiesConfigurator for more details.</p>
  *
  * <p>https://logback.qos.ch/manual/configuration.html#propertiesConfigurator</p>
  *
- * <p>Keep in mind that by integrating a .properties configuration file info
- * your tyler configurator, you can still change logger levels dynamically, without
- * redeploying your application.</p>
+ * <p>Please note that when logback-tyler transforms XML to Java, it performs
+ * runtime analysis of classes using Java's class reflection. Thus,
+ * if your logback.xml mentions classes which are unavailable on the classpath,
+ * logback-tyler will fail during the translation.</p>
  *
  */
 public class TylerConfigurator extends TylerConfiguratorBase implements Configurator {
@@ -88,8 +88,15 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
         setContext(loggerContext);
         this.appenderLIST = setupAppenderLIST();
         this.propertyModelHandlerHelper.handlePropertyModel(this, "JO_PREFIX", "src/test/input/joran", "", "", "");
-        URL topURL = null;
-        include("${JO_PREFIX}/included.xml", null, null, null);
+        PropertiesConfiguratorModel propertyConfiguratorModel = new PropertiesConfiguratorModel();
+        propertyConfiguratorModel.setFile(subst("${JO_PREFIX}/propertiesConfigurator/smoke.properties"));
+        propertyConfiguratorModel.setScanStr(subst("true"));
+        PropertiesConfiguratorModelHandler propertiesConfiguratorModelHandler = new PropertiesConfiguratorModelHandler(context);
+        try {
+            propertiesConfiguratorModelHandler.detachedHandle(this, propertyConfiguratorModel, topScan);
+        } catch(ModelHandlerException e) {
+            addError("Failed to process PropertyConfiguratorModel", e);
+        }
         Logger logger_ROOT = setupLogger("ROOT", "debug", null);
         logger_ROOT.addAppender(appenderLIST);
         return ExecutionStatus.DO_NOT_INVOKE_NEXT_IF_ANY;
@@ -112,20 +119,5 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
         appender.start();
         return appender;
     }
-
-    private void include(String fileStr, String urlStr, String resourceStr, String optionalStr) {
-        IncludeModel includeModel = new IncludeModel();
-        includeModel.setFile(subst(fileStr));
-        includeModel.setUrl(subst(urlStr));
-        includeModel.setResource(subst(resourceStr));
-        includeModel.setOptional(subst(optionalStr));
-        IncludeModelHandler includeModelHandler = new IncludeModelHandler(context);
-        try {
-            Model modelFromIncludedFile = includeModelHandler.buildModelFromIncludedFile(this, topURL, topScan, includeModel);
-            processModelFromIncludedFile(modelFromIncludedFile);
-        } catch(ModelHandlerException e) {
-            addError("Failed to process IncludeModelHandler", e);
-        }
-    }
 }
-// 22:11:33,947 |-INFO in ch.qos.logback.core.model.processor.DefaultProcessor@560348e6 - End of configuration.
+// 21:00:54,827 |-INFO in ch.qos.logback.core.model.processor.DefaultProcessor@b83a9be - End of configuration.

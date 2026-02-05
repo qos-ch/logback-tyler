@@ -68,7 +68,7 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
   public Configurator.ExecutionStatus configure(LoggerContext loggerContext) {
     setContext(loggerContext);
     setupOnConsoleStatusListener_0();
-    propertyModelHandlerHelper.handlePropertyModel(this, "USER_HOME", "/home/alice", "", "", "");
+      this.propertyModelHandlerHelper.handlePropertyModel(this, "USER_HOME", "/home/alice", "", "", "");
     setContextName(subst("${APPNAME}"));
     this.appenderRFILE = setupAppenderRFILE();
     Logger logger_com_foo_Bar = setupLogger("com.foo.Bar", "DEBUG", null);
