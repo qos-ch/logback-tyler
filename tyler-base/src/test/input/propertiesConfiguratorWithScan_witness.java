@@ -88,7 +88,10 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
     Logger logger_ROOT = setupLogger("ROOT", "debug", null);
     logger_ROOT.addAppender(appenderLIST);
     ConfigurationModelHandlerFull configurationMHF = new ConfigurationModelHandlerFull(context);
-    configurationMHF.detachedPostProcess(subst("30 seconds"));
+    String scanPeriodStr = subst("30 seconds");
+    // schedule a ReconfigureOnChangeTask which periodically checks the watched
+    // configuration files for changes, reconfiguring logback if any are detected
+    configurationMHF.detachedPostProcess(scanPeriodStr);
     return ExecutionStatus.DO_NOT_INVOKE_NEXT_IF_ANY;
   }
 

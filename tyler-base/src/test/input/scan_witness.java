@@ -61,7 +61,10 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
   public Configurator.ExecutionStatus configure(LoggerContext loggerContext) {
     setContext(loggerContext);
     ConfigurationModelHandlerFull configurationMHF = new ConfigurationModelHandlerFull(context);
-    configurationMHF.detachedPostProcess(subst(null));
+    String scanPeriodStr = subst(null);
+    // schedule a ReconfigureOnChangeTask which periodically checks the watched
+    // configuration files for changes, reconfiguring logback if any are detected
+    configurationMHF.detachedPostProcess(scanPeriodStr);
     return ExecutionStatus.DO_NOT_INVOKE_NEXT_IF_ANY;
   }
 }

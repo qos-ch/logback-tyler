@@ -71,7 +71,7 @@ public class ConfigurationModelHandler extends ModelHandlerBase {
 
         // It is hard to gauge at this stage which URL ares watchable
         // However, we know for sure if the user wants scanning or not
-        this.scanning = scanAttrToBoolean(configurationModel);
+        this.scanning = scanAttrToBoolean(mic, configurationModel);
         FieldSpec topScanFieldSpec = tmic.createTopScanFieldSpec(booleanObjectToString(scanning));
         tmic.getFieldSpecs().add(topScanFieldSpec);
         mic.setTopScanBoolean(scanning);
@@ -95,7 +95,11 @@ public class ConfigurationModelHandler extends ModelHandlerBase {
             String cmhfVarName = "configurationMHF";
             tmic.configureMethodSpecBuilder.addStatement("$1T $2N = new $1T($3N)", ConfigurationModelHandlerFull.class, cmhfVarName,
                             tmic.getContextFieldSpec());
-            tmic.configureMethodSpecBuilder.addStatement("$N.detachedPostProcess(subst($S))", cmhfVarName, scanPeriodAttribute);
+            String scanPeriodVarName = "scanPeriodStr";
+            tmic.configureMethodSpecBuilder.addStatement("$T $N = subst($S)", String.class, scanPeriodVarName, scanPeriodAttribute);
+            tmic.configureMethodSpecBuilder.addComment("schedule a ReconfigureOnChangeTask which periodically checks the watched");
+            tmic.configureMethodSpecBuilder.addComment("configuration files for changes, reconfiguring logback if any are detected");
+            tmic.configureMethodSpecBuilder.addStatement("$N.detachedPostProcess($N)", cmhfVarName, scanPeriodVarName);
         }
     }
 
@@ -104,25 +108,52 @@ public class ConfigurationModelHandler extends ModelHandlerBase {
     /**
      * Converts the scan string attribute of the given model to a Boolean value.
      *
-     * <p>If the provided model is an instance of {@code ConfigurationModel}, the scan string is retrieved
-     * and converted to a {@code Boolean}. If the provided model is not a {@code ConfigurationModel},
-     * the method returns {@code null}.
-     * </p>
+     * <p>Variable substitution is applied first. If the provided model is not a
+     * {@code ConfigurationModel}, the method returns {@code null}.</p>
      *
+     * <p>This mirrors the behavior of logback-classic 1.5.28 and later.</p>
+     *
+     * @param mic the interpretation context used for variable substitution
      * @param model the model object, which may be an instance of {@code ConfigurationModel}
      * @return a {@code Boolean} corresponding to the scan string attribute if the model is
      *         an instance of {@code ConfigurationModel}, or {@code null} otherwise
      *
      * @since 1.0.4
      */
-    private Boolean scanAttrToBoolean(Model model) {
+    private Boolean scanAttrToBoolean(ModelInterpretationContext mic, Model model) {
         if(model instanceof ConfigurationModel) {
             ConfigurationModel configurationModel = (ConfigurationModel) model;
-            String scanStr = configurationModel.getScanStr();
-            return OptionHelper.toBooleanObject(scanStr);
+            String scanStr = mic.subst(configurationModel.getScanStr());
+            return scanStringToBoolean(scanStr);
         } else {
             return null;
         }
+    }
+
+    /**
+     * Interprets a scan attribute after variable substitution.
+     *
+     * <p>Unset or blank values yield {@code null}. {@code "false"} (case-insensitive)
+     * yields {@link Boolean#FALSE}. Any other non-empty value, including unrecognized
+     * strings, yields {@link Boolean#TRUE}.</p>
+     *
+     * <p>This mirrors the package-private method of the same name in
+     * logback-classic's {@code ConfigurationModelHandler}.</p>
+     *
+     * @param scanStr the scan attribute value, possibly already substituted; may be {@code null}
+     * @return {@code true}, {@code false}, or {@code null} if the attribute is unset
+     *
+     * @since 1.0.4
+     */
+    static Boolean scanStringToBoolean(String scanStr) {
+        if (OptionHelper.isNullOrEmptyOrAllSpaces(scanStr)) {
+            return null;
+        }
+        Boolean parsed = OptionHelper.toBooleanObject(scanStr);
+        if (parsed != null) {
+            return parsed;
+        }
+        return TRUE;
     }
 }
 
