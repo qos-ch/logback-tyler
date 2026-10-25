@@ -89,14 +89,13 @@ public class ConfigurationModelHandler extends ModelHandlerBase {
 
             // code to produce
             //ConfigurationModelHandlerFull configurationModelHandlerFull = new ConfigurationModelHandlerFull(context);
-            //configurationModelHandlerFull.detachedPostProcessScanAttrib(scanStr, scanPeriodStr);
+            //configurationModelHandlerFull.detachedPostProcess(scanPeriodStr);
 
 
             String cmhfVarName = "configurationMHF";
             tmic.configureMethodSpecBuilder.addStatement("$1T $2N = new $1T($3N)", ConfigurationModelHandlerFull.class, cmhfVarName,
                             tmic.getContextFieldSpec());
-            // TODO: after logback-classic 1.5.28 is released remove "true"
-            tmic.configureMethodSpecBuilder.addStatement("$N.detachedPostProcess(\"true\", subst($S))", cmhfVarName, scanPeriodAttribute);
+            tmic.configureMethodSpecBuilder.addStatement("$N.detachedPostProcess(subst($S))", cmhfVarName, scanPeriodAttribute);
         }
     }
 

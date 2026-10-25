@@ -64,7 +64,7 @@ public class PropertiesConfiguratorInclusionWithScanTylerConfigurator extends Ty
         Logger logger_ROOT = setupLogger("ROOT", "debug", null);
         logger_ROOT.addAppender(appenderLIST);
         ConfigurationModelHandlerFull configurationMHF = new ConfigurationModelHandlerFull(context);
-        configurationMHF.detachedPostProcess(subst("true"), subst("30 seconds"));
+        configurationMHF.detachedPostProcess(subst("30 seconds"));
         return ExecutionStatus.DO_NOT_INVOKE_NEXT_IF_ANY;
     }
 
