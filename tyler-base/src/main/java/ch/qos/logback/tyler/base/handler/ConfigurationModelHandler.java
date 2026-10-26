@@ -142,6 +142,10 @@ public class ConfigurationModelHandler extends ModelHandlerBase {
         }
     }
 
+    // TODO: once a logback release makes ConfigurationModelHandler.scanStringToBoolean public,
+    // have generated code call it, e.g. this.topScan = ConfigurationModelHandler.scanStringToBoolean(subst(...)),
+    // and remove addToScanBooleanMethod, scanStringToBoolean below and ConfigurationModelHandlerTest.
+
     /**
      * Emits {@code toScanBoolean} once. The generated method substitutes the raw
      * scan attribute and applies the same rule as {@link #scanStringToBoolean(String)}.
