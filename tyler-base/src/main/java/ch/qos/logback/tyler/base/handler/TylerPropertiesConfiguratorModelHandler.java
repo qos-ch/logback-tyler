@@ -34,7 +34,6 @@ import ch.qos.logback.core.model.processor.ModelInterpretationContext;
 import ch.qos.logback.core.util.OptionHelper;
 import ch.qos.logback.tyler.base.TylerModelInterpretationContext;
 
-import static ch.qos.logback.tyler.base.util.StringToVariableStament.booleanObjectToString;
 
 public class TylerPropertiesConfiguratorModelHandler extends ModelHandlerBase {
 
@@ -71,7 +70,6 @@ public class TylerPropertiesConfiguratorModelHandler extends ModelHandlerBase {
         //PropertiesConfiguratorModelHandler propertiesConfiguratorModelHandler = new PropertiesConfiguratorModelHandler(context);
         //propertiesConfiguratorModelHandler.detachedHandle((ContextAwarePropertyContainer) this, propertyConfiguratorModel, topScanBoolean);
 
-        Boolean topScanBoolean = tmic.getTopScanBoolean();
 
         String pcmVarName = "propertyConfiguratorModel";
         String pcmhVarName = "propertiesConfiguratorModelHandler";
@@ -97,7 +95,7 @@ public class TylerPropertiesConfiguratorModelHandler extends ModelHandlerBase {
         // "this is the calling TylerConfigurator instance of type ContextAwarePropertyContainer"
         tmic.configureMethodSpecBuilder.beginControlFlow("try");
 
-        tmic.configureMethodSpecBuilder.addStatement("$N.detachedHandle(this, $N, $N)", pcmhVarName, pcmVarName, tmic.topScanFieldName);
+        tmic.configureMethodSpecBuilder.addStatement("$N.detachedHandle(this, $N, $L)", pcmhVarName, pcmVarName, tmic.getTopScanCodeBlock());
         tmic.configureMethodSpecBuilder.nextControlFlow("catch($T e)", ModelHandlerException.class);
         tmic.configureMethodSpecBuilder.addStatement("addError(\"Failed to process PropertyConfiguratorModel\", e)");
         tmic.configureMethodSpecBuilder.endControlFlow();

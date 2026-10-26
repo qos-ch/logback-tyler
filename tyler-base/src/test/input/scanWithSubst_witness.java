@@ -4,6 +4,7 @@ import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.model.processor.ConfigurationModelHandlerFull;
 import ch.qos.logback.classic.spi.Configurator;
 import ch.qos.logback.classic.tyler.TylerConfiguratorBase;
+import ch.qos.logback.core.util.OptionHelper;
 import java.net.URL;
 /**
  *
@@ -55,10 +56,10 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
 
     /**
      * Stands for the 'scan' attribute of <configuration> element. Can be true, false or null.
-     * If true, scanning is activated. Can be overridden by the 'scan' attribute of
-     * <propertiesConfigurator> element.
+     * Assigned at the start of configure() by substituting variables in the scan attribute.
+     * If true, scanning is activated.
      */
-    protected Boolean topScan = true;
+    protected Boolean topScan;
 
     /**
      * Since TylerConfigurator is java based, the topURL is always null.
@@ -75,13 +76,27 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
   @Override
   public Configurator.ExecutionStatus configure(LoggerContext loggerContext) {
     setContext(loggerContext);
-    ConfigurationModelHandlerFull configurationMHF = new ConfigurationModelHandlerFull(context);
-    String scanPeriodStr = subst(null);
-    // schedule a ReconfigureOnChangeTask which periodically checks the watched
-    // configuration files for changes, reconfiguring logback if any are detected
-    configurationMHF.detachedPostProcess(scanPeriodStr);
+    this.topScan = toScanBoolean("${TYLER_UNDEFINED_SCAN_VAR:-yes}");
+    if (Boolean.TRUE.equals(topScan)) {
+      ConfigurationModelHandlerFull configurationMHF = new ConfigurationModelHandlerFull(context);
+      String scanPeriodStr = subst(null);
+      // schedule a ReconfigureOnChangeTask which periodically checks the watched
+      // configuration files for changes, reconfiguring logback if any are detected
+      configurationMHF.detachedPostProcess(scanPeriodStr);
+    }
     return ExecutionStatus.DO_NOT_INVOKE_NEXT_IF_ANY;
   }
+
+  /**
+   * Interprets the raw scan attribute using properties of the running context.
+   */
+  private Boolean toScanBoolean(String scanAttribute) {
+    String scanStr = subst(scanAttribute);
+    if (OptionHelper.isNullOrEmptyOrAllSpaces(scanStr)) {
+      return null;
+    }
+    Boolean parsed = OptionHelper.toBooleanObject(scanStr);
+    return parsed != null ? parsed : Boolean.TRUE;
+  }
 }
-// 16:38:55,630 |-INFO in ch.qos.logback.tyler.base.TylerModelInterpretationContext@273e7444 - value "yes" substituted for "${TYLER_UNDEFINED_SCAN_VAR:-yes}"
 // 18:48:44,444 |-INFO in ch.qos.logback.core.model.processor.DefaultProcessor@1d8062d2 - End of configuration.

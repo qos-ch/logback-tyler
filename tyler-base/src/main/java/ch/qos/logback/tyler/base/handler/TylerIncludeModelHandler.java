@@ -42,7 +42,6 @@ import javax.lang.model.element.Modifier;
 
 import java.net.URL;
 
-import static ch.qos.logback.tyler.base.util.StringToVariableStament.booleanObjectToString;
 
 public class TylerIncludeModelHandler extends ModelHandlerBase {
 
@@ -112,8 +111,6 @@ public class TylerIncludeModelHandler extends ModelHandlerBase {
         final String resourceStrVarName = "resourceStr";
         final String optionalStrVarName = "optionalStr";
 
-        Boolean topScanBoolean = tmic.getTopScanBoolean();
-        String booleanObjectStr = booleanObjectToString(topScanBoolean);
 
         URL topURL = tmic.getTopURL();
         String topURLStr = topURL != null ? topURL.toString() : "null";
@@ -137,8 +134,8 @@ public class TylerIncludeModelHandler extends ModelHandlerBase {
 
         // "this is the calling TylerConfigurator instance of type ContextAwarePropertyContainer"
         msBuilder.beginControlFlow("try");
-        msBuilder.addStatement("$T $N = $N.buildModelFromIncludedFile(this, $N, $N, $N)", Model.class, mfifVarName,
-                imhVarName, topURLVarName, tmic.topScanFieldName, includeModelVarName);
+        msBuilder.addStatement("$T $N = $N.buildModelFromIncludedFile(this, $N, $L, $N)", Model.class, mfifVarName,
+                imhVarName, topURLVarName, tmic.getTopScanCodeBlock(), includeModelVarName);
         msBuilder.addStatement("processModelFromIncludedFile($N)", mfifVarName);
         msBuilder.nextControlFlow("catch($T e)", ModelHandlerException.class);
         msBuilder.addStatement("addError(\"Failed to process IncludeModelHandler\", e)");

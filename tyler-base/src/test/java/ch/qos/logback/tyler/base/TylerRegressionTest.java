@@ -94,6 +94,11 @@ public class TylerRegressionTest {
     }
 
     @Test
+    void scanFalseTest() throws JoranException, IOException {
+        verify(INPUT_PREFIX + "scanFalse.xml", INPUT_PREFIX + "scanFalse_witness.java");
+    }
+
+    @Test
     void defineTest() throws JoranException, IOException {
         verify(INPUT_PREFIX + "define.xml", INPUT_PREFIX + "define_witness.java");
     }

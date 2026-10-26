@@ -63,12 +63,6 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
      */
     protected StringListAppender appenderLIST;
 
-    /**
-     * Stands for the 'scan' attribute of <configuration> element. Can be true, false or null.
-     * If true, scanning is activated. Can be overridden by the 'scan' attribute of
-     * <propertiesConfigurator> element.
-     */
-    protected Boolean topScan = null;
 
     /**
      * Since TylerConfigurator is java based, the topURL is always null.
@@ -93,7 +87,7 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
         propertyConfiguratorModel.setScanStr(subst("true"));
         PropertiesConfiguratorModelHandler propertiesConfiguratorModelHandler = new PropertiesConfiguratorModelHandler(context);
         try {
-            propertiesConfiguratorModelHandler.detachedHandle(this, propertyConfiguratorModel, topScan);
+            propertiesConfiguratorModelHandler.detachedHandle(this, propertyConfiguratorModel, null);
         } catch(ModelHandlerException e) {
             addError("Failed to process PropertyConfiguratorModel", e);
         }

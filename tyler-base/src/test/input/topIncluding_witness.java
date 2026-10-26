@@ -64,12 +64,6 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
      */
     protected StringListAppender appenderLIST;
 
-    /**
-     * Stands for the 'scan' attribute of <configuration> element. Can be true, false or null.
-     * If true, scanning is activated. Can be overridden by the 'scan' attribute of
-     * <propertiesConfigurator> element.
-     */
-    protected Boolean topScan = null;
 
     /**
      * Since TylerConfigurator is java based, the topURL is always null.
@@ -122,7 +116,7 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
         includeModel.setOptional(subst(optionalStr));
         IncludeModelHandler includeModelHandler = new IncludeModelHandler(context);
         try {
-            Model modelFromIncludedFile = includeModelHandler.buildModelFromIncludedFile(this, topURL, topScan, includeModel);
+            Model modelFromIncludedFile = includeModelHandler.buildModelFromIncludedFile(this, topURL, null, includeModel);
             processModelFromIncludedFile(modelFromIncludedFile);
         } catch(ModelHandlerException e) {
             addError("Failed to process IncludeModelHandler", e);

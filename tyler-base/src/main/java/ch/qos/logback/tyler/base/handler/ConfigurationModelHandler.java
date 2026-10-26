@@ -35,17 +35,35 @@ import ch.qos.logback.core.model.processor.ModelHandlerException;
 import ch.qos.logback.core.model.processor.ModelInterpretationContext;
 import ch.qos.logback.core.util.OptionHelper;
 import ch.qos.logback.tyler.base.TylerModelInterpretationContext;
-import com.squareup.javapoet.FieldSpec;
+import com.squareup.javapoet.CodeBlock;
+import com.squareup.javapoet.MethodSpec;
+
+import javax.lang.model.element.Modifier;
 
 import static ch.qos.logback.core.model.ModelConstants.DEBUG_SYSTEM_PROPERTY_KEY;
 import static ch.qos.logback.core.model.ModelConstants.NULL_STR;
 import static ch.qos.logback.tyler.base.TylerConstants.ADD_ON_CONSOLE_STATUS_LISTENER;
-import static ch.qos.logback.tyler.base.util.StringToVariableStament.booleanObjectToString;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 
 public class ConfigurationModelHandler extends ModelHandlerBase {
-    protected Boolean scanning = null;
+
+    static final String TO_SCAN_BOOLEAN_METHOD_NAME = "toScanBoolean";
+    static final String VARIABLE_START = "${";
+
+    /**
+     * How the scan attribute of the configuration element translates into generated code.
+     */
+    enum ScanMode {
+        /** scan attribute missing, blank or false: no scanning code is generated */
+        OFF,
+        /** scan attribute evaluated as true at translation time */
+        ON,
+        /** scan attribute contains variables and is evaluated when configure() runs */
+        RUNTIME
+    }
+
+    ScanMode scanMode = ScanMode.OFF;
 
     public ConfigurationModelHandler(Context context) {
         super(context);
@@ -69,13 +87,24 @@ public class ConfigurationModelHandler extends ModelHandlerBase {
         }
 
 
-        // It is hard to gauge at this stage which URL ares watchable
-        // However, we know for sure if the user wants scanning or not
-        this.scanning = scanAttrToBoolean(mic, configurationModel);
-        FieldSpec topScanFieldSpec = tmic.createTopScanFieldSpec(booleanObjectToString(scanning));
-        tmic.getFieldSpecs().add(topScanFieldSpec);
-        mic.setTopScanBoolean(scanning);
-
+        String scanAttribute = configurationModel.getScanStr();
+        if (OptionHelper.isNullOrEmptyOrAllSpaces(scanAttribute)) {
+            scanMode = ScanMode.OFF;
+        } else if (scanAttribute.contains(VARIABLE_START)) {
+            // The scan attribute is interpreted when the generated configure() method runs,
+            // so a value such as ${SCAN:-yes} follows the application, not the translator.
+            scanMode = ScanMode.RUNTIME;
+            tmic.getFieldSpecs().add(tmic.createTopScanFieldSpec());
+            addToScanBooleanMethod(tmic);
+            tmic.configureMethodSpecBuilder.addStatement("this.$N = $N($S)", tmic.topScanFieldName, TO_SCAN_BOOLEAN_METHOD_NAME, scanAttribute);
+            tmic.setTopScanCodeBlock(CodeBlock.of("$N", tmic.topScanFieldName));
+        } else if (scanStringToBoolean(scanAttribute) == TRUE) {
+            // without variables, substitution leaves the value unchanged, so it can be evaluated now
+            scanMode = ScanMode.ON;
+            tmic.setTopScanCodeBlock(CodeBlock.of("$T.TRUE", Boolean.class));
+        } else {
+            scanMode = ScanMode.OFF;
+        }
     }
 
     @Override
@@ -83,51 +112,57 @@ public class ConfigurationModelHandler extends ModelHandlerBase {
         ConfigurationModel configurationModel = (ConfigurationModel) model;
         TylerModelInterpretationContext tmic = (TylerModelInterpretationContext) mic;
 
-        // do not produce code if scanAttribute is null or empty
-        if (this.scanning == TRUE) {
-            String scanPeriodAttribute = configurationModel.getScanPeriodStr();
+        if (scanMode == ScanMode.OFF) {
+            return;
+        }
 
-            // code to produce
-            //ConfigurationModelHandlerFull configurationModelHandlerFull = new ConfigurationModelHandlerFull(context);
-            //configurationModelHandlerFull.detachedPostProcess(scanPeriodStr);
+        // code to produce, the if statement being present only for ScanMode.RUNTIME
+        // if (Boolean.TRUE.equals(topScan)) {
+        //     ConfigurationModelHandlerFull configurationModelHandlerFull = new ConfigurationModelHandlerFull(context);
+        //     String scanPeriodStr = subst(scanPeriodAttribute);
+        //     configurationModelHandlerFull.detachedPostProcess(scanPeriodStr);
+        // }
 
+        if (scanMode == ScanMode.RUNTIME) {
+            tmic.configureMethodSpecBuilder.beginControlFlow("if ($T.TRUE.equals($N))", Boolean.class, tmic.topScanFieldName);
+        }
 
-            String cmhfVarName = "configurationMHF";
-            tmic.configureMethodSpecBuilder.addStatement("$1T $2N = new $1T($3N)", ConfigurationModelHandlerFull.class, cmhfVarName,
-                            tmic.getContextFieldSpec());
-            String scanPeriodVarName = "scanPeriodStr";
-            tmic.configureMethodSpecBuilder.addStatement("$T $N = subst($S)", String.class, scanPeriodVarName, scanPeriodAttribute);
-            tmic.configureMethodSpecBuilder.addComment("schedule a ReconfigureOnChangeTask which periodically checks the watched");
-            tmic.configureMethodSpecBuilder.addComment("configuration files for changes, reconfiguring logback if any are detected");
-            tmic.configureMethodSpecBuilder.addStatement("$N.detachedPostProcess($N)", cmhfVarName, scanPeriodVarName);
+        String scanPeriodAttribute = configurationModel.getScanPeriodStr();
+        String cmhfVarName = "configurationMHF";
+        String scanPeriodVarName = "scanPeriodStr";
+        tmic.configureMethodSpecBuilder.addStatement("$1T $2N = new $1T($3N)", ConfigurationModelHandlerFull.class, cmhfVarName,
+                        tmic.getContextFieldSpec());
+        tmic.configureMethodSpecBuilder.addStatement("$T $N = subst($S)", String.class, scanPeriodVarName, scanPeriodAttribute);
+        tmic.configureMethodSpecBuilder.addComment("schedule a ReconfigureOnChangeTask which periodically checks the watched");
+        tmic.configureMethodSpecBuilder.addComment("configuration files for changes, reconfiguring logback if any are detected");
+        tmic.configureMethodSpecBuilder.addStatement("$N.detachedPostProcess($N)", cmhfVarName, scanPeriodVarName);
+
+        if (scanMode == ScanMode.RUNTIME) {
+            tmic.configureMethodSpecBuilder.endControlFlow();
         }
     }
 
-
-
     /**
-     * Converts the scan string attribute of the given model to a Boolean value.
-     *
-     * <p>Variable substitution is applied first. If the provided model is not a
-     * {@code ConfigurationModel}, the method returns {@code null}.</p>
-     *
-     * <p>This mirrors the behavior of logback-classic 1.5.28 and later.</p>
-     *
-     * @param mic the interpretation context used for variable substitution
-     * @param model the model object, which may be an instance of {@code ConfigurationModel}
-     * @return a {@code Boolean} corresponding to the scan string attribute if the model is
-     *         an instance of {@code ConfigurationModel}, or {@code null} otherwise
-     *
-     * @since 1.0.4
+     * Emits {@code toScanBoolean} once. The generated method substitutes the raw
+     * scan attribute and applies the same rule as {@link #scanStringToBoolean(String)}.
      */
-    private Boolean scanAttrToBoolean(ModelInterpretationContext mic, Model model) {
-        if(model instanceof ConfigurationModel) {
-            ConfigurationModel configurationModel = (ConfigurationModel) model;
-            String scanStr = mic.subst(configurationModel.getScanStr());
-            return scanStringToBoolean(scanStr);
-        } else {
-            return null;
+    private void addToScanBooleanMethod(TylerModelInterpretationContext tmic) {
+        if (tmic.mapOfMethodSpecBuilders.containsKey(TO_SCAN_BOOLEAN_METHOD_NAME)) {
+            return;
         }
+
+        MethodSpec.Builder method = MethodSpec.methodBuilder(TO_SCAN_BOOLEAN_METHOD_NAME)
+                .addModifiers(Modifier.PRIVATE)
+                .returns(Boolean.class)
+                .addParameter(String.class, "scanAttribute")
+                .addJavadoc("Interprets the raw scan attribute using properties of the running context.\n");
+        method.addStatement("$T scanStr = subst(scanAttribute)", String.class);
+        method.beginControlFlow("if ($T.isNullOrEmptyOrAllSpaces(scanStr))", OptionHelper.class);
+        method.addStatement("return null");
+        method.endControlFlow();
+        method.addStatement("$T parsed = $T.toBooleanObject(scanStr)", Boolean.class, OptionHelper.class);
+        method.addStatement("return parsed != null ? parsed : $T.TRUE", Boolean.class);
+        tmic.mapOfMethodSpecBuilders.put(TO_SCAN_BOOLEAN_METHOD_NAME, method);
     }
 
     /**
@@ -137,8 +172,8 @@ public class ConfigurationModelHandler extends ModelHandlerBase {
      * yields {@link Boolean#FALSE}. Any other non-empty value, including unrecognized
      * strings, yields {@link Boolean#TRUE}.</p>
      *
-     * <p>This mirrors the package-private method of the same name in
-     * logback-classic's {@code ConfigurationModelHandler}.</p>
+     * <p>This matches logback-classic's {@code ConfigurationModelHandler.scanStringToBoolean}
+     * and the {@code toScanBoolean} method emitted into generated configurators.</p>
      *
      * @param scanStr the scan attribute value, possibly already substituted; may be {@code null}
      * @return {@code true}, {@code false}, or {@code null} if the attribute is unset

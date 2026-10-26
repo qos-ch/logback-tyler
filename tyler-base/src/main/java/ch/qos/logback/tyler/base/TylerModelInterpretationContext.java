@@ -58,6 +58,13 @@ package ch.qos.logback.tyler.base;
         final public String topScanFieldName = "topScan";
         final public String topURLFieldName = "topURL";
 
+        /**
+         * Java expression standing for the top-level scan value in generated code: {@code null},
+         * {@code Boolean.TRUE}, or the {@code topScan} field when the scan attribute must be
+         * evaluated at runtime.
+         */
+        CodeBlock topScanCodeBlock = CodeBlock.of("null");
+
         final List<FieldSpec> fieldSpecs = new ArrayList<>();
 
         final List<StaticImportData> staticImportsList = new ArrayList<>();
@@ -157,15 +164,23 @@ package ch.qos.logback.tyler.base;
 //            return fieldSpecBuilder.build();
 //        }
 
-        public FieldSpec createTopScanFieldSpec(String boolStr) {
-            FieldSpec.Builder fieldSpecBuilder = FieldSpec.builder(Boolean.class, topScanFieldName).addModifiers(Modifier.PROTECTED).initializer("$L", boolStr);
+        public FieldSpec createTopScanFieldSpec() {
+            FieldSpec.Builder fieldSpecBuilder = FieldSpec.builder(Boolean.class, topScanFieldName).addModifiers(Modifier.PROTECTED);
             String javadocStr = """
             Stands for the 'scan' attribute of <configuration> element. Can be true, false or null.
-            If true, scanning is activated. Can be overridden by the 'scan' attribute of 
-            <propertiesConfigurator> element.
+            Assigned at the start of configure() by substituting variables in the scan attribute.
+            If true, scanning is activated.
             """;
             fieldSpecBuilder.addJavadoc(javadocStr);
             return fieldSpecBuilder.build();
+        }
+
+        public CodeBlock getTopScanCodeBlock() {
+            return topScanCodeBlock;
+        }
+
+        public void setTopScanCodeBlock(CodeBlock topScanCodeBlock) {
+            this.topScanCodeBlock = topScanCodeBlock;
         }
 
         public FieldSpec createTopURLFieldSpec() {

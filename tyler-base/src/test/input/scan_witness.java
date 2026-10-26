@@ -53,12 +53,6 @@ import java.net.URL;
  */
 public class TylerConfigurator extends TylerConfiguratorBase implements Configurator {
 
-    /**
-     * Stands for the 'scan' attribute of <configuration> element. Can be true, false or null.
-     * If true, scanning is activated. Can be overridden by the 'scan' attribute of
-     * <propertiesConfigurator> element.
-     */
-    protected Boolean topScan = true;
 
     /**
      * Since TylerConfigurator is java based, the topURL is always null.
