@@ -58,7 +58,7 @@ public class TylerRegressionTest {
     SyntaxVerifier syntaxVerifier = new SyntaxVerifier();
     CompilationVerifier compilationVerifier = new CompilationVerifier();
     ModelToJava m2j = new ModelToJava(context);
-    ModelToJava m2jWithInclusion = new ModelToJava(context, true);
+    ModelToJava m2jWithInclusion = new ModelToJava(context, TranslationOptions.builder().translationTimeInclusionEnabled(true).build());
     OutputComparator outputComparator = new OutputComparator();
 
     @BeforeEach

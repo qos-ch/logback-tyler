@@ -73,7 +73,7 @@ public class TylerIncludeModelHandler extends ModelHandlerBase {
         TylerModelInterpretationContext tmic = (TylerModelInterpretationContext) mic;
         String description = describe(includeModel);
 
-        if (!tmic.isTranslationTimeInclusionEnabled()) {
+        if (!tmic.getTranslationOptions().isTranslationTimeInclusionEnabled()) {
             omitInclude(tmic, includeModel, description, "translation-time inclusion is disabled");
             return;
         }

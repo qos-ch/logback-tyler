@@ -61,6 +61,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import static ch.qos.logback.tyler.base.util.StringToVariableStament.booleanObjectToString;
 
@@ -68,29 +69,24 @@ public class ModelToJava {
 
 
     final Context context;
-    final boolean translationTimeInclusionEnabled;
+    final TranslationOptions translationOptions;
 
     /**
-     * Translation-time inclusion is disabled with this constructor. Consequently, &lt;include&gt;
-     * elements are omitted from the generated code, each with a warning.
+     * Uses {@link TranslationOptions#DEFAULT}. In particular, translation-time inclusion is disabled.
+     * Consequently, &lt;include&gt; elements are omitted from the generated code, each with a warning.
      */
     public ModelToJava(Context context) {
-        this(context, false);
+        this(context, TranslationOptions.DEFAULT);
     }
 
     /**
      * @param context the context
-     * @param translationTimeInclusionEnabled if true, files referenced by &lt;include&gt; elements
-     *        are read at translation time and their contents inlined in the generated code. Variables
-     *        are not supported in the attributes of &lt;include&gt; elements. Relative file paths are
-     *        resolved against the current working directory of the translating JVM. Only enable this
-     *        option for trusted input, as included files can be read from the local file system, the
-     *        class path or any URL.
+     * @param translationOptions options governing the translation
      * @since 1.0.5
      */
-    public ModelToJava(Context context, boolean translationTimeInclusionEnabled) {
+    public ModelToJava(Context context, TranslationOptions translationOptions) {
         this.context = context;
-        this.translationTimeInclusionEnabled = translationTimeInclusionEnabled;
+        this.translationOptions = Objects.requireNonNull(translationOptions, "translationOptions cannot be null");
     }
 
 
@@ -108,9 +104,8 @@ public class ModelToJava {
     }
 
     public StringBuffer toJavaAsStringBuffer(Model topModel) throws IOException {
-        TylerModelInterpretationContext tmic = new TylerModelInterpretationContext(context);
+        TylerModelInterpretationContext tmic = new TylerModelInterpretationContext(context, translationOptions);
         tmic.setTopModel(topModel);
-        tmic.setTranslationTimeInclusionEnabled(translationTimeInclusionEnabled);
         // used to parse included files at translation time
         tmic.setConfiguratorSupplier(() -> {
             JoranConfigurator joranConfigurator = new JoranConfigurator();
@@ -144,7 +139,7 @@ public class ModelToJava {
 
         TypeSpec tylerConfiguratorTypeSpec = tmic.tylerConfiguratorTSB.build();
 
-        JavaFile.Builder javaFileBuilder = JavaFile.builder("com.example", tylerConfiguratorTypeSpec);
+        JavaFile.Builder javaFileBuilder = JavaFile.builder(translationOptions.getGeneratedClassPackageName(), tylerConfiguratorTypeSpec);
         javaFileBuilder.skipJavaLangImports(true);
 
         tmic.staticImportsList.forEach(sid -> javaFileBuilder.addStaticImport(sid.aClass(), sid.methodName()));
