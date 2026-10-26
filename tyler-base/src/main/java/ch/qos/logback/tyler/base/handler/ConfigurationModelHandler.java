@@ -78,6 +78,7 @@ public class ConfigurationModelHandler extends ModelHandlerBase {
         ConfigurationModel configurationModel = (ConfigurationModel) model;
         TylerModelInterpretationContext tmic = (TylerModelInterpretationContext) mic;
 
+        // TODO: check alignment with logback-classic's ConfigurationModelHandler.handle() and ConfigurationModelHandler.postHandle()
         String debugAttrib = OptionHelper.getSystemProperty(DEBUG_SYSTEM_PROPERTY_KEY, null);
         if (debugAttrib == null) {
             debugAttrib = mic.subst(configurationModel.getDebugStr());
