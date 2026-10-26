@@ -106,8 +106,8 @@ public class ModelToJava {
         tmic.configureMethodSpecBuilder.addStatement("return ExecutionStatus.DO_NOT_INVOKE_NEXT_IF_ANY");
         MethodSpec configureMethodSpec = tmic.configureMethodSpecBuilder.build();
 
-        tmic.fieldSpecs.forEach(tmic.tylerConfiguratorTSB.fieldSpecs::addFirst);
-        tmic.tylerConfiguratorTSB.methodSpecs.addFirst(configureMethodSpec);
+        tmic.fieldSpecs.forEach(fs -> tmic.tylerConfiguratorTSB.fieldSpecs.add(0, fs));
+        tmic.tylerConfiguratorTSB.methodSpecs.add(0, configureMethodSpec);
 
         for(String methodName: tmic.mapOfMethodSpecBuilders.keySet()) {
             MethodSpec.Builder methodSpecBuilder = tmic.mapOfMethodSpecBuilders.get(methodName);
