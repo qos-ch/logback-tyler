@@ -41,6 +41,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -51,10 +52,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TylerRegressionTest {
 
+    static final String CWD_URL_PLACEHOLDER = "file:CWD/";
+
     ContextBase context = new ContextBase();
     SyntaxVerifier syntaxVerifier = new SyntaxVerifier();
     CompilationVerifier compilationVerifier = new CompilationVerifier();
     ModelToJava m2j = new ModelToJava(context);
+    ModelToJava m2jWithInclusion = new ModelToJava(context, true);
     OutputComparator outputComparator = new OutputComparator();
 
     @BeforeEach
@@ -154,6 +158,26 @@ public class TylerRegressionTest {
         verify(INPUT_PREFIX + "topIncluding.xml", INPUT_PREFIX + "topIncluding_witness.java");
     }
     @Test
+    void includeInlineTest() throws JoranException, IOException {
+        verify(m2jWithInclusion, INPUT_PREFIX + "includeInline.xml", INPUT_PREFIX + "includeInline_witness.java");
+    }
+
+    @Test
+    void includeMissingTest() throws JoranException, IOException {
+        verify(m2jWithInclusion, INPUT_PREFIX + "includeMissing.xml", INPUT_PREFIX + "includeMissing_witness.java");
+    }
+
+    @Test
+    void includeCircularTest() throws JoranException, IOException {
+        verify(m2jWithInclusion, INPUT_PREFIX + "includeCircular.xml", INPUT_PREFIX + "includeCircular_witness.java");
+    }
+
+    @Test
+    void includeVariableTest() throws JoranException, IOException {
+        verify(m2jWithInclusion, INPUT_PREFIX + "includeVariable.xml", INPUT_PREFIX + "includeVariable_witness.java");
+    }
+
+    @Test
     void insertFromJNDITest() throws JoranException, IOException {
         verify(INPUT_PREFIX + "insertFromJNDI.xml", INPUT_PREFIX + "insertFromJNDI_witness.java");
     }
@@ -166,16 +190,24 @@ public class TylerRegressionTest {
 
 
     String runTransformation(String path2XMLFile) throws JoranException, IOException {
+        return runTransformation(m2j, path2XMLFile);
+    }
+
+    String runTransformation(ModelToJava modelToJava, String path2XMLFile) throws JoranException, IOException {
         List<String> lines = FileHelper.readFile(path2XMLFile);
 
-        Model model = m2j.extractModel(String.join("\n", lines));
-        String result = m2j.toJava(model);
+        Model model = modelToJava.extractModel(String.join("\n", lines));
+        String result = modelToJava.toJava(model);
         return result;
     }
 
     void verify(String path2XMLFile, String path2WitnessFile) throws JoranException, IOException {
+        verify(m2j, path2XMLFile, path2WitnessFile);
+    }
 
-        String result = runTransformation(path2XMLFile);
+    void verify(ModelToJava m2j, String path2XMLFile, String path2WitnessFile) throws JoranException, IOException {
+
+        String result = runTransformation(m2j, path2XMLFile);
 
         List<String> witnessLines = FileHelper.readFile(path2WitnessFile);
 
@@ -183,7 +215,9 @@ public class TylerRegressionTest {
         List<String> resultList = new ArrayList<>(List.of(resultArray));
 
         List<String> statusList = m2j.statusToStringList();
-        resultList.addAll(statusList);
+        // status messages about included files mention absolute URLs which depend on the working directory
+        String cwdURLStr = new File("").getAbsoluteFile().toURI().toString();
+        statusList.forEach(line -> resultList.add(line.replace(cwdURLStr, CWD_URL_PLACEHOLDER)));
 
         // uncomment to see filtered output
         resultList.forEach(System.out::println);

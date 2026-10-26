@@ -68,9 +68,29 @@ public class ModelToJava {
 
 
     final Context context;
+    final boolean translationTimeInclusionEnabled;
 
+    /**
+     * Translation-time inclusion is disabled with this constructor. Consequently, &lt;include&gt;
+     * elements are omitted from the generated code, each with a warning.
+     */
     public ModelToJava(Context context) {
+        this(context, false);
+    }
+
+    /**
+     * @param context the context
+     * @param translationTimeInclusionEnabled if true, files referenced by &lt;include&gt; elements
+     *        are read at translation time and their contents inlined in the generated code. Variables
+     *        are not supported in the attributes of &lt;include&gt; elements. Relative file paths are
+     *        resolved against the current working directory of the translating JVM. Only enable this
+     *        option for trusted input, as included files can be read from the local file system, the
+     *        class path or any URL.
+     * @since 1.0.5
+     */
+    public ModelToJava(Context context, boolean translationTimeInclusionEnabled) {
         this.context = context;
+        this.translationTimeInclusionEnabled = translationTimeInclusionEnabled;
     }
 
 
@@ -90,6 +110,13 @@ public class ModelToJava {
     public StringBuffer toJavaAsStringBuffer(Model topModel) throws IOException {
         TylerModelInterpretationContext tmic = new TylerModelInterpretationContext(context);
         tmic.setTopModel(topModel);
+        tmic.setTranslationTimeInclusionEnabled(translationTimeInclusionEnabled);
+        // used to parse included files at translation time
+        tmic.setConfiguratorSupplier(() -> {
+            JoranConfigurator joranConfigurator = new JoranConfigurator();
+            joranConfigurator.setContext(context);
+            return joranConfigurator;
+        });
 
         FieldSpec topURLFieldSpec = tmic.createTopURLFieldSpec();
         tmic.getFieldSpecs().add(topURLFieldSpec);

@@ -1,0 +1,4 @@
+<included>
+    <logger name="com.foo" level="INFO"/>
+    <include file="src/test/input/includedSelf.xml"/>
+</included>

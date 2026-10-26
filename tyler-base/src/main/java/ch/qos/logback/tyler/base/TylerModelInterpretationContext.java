@@ -69,6 +69,17 @@ package ch.qos.logback.tyler.base;
 
         final List<StaticImportData> staticImportsList = new ArrayList<>();
 
+        /**
+         * Whether included files are read and inlined at translation time.
+         */
+        boolean translationTimeInclusionEnabled = false;
+
+        /**
+         * Descriptions of &lt;include&gt; elements currently being inlined. Used to detect circular
+         * inclusion.
+         */
+        final Set<String> includesInProgress = new HashSet<>();
+
 
         public TylerModelInterpretationContext(Context context) {
             super(context);
@@ -217,5 +228,26 @@ package ch.qos.logback.tyler.base;
             String packageName = ClassUtil.extractPackageName(fqcn);
             String simpleName = ClassUtil.extractSimpleClassName(fqcn);
             return ClassName.get(packageName, simpleName);
+        }
+
+        public boolean isTranslationTimeInclusionEnabled() {
+            return translationTimeInclusionEnabled;
+        }
+
+        public void setTranslationTimeInclusionEnabled(boolean translationTimeInclusionEnabled) {
+            this.translationTimeInclusionEnabled = translationTimeInclusionEnabled;
+        }
+
+        /**
+         * Mark the given include as being in progress.
+         *
+         * @return false if the include is already in progress, i.e. in case of circular inclusion
+         */
+        public boolean enterInclude(String includeDescription) {
+            return includesInProgress.add(includeDescription);
+        }
+
+        public void exitInclude(String includeDescription) {
+            includesInProgress.remove(includeDescription);
         }
     }

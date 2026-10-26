@@ -1,0 +1,7 @@
+<configuration>
+
+    <include file="src/test/input/doesNotExist.xml"/>
+    <include file="src/test/input/doesNotExistEither.xml" optional="true"/>
+
+    <root level="DEBUG"/>
+</configuration>

@@ -1,0 +1,8 @@
+<configuration>
+
+    <variable name="INCLUDE_DIR" value="src/test/input"/>
+
+    <include file="${INCLUDE_DIR}/included0.xml"/>
+
+    <root level="DEBUG"/>
+</configuration>

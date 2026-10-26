@@ -1,0 +1,6 @@
+<configuration>
+
+    <include file="src/test/input/includedSelf.xml"/>
+
+    <root level="DEBUG"/>
+</configuration>
