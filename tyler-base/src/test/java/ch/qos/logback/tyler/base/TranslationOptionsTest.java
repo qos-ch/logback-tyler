@@ -56,6 +56,30 @@ public class TranslationOptionsTest {
         assertEquals("com.example.TylerConfigurator", options.getGeneratedClassName());
         assertEquals("com.example", options.getGeneratedClassPackageName());
         assertEquals("TylerConfigurator", options.getGeneratedClassSimpleName());
+        assertEquals("ch.qos.logback.classic.tyler.TylerConfiguratorBase", options.getGeneratedClassSuperclassName());
+    }
+
+    @Test
+    void superclass() {
+        TranslationOptions options = TranslationOptions.builder().generatedClassSuperclassName("org.acme.AcmeTylerConfiguratorBase").build();
+        assertEquals("org.acme.AcmeTylerConfiguratorBase", options.getGeneratedClassSuperclassName());
+
+        // both in the default package
+        TranslationOptions defaultPackageOptions = TranslationOptions.builder().generatedClassName("AcmeConfigurator")
+                        .generatedClassSuperclassName("AcmeTylerConfiguratorBase").build();
+        assertEquals("AcmeTylerConfiguratorBase", defaultPackageOptions.getGeneratedClassSuperclassName());
+    }
+
+    @Test
+    void invalidSuperclass() {
+        assertThrows(IllegalArgumentException.class, () -> TranslationOptions.builder().generatedClassSuperclassName(null).build());
+        assertThrows(IllegalArgumentException.class, () -> TranslationOptions.builder().generatedClassSuperclassName("org.acme.").build());
+        assertThrows(IllegalArgumentException.class, () -> TranslationOptions.builder().generatedClassSuperclassName("org.class.Base").build());
+        // a class in a named package cannot extend a class in the default package
+        assertThrows(IllegalArgumentException.class, () -> TranslationOptions.builder().generatedClassSuperclassName("AcmeTylerConfiguratorBase").build());
+        // a class cannot extend itself
+        assertThrows(IllegalArgumentException.class, () -> TranslationOptions.builder().generatedClassName("org.acme.Foo")
+                        .generatedClassSuperclassName("org.acme.Foo").build());
     }
 
     @Test

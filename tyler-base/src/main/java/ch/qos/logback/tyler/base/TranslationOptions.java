@@ -26,6 +26,7 @@
 
 package ch.qos.logback.tyler.base;
 
+import ch.qos.logback.classic.tyler.TylerConfiguratorBase;
 import ch.qos.logback.tyler.base.util.ClassUtil;
 
 import javax.lang.model.SourceVersion;
@@ -39,6 +40,7 @@ import javax.lang.model.SourceVersion;
  * TranslationOptions options = TranslationOptions.builder()
  *     .translationTimeInclusionEnabled(true)
  *     .generatedClassName("org.example.MyConfigurator")
+ *     .generatedClassSuperclassName("org.example.MyTylerConfiguratorBase")
  *     .build();
  * </pre>
  *
@@ -52,17 +54,26 @@ public final class TranslationOptions {
     public static final String DEFAULT_GENERATED_CLASS_NAME = "com.example." + TylerConstants.TYLER_CONFIGURATOR;
 
     /**
-     * Options with default values, i.e. translation-time inclusion disabled and
-     * {@link #DEFAULT_GENERATED_CLASS_NAME} as the name of the generated class.
+     * Default fully qualified name of the superclass of the generated configurator class.
+     */
+    // declared before DEFAULT as it is not a compile-time constant
+    public static final String DEFAULT_GENERATED_CLASS_SUPERCLASS_NAME = TylerConfiguratorBase.class.getName();
+
+    /**
+     * Options with default values, i.e. translation-time inclusion disabled,
+     * {@link #DEFAULT_GENERATED_CLASS_NAME} as the name of the generated class and
+     * {@link #DEFAULT_GENERATED_CLASS_SUPERCLASS_NAME} as the name of its superclass.
      */
     public static final TranslationOptions DEFAULT = builder().build();
 
     final boolean translationTimeInclusionEnabled;
     final String generatedClassName;
+    final String generatedClassSuperclassName;
 
     private TranslationOptions(Builder builder) {
         this.translationTimeInclusionEnabled = builder.translationTimeInclusionEnabled;
         this.generatedClassName = builder.generatedClassName;
+        this.generatedClassSuperclassName = builder.generatedClassSuperclassName;
     }
 
     public static Builder builder() {
@@ -105,16 +116,35 @@ public final class TranslationOptions {
         return ClassUtil.extractSimpleClassName(generatedClassName);
     }
 
+    /**
+     * The fully qualified name of the superclass of the generated configurator class.
+     *
+     * <p>The superclass must be a public, non-final, top-level class extending
+     * {@link TylerConfiguratorBase} with a public or protected no-argument constructor. The generated
+     * class invokes methods inherited from <code>TylerConfiguratorBase</code> and implements
+     * {@link ch.qos.logback.classic.spi.Configurator} regardless of its superclass.</p>
+     *
+     * <p>If the superclass can be loaded at translation time, these requirements are checked and
+     * violations are reported as errors.</p>
+     *
+     * @since 1.0.5
+     */
+    public String getGeneratedClassSuperclassName() {
+        return generatedClassSuperclassName;
+    }
+
     @Override
     public String toString() {
         return "TranslationOptions{translationTimeInclusionEnabled=" + translationTimeInclusionEnabled
-                        + ", generatedClassName='" + generatedClassName + "'}";
+                        + ", generatedClassName='" + generatedClassName
+                        + "', generatedClassSuperclassName='" + generatedClassSuperclassName + "'}";
     }
 
     public static final class Builder {
 
         boolean translationTimeInclusionEnabled = false;
         String generatedClassName = DEFAULT_GENERATED_CLASS_NAME;
+        String generatedClassSuperclassName = DEFAULT_GENERATED_CLASS_SUPERCLASS_NAME;
 
         private Builder() {
         }
@@ -137,14 +167,44 @@ public final class TranslationOptions {
         }
 
         /**
-         * @throws IllegalArgumentException if the generated class name is not a valid fully qualified
-         *         Java class name
+         * @param generatedClassSuperclassName fully qualified name of the superclass of the generated
+         *        configurator class, e.g. "org.example.MyTylerConfiguratorBase". Only top-level classes
+         *        are supported.
+         * @see TranslationOptions#getGeneratedClassSuperclassName()
+         * @since 1.0.5
+         */
+        public Builder generatedClassSuperclassName(String generatedClassSuperclassName) {
+            this.generatedClassSuperclassName = generatedClassSuperclassName;
+            return this;
+        }
+
+        /**
+         * @throws IllegalArgumentException if the generated class name or the superclass name is not a
+         *         valid fully qualified Java class name, if both names are equal, or if the superclass is
+         *         in the default package whereas the generated class is not
          */
         public TranslationOptions build() {
-            if (generatedClassName == null || !SourceVersion.isName(generatedClassName)) {
-                throw new IllegalArgumentException("[" + generatedClassName + "] is not a valid fully qualified class name");
+            checkClassName(generatedClassName);
+            checkClassName(generatedClassSuperclassName);
+            if (generatedClassName.equals(generatedClassSuperclassName)) {
+                throw new IllegalArgumentException("The generated class [" + generatedClassName + "] cannot extend itself");
+            }
+            // classes in the default package cannot be referenced from a named package
+            if (isInNamedPackage(generatedClassName) && !isInNamedPackage(generatedClassSuperclassName)) {
+                throw new IllegalArgumentException("The superclass [" + generatedClassSuperclassName
+                                + "] in the default package cannot be extended by [" + generatedClassName + "]");
             }
             return new TranslationOptions(this);
+        }
+
+        static private boolean isInNamedPackage(String className) {
+            return ClassUtil.extractPackageName(className) != null;
+        }
+
+        static private void checkClassName(String className) {
+            if (className == null || !SourceVersion.isName(className)) {
+                throw new IllegalArgumentException("[" + className + "] is not a valid fully qualified class name");
+            }
         }
     }
 }

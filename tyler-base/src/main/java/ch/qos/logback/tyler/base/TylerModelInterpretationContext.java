@@ -165,9 +165,52 @@ package ch.qos.logback.tyler.base;
                                             
                                             """.formatted(TYLER_VERSION, REQUIRED_LOGBACK_VERSION))
                             .addSuperinterface(Configurator.class)
-                            .superclass(TylerConfiguratorBase.class)
+                            .superclass(makeSuperclassName())
                             .addModifiers(Modifier.PUBLIC);
             return tsb;
+        }
+
+        /**
+         * Only top-level classes are supported, see {@link TranslationOptions#getGeneratedClassSuperclassName()}.
+         */
+        ClassName makeSuperclassName() {
+            String superclassName = translationOptions.getGeneratedClassSuperclassName();
+            checkSuperclass(superclassName);
+            String packageName = ClassUtil.extractPackageName(superclassName);
+            return ClassName.get(packageName == null ? "" : packageName, ClassUtil.extractSimpleClassName(superclassName));
+        }
+
+        /**
+         * If the superclass can be loaded at translation time, check that the generated class can extend it.
+         * Otherwise, e.g. if the superclass is absent from the class path of the translator, the check is skipped.
+         */
+        void checkSuperclass(String superclassName) {
+            Class<?> superclass;
+            try {
+                superclass = Class.forName(superclassName, false, TylerModelInterpretationContext.class.getClassLoader());
+            } catch (ClassNotFoundException | LinkageError e) {
+                return;
+            }
+
+            String errorPrefix = "Superclass [" + superclassName + "] of the generated class";
+            if (!TylerConfiguratorBase.class.isAssignableFrom(superclass)) {
+                addError(errorPrefix + " does not extend [" + TylerConfiguratorBase.class.getName() + "]");
+            }
+            int modifiers = superclass.getModifiers();
+            if (!java.lang.reflect.Modifier.isPublic(modifiers)) {
+                addError(errorPrefix + " is not public");
+            }
+            if (java.lang.reflect.Modifier.isFinal(modifiers)) {
+                addError(errorPrefix + " is final");
+            }
+            try {
+                int constructorModifiers = superclass.getDeclaredConstructor().getModifiers();
+                if (!java.lang.reflect.Modifier.isPublic(constructorModifiers) && !java.lang.reflect.Modifier.isProtected(constructorModifiers)) {
+                    addError(errorPrefix + " has no public or protected no-argument constructor");
+                }
+            } catch (NoSuchMethodException e) {
+                addError(errorPrefix + " has no public or protected no-argument constructor");
+            }
         }
 
         private MethodSpec.Builder initializeConfigureMethodSpecBuilder() {
