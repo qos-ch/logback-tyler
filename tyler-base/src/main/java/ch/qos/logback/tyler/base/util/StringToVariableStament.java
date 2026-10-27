@@ -41,44 +41,7 @@ public class StringToVariableStament {
             return false;
         }
     }
-
-    /**
-     * @deprecated no longer used by Tyler, which now generates statements for basic properties in
-     * <code>ch.qos.logback.tyler.base.handler.BasicPropertyStatementGenerator</code>. The returned format
-     * string does not perform variable substitution for non-String types.
-     */
-    @Deprecated
-    public static String convertArg (Class<?> type, String value) {
-        boolean isVar = containsVariable(value);
-
-        if (String.class.isAssignableFrom(type)) {
-            return isVar ? "subst($S)" : "$S";
-        } else if (Integer.TYPE.isAssignableFrom(type)) {
-            return "$N";
-        } else if (Long.TYPE.isAssignableFrom(type)) {
-            return "$N";
-        } else if (Float.TYPE.isAssignableFrom(type)) {
-            return "$N";
-        } else if (Double.TYPE.isAssignableFrom(type)) {
-            return "$N";
-        } else if (Boolean.TYPE.isAssignableFrom(type)) {
-            return "$N";
-        } else if (type.isEnum()) {
-            return "Enum.valueOf("+type.getCanonicalName()+".class, $S)";
-        } else if (StringToObjectConverter.followsTheValueOfConvention(type)) {
-            return type.getName()+".valueOf($S)";
-        } else if (isOfTypeCharset(type)) {
-            return  "Charset.forName($S)";
-        }
-
-        return null;
-    }
-
-    static private boolean isOfTypeCharset(Class<?> type) {
-        return Charset.class.isAssignableFrom(type);
-    }
-
-
+    
     public static String booleanObjectToString(Boolean bool) {
         if(bool == null)
             return "null";
