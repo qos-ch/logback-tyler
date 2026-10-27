@@ -1,0 +1,9 @@
+<configuration>
+
+    <conversionRule conversionWord="missing" class="com.example.DoesNotExistConverter"/>
+    <conversionRule conversionWord="notAConverter" class="java.lang.Object"/>
+    <conversionRule conversionWord="abstractConverter" class="ch.qos.logback.classic.pattern.ClassicConverter"/>
+    <conversionRule class="ch.qos.logback.tyler.base.UpperCaseMessageConverter"/>
+
+    <root level="DEBUG"/>
+</configuration>

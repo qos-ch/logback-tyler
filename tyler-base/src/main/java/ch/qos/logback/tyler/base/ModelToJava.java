@@ -181,6 +181,7 @@ public class ModelToJava {
 
         defaultProcessor.addHandler(ContextNameModel.class, ContextNameModelHandler::makeInstance);
         defaultProcessor.addHandler(ImportModel.class, ImportModelHandler::makeInstance);
+        defaultProcessor.addHandler(ConversionRuleModel.class, ConversionRuleModelHandler::makeInstance);
         defaultProcessor.addHandler(DefineModel.class, DefineModelHandler::makeInstance);
         defaultProcessor.addHandler(InsertFromJNDIModel.class, TylerInsertFromJNDIModelHandler::makeInstance);
 

@@ -154,6 +154,16 @@ public class TylerRegressionTest {
     }
 
     @Test
+    void conversionRuleTest() throws JoranException, IOException {
+        verify(INPUT_PREFIX + "conversionRule.xml", INPUT_PREFIX + "conversionRule_witness.java");
+    }
+
+    @Test
+    void conversionRuleErrorsTest() throws JoranException, IOException {
+        verify(INPUT_PREFIX + "conversionRuleErrors.xml", INPUT_PREFIX + "conversionRuleErrors_witness.java");
+    }
+
+    @Test
     void topIncludingTest() throws JoranException, IOException {
         verify(INPUT_PREFIX + "topIncluding.xml", INPUT_PREFIX + "topIncluding_witness.java");
     }

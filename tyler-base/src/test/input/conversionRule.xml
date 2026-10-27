@@ -1,0 +1,17 @@
+<configuration>
+
+    <import class="ch.qos.logback.tyler.base.UpperCaseMessageConverter"/>
+
+    <conversionRule conversionWord="upperMsg" class="UpperCaseMessageConverter"/>
+    <conversionRule conversionWord="upperMsg2" class="ch.qos.logback.tyler.base.UpperCaseMessageConverter"/>
+
+    <appender name="LIST" class="ch.qos.logback.core.testUtil.StringListAppender">
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <Pattern>%upperMsg %upperMsg2</Pattern>
+        </layout>
+    </appender>
+
+    <root level="DEBUG">
+        <appender-ref ref="LIST"/>
+    </root>
+</configuration>
