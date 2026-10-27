@@ -27,10 +27,10 @@
 
 module ch.qos.logback.tyler.base {
 
-    requires com.squareup.javapoet;
-    requires java.compiler;
-    requires ch.qos.logback.core;
-    requires ch.qos.logback.classic;
+    requires transitive com.squareup.javapoet;
+    requires transitive java.compiler;
+    requires transitive ch.qos.logback.core;
+    requires transitive ch.qos.logback.classic;
     exports ch.qos.logback.tyler.base;
     exports ch.qos.logback.tyler.base.handler;
     exports ch.qos.logback.tyler.base.util;
