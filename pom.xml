@@ -53,28 +53,20 @@
         <hamcrest.version>2.2</hamcrest.version>
 
         <javapoet.version>1.13.0</javapoet.version>
-        <jersey.version>3.0.3</jersey.version>
-        <jakarta.mail.version>2.0.1</jakarta.mail.version>
-        <jakarta.activation.version>2.1.0</jakarta.activation.version>
-        <jakarta.servlet-api.version>5.0.0</jakarta.servlet-api.version>
-
         <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
         <maven-source-plugin.version>3.2.0</maven-source-plugin.version>
         <maven-surefire-plugin.version>3.0.0-M7</maven-surefire-plugin.version>
         <maven-jar-plugin.version>3.2.0</maven-jar-plugin.version>
         <maven-javadoc-plugin.version>3.3.0</maven-javadoc-plugin.version>
         <maven-war-plugin.version>3.3.2</maven-war-plugin.version>
-        <jetty-maven-plugin.version>11.0.18</jetty-maven-plugin.version>
         <jackson.version>2.12.2</jackson.version>
         <antlr4.version>4.9.3</antlr4.version>
-
         <central-publishing-maven-plugin.version>0.9.0</central-publishing-maven-plugin.version>
     </properties>
 
 
     <modules>
         <module>tyler-base</module>
-        <!--        <module>web</module>-->
     </modules>
 
     <developers>
@@ -127,14 +119,6 @@
 
 
             <dependency>
-                <groupId>org.glassfish.jersey</groupId>
-                <artifactId>jersey-bom</artifactId>
-                <version>${jersey.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-
-            <dependency>
                 <groupId>ch.qos.logback.tyler</groupId>
                 <artifactId>tyler-base</artifactId>
                 <version>${project.version}</version>
@@ -162,31 +146,6 @@
                 <groupId>org.antlr</groupId>
                 <artifactId>antlr4-runtime</artifactId>
                 <version>${antlr4.version}</version>
-            </dependency>
-
-
-            <dependency>
-                <groupId>jakarta.servlet</groupId>
-                <artifactId>jakarta.servlet-api</artifactId>
-                <version>${jakarta.servlet-api.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>jakarta.mail</groupId>
-                <artifactId>jakarta.mail-api</artifactId>
-                <version>${jakarta.mail.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>jakarta.activation</groupId>
-                <artifactId>jakarta.activation-api</artifactId>
-                <version>${jakarta.mail.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.sun.mail</groupId>
-                <artifactId>jakarta.mail</artifactId>
-                <version>${jakarta.mail.version}</version>
             </dependency>
 
 
@@ -226,18 +185,6 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
                     <version>${maven-javadoc-plugin.version}</version>
-                </plugin>
-
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-war-plugin</artifactId>
-                    <version>${maven-war-plugin.version}</version>
-                </plugin>
-
-                <plugin>
-                    <groupId>org.eclipse.jetty</groupId>
-                    <artifactId>jetty-maven-plugin</artifactId>
-                    <version>${jetty-maven-plugin.version}</version>
                 </plugin>
 
 
