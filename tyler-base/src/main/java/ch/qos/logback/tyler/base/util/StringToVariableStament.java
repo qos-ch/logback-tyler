@@ -42,6 +42,12 @@ public class StringToVariableStament {
         }
     }
 
+    /**
+     * @deprecated no longer used by Tyler, which now generates statements for basic properties in
+     * <code>ch.qos.logback.tyler.base.handler.BasicPropertyStatementGenerator</code>. The returned format
+     * string does not perform variable substitution for non-String types.
+     */
+    @Deprecated
     public static String convertArg (Class<?> type, String value) {
         boolean isVar = containsVariable(value);
 
@@ -58,7 +64,7 @@ public class StringToVariableStament {
         } else if (Boolean.TYPE.isAssignableFrom(type)) {
             return "$N";
         } else if (type.isEnum()) {
-            return "Enum.valueOf("+type.getName()+", $S";
+            return "Enum.valueOf("+type.getCanonicalName()+".class, $S)";
         } else if (StringToObjectConverter.followsTheValueOfConvention(type)) {
             return type.getName()+".valueOf($S)";
         } else if (isOfTypeCharset(type)) {

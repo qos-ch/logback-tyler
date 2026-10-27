@@ -42,7 +42,6 @@ import ch.qos.logback.core.util.OptionHelper;
 import ch.qos.logback.core.util.StringUtil;
 import ch.qos.logback.tyler.base.TylerModelInterpretationContext;
 import ch.qos.logback.tyler.base.util.ClassUtil;
-import ch.qos.logback.tyler.base.util.StringToVariableStament;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.MethodSpec;
 
@@ -200,39 +199,30 @@ public class ImplicitModelHandler extends ModelHandlerBase {
     private void doBasicProperty(ModelInterpretationContext mic, ImplicitModel implicitModel,
             AggregationAssessor aggregationAssessor, ImplicitModelHandlerData classAndMethodSpecTuple,
             AggregationType aggregationType) {
+        TylerModelInterpretationContext tmic = (TylerModelInterpretationContext) mic;
         String bodyText = implicitModel.getBodyText();
         String nestedElementTagName = implicitModel.getTag();
 
         switch (aggregationType) {
         case AS_BASIC_PROPERTY:
             Method setterMethod = aggregationAssessor.findSetterMethod(nestedElementTagName);
-            Class<?>[] paramTypes = setterMethod.getParameterTypes();
-            setPropertyJavaStatement(classAndMethodSpecTuple, setterMethod, bodyText, paramTypes[0]);
+            setPropertyJavaStatement(tmic, classAndMethodSpecTuple, setterMethod, false, nestedElementTagName, bodyText);
             break;
         case AS_BASIC_PROPERTY_COLLECTION:
             Method adderMethod = aggregationAssessor.findAdderMethod(nestedElementTagName);
-            Class<?>[] addedParamTypes = adderMethod.getParameterTypes();
-            setPropertyJavaStatement(classAndMethodSpecTuple, adderMethod, bodyText, addedParamTypes[0]);
-
+            setPropertyJavaStatement(tmic, classAndMethodSpecTuple, adderMethod, true, nestedElementTagName, bodyText);
             break;
         default:
             addError("Unexpected aggregationType " + aggregationType);
         }
     }
 
-    private void setPropertyJavaStatement(ImplicitModelHandlerData classAndMethodSpecTuple, Method setterMethod,
-            String value, Class<?> type) {
-
+    private void setPropertyJavaStatement(TylerModelInterpretationContext tmic, ImplicitModelHandlerData classAndMethodSpecTuple,
+            Method method, boolean isAdder, String propertyName, String value) {
         MethodSpec.Builder methodSpecBuilder = classAndMethodSpecTuple.methodSpecBuilder;
         String variableName = classAndMethodSpecTuple.getVariableName();
-        //String setterSuffix = StringUtil.capitalizeFirstLetter(nestedElementTagName);
-        String valuePart = StringToVariableStament.convertArg(type, value);
-        if (Boolean.TYPE.isAssignableFrom(type)) {
-            value = value.toLowerCase();
-        }
-        methodSpecBuilder.addStatement("$N.$N(" + valuePart + ")", variableName, setterMethod.getName(), value);
-
-        Integer.parseInt("1");
+        BasicPropertyStatementGenerator generator = new BasicPropertyStatementGenerator(this, tmic);
+        generator.addStatement(methodSpecBuilder, variableName, method, isAdder, propertyName, value);
     }
 
     @Override
