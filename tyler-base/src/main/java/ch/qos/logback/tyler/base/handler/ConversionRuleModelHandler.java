@@ -139,6 +139,7 @@ public class ConversionRuleModelHandler extends ModelHandlerBase {
         return null;
     }
 
+    // TODO: This method should be moved into TylerConfiguratorBase
     void addConversionRuleMethod(TylerModelInterpretationContext tmic) {
 
         // insert method at most once
