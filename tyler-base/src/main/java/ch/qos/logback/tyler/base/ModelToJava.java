@@ -95,7 +95,7 @@ public class ModelToJava {
         InputSource inputSource = new InputSource(inputStream);
         inputSource.setSystemId("UNKNOWN");
 
-        JoranConfigurator joranConfigurator = new JoranConfigurator();
+        JoranConfigurator joranConfigurator = createJoranConfigurator();
         joranConfigurator.setContext(context);
 
         SaxEventRecorder recorder = joranConfigurator.populateSaxEventRecorder(inputSource);
@@ -103,12 +103,35 @@ public class ModelToJava {
         return top;
     }
 
+    /**
+     * Create the {@link JoranConfigurator} used to build models from XML, both for the top-level
+     * configuration file in {@link #extractModel(String)} and for included files at translation time.
+     *
+     * <p>Subclasses can override this method to return a subclass of <code>JoranConfigurator</code>
+     * registering additional element selectors and actions. A new instance must be returned on each
+     * invocation. The returned instance need not have its context set, as callers set it.</p>
+     *
+     * @return a new JoranConfigurator instance
+     * @since 1.0.5
+     */
+    protected JoranConfigurator createJoranConfigurator() {
+        return new JoranConfigurator();
+    }
+
+    /**
+     * @return the context passed to the constructor
+     * @since 1.0.5
+     */
+    protected Context getContext() {
+        return context;
+    }
+
     public StringBuffer toJavaAsStringBuffer(Model topModel) throws IOException {
         TylerModelInterpretationContext tmic = new TylerModelInterpretationContext(context, translationOptions);
         tmic.setTopModel(topModel);
-        // used to parse included files at translation time
+        // used to parse included files at translation time, with the same rules as the top-level file
         tmic.setConfiguratorSupplier(() -> {
-            JoranConfigurator joranConfigurator = new JoranConfigurator();
+            JoranConfigurator joranConfigurator = createJoranConfigurator();
             joranConfigurator.setContext(context);
             return joranConfigurator;
         });
@@ -173,9 +196,28 @@ public class ModelToJava {
      * Associate model classes with their respective handlers. This is where ModelHandlers specific to
      * Tyler are linked to the model processing.
      *
-     * @param defaultProcessor
+     * <p>This method is an extension point. Subclasses can translate their own model types by overriding
+     * this method, invoking <code>super</code> and then adding associations:</p>
+     *
+     * <pre>
+     * &#64;Override
+     * protected void addModelHandlerAssociations(DefaultProcessor defaultProcessor) {
+     *     super.addModelHandlerAssociations(defaultProcessor);
+     *     defaultProcessor.addHandler(CustomModel.class, CustomModelHandler::makeInstance);
+     * }
+     * </pre>
+     *
+     * <p>As associations are keyed by model class, adding an association for a model class already
+     * handled by Tyler replaces Tyler's handler.</p>
+     *
+     * <p>Handlers receive a {@link TylerModelInterpretationContext} through which they emit code. Custom
+     * model types usually require custom element selectors and actions, see
+     * {@link #createJoranConfigurator()}.</p>
+     *
+     * @param defaultProcessor the processor to which associations are added
+     * @since 1.0.5 (previously private)
      */
-    private void addModelHandlerAssociations(DefaultProcessor defaultProcessor) {
+    protected void addModelHandlerAssociations(DefaultProcessor defaultProcessor) {
         defaultProcessor.addHandler(ConfigurationModel.class, ConfigurationModelHandler::makeInstance);
         defaultProcessor.addHandler(PropertyModel.class, VariableModelHandler::makeInstance);
 

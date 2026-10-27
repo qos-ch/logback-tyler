@@ -46,6 +46,24 @@ package ch.qos.logback.tyler.base;
 
     import static ch.qos.logback.tyler.base.TylerConstants.*;
 
+    /**
+     * Interpretation context passed to Tyler model handlers. Instead of configuring a logback context,
+     * handlers emit Java code via JavaPoet builders made available by this class.
+     *
+     * <p>Handlers located outside this package, e.g. handlers registered by overriding
+     * {@link ModelToJava#addModelHandlerAssociations}, can emit code via:</p>
+     * <ul>
+     *   <li>{@link #getConfigureMethodSpecBuilder()} for statements of the <code>configure</code> method</li>
+     *   <li>{@link #addMethodSpecBuilder(String, MethodSpec.Builder)} and related methods for additional methods</li>
+     *   <li>{@link #addFieldSpec(FieldSpec)} for fields</li>
+     *   <li>{@link #addStaticImport(Class, String)} for static imports</li>
+     *   <li>{@link #getConfiguratorTypeSpecBuilder()} for any other modification of the generated class</li>
+     * </ul>
+     *
+     * <p>The field referencing the logback context in generated code is given by {@link #getContextFieldSpec()}.
+     * Helpers for naming variables consistently with Tyler's handlers are available in
+     * {@link ch.qos.logback.tyler.base.util.VariableNameUtil}.</p>
+     */
     public class TylerModelInterpretationContext extends ModelInterpretationContext {
 
         final public TypeSpec.Builder tylerConfiguratorTSB;
@@ -237,6 +255,73 @@ package ch.qos.logback.tyler.base;
 
         public TranslationOptions getTranslationOptions() {
             return translationOptions;
+        }
+
+        // accessors for model handlers, including handlers in other packages ===========================
+
+        /**
+         * @return the builder of the <code>configure</code> method of the generated class. Statements
+         * are executed in the order in which they are added.
+         * @since 1.0.5
+         */
+        public MethodSpec.Builder getConfigureMethodSpecBuilder() {
+            return configureMethodSpecBuilder;
+        }
+
+        /**
+         * @return the builder of the generated configurator class
+         * @since 1.0.5
+         */
+        public TypeSpec.Builder getConfiguratorTypeSpecBuilder() {
+            return tylerConfiguratorTSB;
+        }
+
+        /**
+         * Add a field to the generated class.
+         *
+         * @since 1.0.5
+         */
+        public void addFieldSpec(FieldSpec fieldSpec) {
+            fieldSpecs.add(fieldSpec);
+        }
+
+        /**
+         * @return true if a method with the given name was added via
+         * {@link #addMethodSpecBuilder(String, MethodSpec.Builder)}
+         * @since 1.0.5
+         */
+        public boolean containsMethodSpecBuilder(String methodName) {
+            return mapOfMethodSpecBuilders.containsKey(methodName);
+        }
+
+        /**
+         * @return the builder of the method with the given name, or null if none was added
+         * @since 1.0.5
+         */
+        public MethodSpec.Builder getMethodSpecBuilder(String methodName) {
+            return mapOfMethodSpecBuilders.get(methodName);
+        }
+
+        /**
+         * Add a method to the generated class. Methods are emitted after the <code>configure</code>
+         * method, in insertion order. Adding a method with the name of an existing method replaces it.
+         *
+         * <p>Helper methods shared by several model instances are typically added at most once, after
+         * checking {@link #containsMethodSpecBuilder(String)}.</p>
+         *
+         * @since 1.0.5
+         */
+        public void addMethodSpecBuilder(String methodName, MethodSpec.Builder methodSpecBuilder) {
+            mapOfMethodSpecBuilders.put(methodName, methodSpecBuilder);
+        }
+
+        /**
+         * Add a static import to the generated file, if not already present.
+         *
+         * @since 1.0.5
+         */
+        public void addStaticImport(Class<?> aClass, String methodName) {
+            addStaticImport(new StaticImportData(aClass, methodName));
         }
 
         /**

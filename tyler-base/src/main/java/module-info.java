@@ -33,4 +33,5 @@ module ch.qos.logback.tyler.base {
     requires ch.qos.logback.classic;
     exports ch.qos.logback.tyler.base;
     exports ch.qos.logback.tyler.base.handler;
+    exports ch.qos.logback.tyler.base.util;
 }
