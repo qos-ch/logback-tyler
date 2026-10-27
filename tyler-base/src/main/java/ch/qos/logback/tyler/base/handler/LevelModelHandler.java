@@ -37,7 +37,6 @@ import ch.qos.logback.core.model.processor.ModelInterpretationContext;
 import ch.qos.logback.tyler.base.TylerModelInterpretationContext;
 import ch.qos.logback.tyler.base.spi.StaticImportData;
 import ch.qos.logback.tyler.base.util.StringToVariableStament;
-import ch.qos.logback.tyler.base.util.VariableNameUtil;
 
 import static ch.qos.logback.classic.tyler.TylerConfiguratorBase.SETUP_LOGGER_METHOD_NAME;
 
@@ -74,7 +73,7 @@ public class LevelModelHandler extends ModelHandlerBase {
     }
 
     void addJavaStatement(TylerModelInterpretationContext tmic, String loggerName, String levelStr) {
-        String loggerVariableName = VariableNameUtil.loggerNameToVariableName(loggerName);
+        String loggerVariableName = tmic.getLoggerVariableName(loggerName);
         boolean containsVariable = StringToVariableStament.containsVariable(levelStr);
         String levelStrPart = containsVariable ? "subst($S)" : "$S";
 

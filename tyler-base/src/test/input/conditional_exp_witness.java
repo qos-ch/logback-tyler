@@ -96,8 +96,8 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
             logger_ROOT.addAppender(appenderCON);
         } else {
             this.appenderFILE = setupAppenderFILE();
-            Logger logger_ROOT = setupLogger("ROOT", "ERROR", null);
-            logger_ROOT.addAppender(appenderFILE);
+            Logger logger_ROOT_1 = setupLogger("ROOT", "ERROR", null);
+            logger_ROOT_1.addAppender(appenderFILE);
         }
         return ExecutionStatus.DO_NOT_INVOKE_NEXT_IF_ANY;
     }

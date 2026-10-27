@@ -39,13 +39,40 @@ public class VariableNameUtil {
         return loggerName.replace(DOT, UNDERSCORE);
     }
 
+    /**
+     * Return "logger_" followed by the logger name in which every character not allowed in a Java
+     * identifier, including dots, is replaced with an underscore.
+     */
     static public String loggerNameToVariableName(String loggerName) {
-        return "logger_"+replaceDotsWithUnderscores(loggerName);
+        return "logger_"+toJavaIdentifierPart(loggerName);
+    }
+
+    /**
+     * Replace every character not allowed in a Java identifier with an underscore. Identifier-ignorable
+     * characters are replaced as well.
+     *
+     * @since 1.0.5
+     */
+    static public String toJavaIdentifierPart(String str) {
+        StringBuilder sb = new StringBuilder(str.length());
+        str.codePoints().forEach(cp -> {
+            if (Character.isJavaIdentifierPart(cp) && !Character.isIdentifierIgnorable(cp)) {
+                sb.appendCodePoint(cp);
+            } else {
+                sb.append(UNDERSCORE);
+            }
+        });
+        return sb.toString();
     }
 
 
+    /**
+     * Return "appender" followed by the appender name, with its first letter capitalized and every
+     * character not allowed in a Java identifier replaced with an underscore. Distinct appender names
+     * may map to the same variable name.
+     */
     static public String appenderNameToVariableName(String appenderName) {
-        return "appender"+ StringUtil.capitalizeFirstLetter(appenderName);
+        return "appender"+ StringUtil.capitalizeFirstLetter(toJavaIdentifierPart(appenderName));
     }
 
     static public String fullyQualifiedClassNameToVariableName(String fqcn) {

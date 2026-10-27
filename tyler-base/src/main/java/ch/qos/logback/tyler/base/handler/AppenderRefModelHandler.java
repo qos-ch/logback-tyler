@@ -63,7 +63,7 @@ public class AppenderRefModelHandler extends ModelHandlerBase {
 
         if(o instanceof String) {
             String loggerName  = (String) o;
-            String variableName = VariableNameUtil.loggerNameToVariableName(loggerName);
+            String variableName = tmic.getLoggerVariableName(loggerName);
             addJavaStatement(tmic.configureMethodSpecBuilder, variableName, appenderRefModel.getRef());
         } else if(o instanceof ImplicitModelHandlerData) {
             ImplicitModelHandlerData implicitModelHandlerData = (ImplicitModelHandlerData) o;

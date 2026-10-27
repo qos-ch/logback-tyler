@@ -95,6 +95,16 @@ package ch.qos.logback.tyler.base;
          */
         final Set<String> includesInProgress = new HashSet<>();
 
+        /**
+         * Logger variable names declared so far in the configure method.
+         */
+        final Set<String> declaredLoggerVariableNames = new HashSet<>();
+
+        /**
+         * For each logger name, the variable name of its most recent declaration.
+         */
+        final Map<String, String> loggerVariableNames = new HashMap<>();
+
 
         public TylerModelInterpretationContext(Context context) {
             this(context, TranslationOptions.DEFAULT);
@@ -378,5 +388,42 @@ package ch.qos.logback.tyler.base;
 
         public void exitInclude(String includeDescription) {
             includesInProgress.remove(includeDescription);
+        }
+
+        /**
+         * Return a new variable name for a declaration of the logger named <code>loggerName</code> in the
+         * configure method. The name is {@link VariableNameUtil#loggerNameToVariableName(String)}
+         * followed by the suffix "_N", where N is the smallest positive integer yielding a name not
+         * declared earlier. The suffix is omitted if the unsuffixed name was not declared earlier.
+         *
+         * <p>Unique names are required because a logger may be declared more than once, e.g. at top
+         * level and again in a nested block, and because distinct logger names may map to the same
+         * variable name.</p>
+         *
+         * <p>The returned name is subsequently returned by {@link #getLoggerVariableName(String)}.</p>
+         *
+         * @since 1.0.5
+         */
+        public String declareLoggerVariableName(String loggerName) {
+            String baseName = VariableNameUtil.loggerNameToVariableName(loggerName);
+            String variableName = baseName;
+            for (int count = 1; declaredLoggerVariableNames.contains(variableName); count++) {
+                variableName = baseName + UNDERSCORE + count;
+            }
+            declaredLoggerVariableNames.add(variableName);
+            loggerVariableNames.put(loggerName, variableName);
+            return variableName;
+        }
+
+        /**
+         * Return the variable name of the most recent declaration of the logger named
+         * <code>loggerName</code>, or {@link VariableNameUtil#loggerNameToVariableName(String)} if
+         * no such declaration exists.
+         *
+         * @since 1.0.5
+         */
+        public String getLoggerVariableName(String loggerName) {
+            String variableName = loggerVariableNames.get(loggerName);
+            return variableName != null ? variableName : VariableNameUtil.loggerNameToVariableName(loggerName);
         }
     }

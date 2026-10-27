@@ -36,7 +36,6 @@ import ch.qos.logback.core.model.processor.ModelInterpretationContext;
 import ch.qos.logback.core.util.OptionHelper;
 import ch.qos.logback.tyler.base.TylerModelInterpretationContext;
 import ch.qos.logback.tyler.base.util.StringToVariableStament;
-import ch.qos.logback.tyler.base.util.VariableNameUtil;
 
 import static ch.qos.logback.classic.tyler.TylerConfiguratorBase.SETUP_LOGGER_METHOD_NAME;
 
@@ -83,7 +82,7 @@ public class LoggerModelHandler  extends ModelHandlerBase {
 
     private void addJavaStatement(TylerModelInterpretationContext tmic, String loggerName, String levelStr, Boolean additivity) {
         // Logger logger_XYZ = setupLogger(loggerName, level, levelString, additivity)
-        String loggerVariableName = VariableNameUtil.loggerNameToVariableName(loggerName);
+        String loggerVariableName = tmic.declareLoggerVariableName(loggerName);
 
         String additivityStr = additivity == null ? "null" : "Boolean."+additivity.toString().toUpperCase();
         boolean containsVariable = StringToVariableStament.containsVariable(levelStr);

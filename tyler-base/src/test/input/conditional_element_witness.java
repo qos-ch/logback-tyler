@@ -76,7 +76,7 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
         if(this.isPropertyDefinedCondition_0.evaluate()) {
             Logger logger_com_foo_Bar = setupLogger("com.foo.Bar", "INFO", null);
         } else {
-            Logger logger_com_foo_Bar = setupLogger("com.foo.Bar", "DEBUG", null);
+            Logger logger_com_foo_Bar_1 = setupLogger("com.foo.Bar", "DEBUG", null);
         }
         Logger logger_ROOT = setupLogger("ROOT", "DEBUG", null);
         return ExecutionStatus.DO_NOT_INVOKE_NEXT_IF_ANY;

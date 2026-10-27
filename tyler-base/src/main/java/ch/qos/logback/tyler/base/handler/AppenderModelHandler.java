@@ -90,7 +90,7 @@ public class AppenderModelHandler extends ModelHandlerBase {
 
         ClassName desiredAppenderCN = tmic.makeClassName(fullyQualifiedAppenderClassName);
 
-        String fistLetterCapitalizedAppenderName = StringUtil.capitalizeFirstLetter(appenderName);
+        String fistLetterCapitalizedAppenderName = StringUtil.capitalizeFirstLetter(VariableNameUtil.toJavaIdentifierPart(appenderName));
 
         String methodName = SETUP_APPENDER + fistLetterCapitalizedAppenderName;
         String appenderVariableName = VariableNameUtil.appenderNameToVariableName(appenderName);
