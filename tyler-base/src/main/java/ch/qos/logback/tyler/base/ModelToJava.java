@@ -55,9 +55,8 @@ import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeSpec;
 import org.xml.sax.InputSource;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -90,11 +89,27 @@ public class ModelToJava {
     }
 
 
+    /**
+     * Build a model from the given XML string. As the string is already decoded, it is passed to the
+     * parser as a character stream. Consequently, the encoding declaration of the document, if any,
+     * is ignored.
+     */
     public Model extractModel(String input) throws JoranException {
-        InputStream inputStream = new ByteArrayInputStream(input.getBytes());
-        InputSource inputSource = new InputSource(inputStream);
+        InputSource inputSource = new InputSource(new StringReader(input));
         inputSource.setSystemId("UNKNOWN");
+        return extractModel(inputSource);
+    }
 
+    /**
+     * Build a model from the given input source. The system id, encoding and byte or character stream
+     * set by the caller are left untouched. In particular, a byte stream is decoded according to the
+     * encoding declaration of the document.
+     *
+     * @param inputSource the XML input
+     * @return the top model
+     * @since 1.0.6
+     */
+    public Model extractModel(InputSource inputSource) throws JoranException {
         JoranConfigurator joranConfigurator = createJoranConfigurator();
         joranConfigurator.setContext(context);
 
@@ -105,7 +120,7 @@ public class ModelToJava {
 
     /**
      * Create the {@link JoranConfigurator} used to build models from XML, both for the top-level
-     * configuration file in {@link #extractModel(String)} and for included files at translation time.
+     * configuration file in {@link #extractModel(String)} and {@link #extractModel(InputSource)}, and for included files at translation time.
      *
      * <p>Subclasses can override this method to return a subclass of <code>JoranConfigurator</code>
      * registering additional element selectors and actions. A new instance must be returned on each
