@@ -4,7 +4,9 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.classic.spi.Configurator;
+import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.tyler.TylerConfiguratorBase;
+import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.ConsoleAppender;
 import ch.qos.logback.core.model.InsertFromJNDIModel;
 import ch.qos.logback.core.model.ModelConstants;
@@ -62,7 +64,7 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
   /**
    * Appender variable referencing the appender named "CONSOLE".
    */
-  protected ConsoleAppender appenderCONSOLE;
+  protected Appender<ILoggingEvent> appenderCONSOLE;
 
   /**
    * Since TylerConfigurator is java based, the topURL is always null.
@@ -129,5 +131,5 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
     insertFromJNDIModelHandler.detachedHandle(this, insertFromJNDIModel);
   }
 }
-// 16:51:10,344 |-INFO in ch.qos.logback.tyler.base.handler.ImplicitModelHandler - Assuming default type [ch.qos.logback.classic.encoder.PatternLayoutEncoder] for [encoder] property
-// 16:51:10,344 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@6ec8211c - End of configuration.
+// 17:08:25,827 |-INFO in ch.qos.logback.tyler.base.handler.ImplicitModelHandler - Assuming default type [ch.qos.logback.classic.encoder.PatternLayoutEncoder] for [encoder] property
+// 17:08:25,828 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@6ec8211c - End of configuration.

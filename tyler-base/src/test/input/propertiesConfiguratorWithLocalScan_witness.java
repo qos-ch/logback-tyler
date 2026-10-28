@@ -6,7 +6,9 @@ import ch.qos.logback.classic.PatternLayout;
 import ch.qos.logback.classic.model.PropertiesConfiguratorModel;
 import ch.qos.logback.classic.model.processor.PropertiesConfiguratorModelHandler;
 import ch.qos.logback.classic.spi.Configurator;
+import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.tyler.TylerConfiguratorBase;
+import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.model.ModelConstants;
 import ch.qos.logback.core.model.processor.ModelHandlerException;
 import ch.qos.logback.core.testUtil.StringListAppender;
@@ -63,7 +65,7 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
   /**
    * Appender variable referencing the appender named "LIST".
    */
-  protected StringListAppender appenderLIST;
+  protected Appender<ILoggingEvent> appenderLIST;
 
   /**
    * Since TylerConfigurator is java based, the topURL is always null.
@@ -129,4 +131,4 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
     return !(OptionHelper.isNullOrEmptyOrAllSpaces(debugStr) || debugStr.equalsIgnoreCase("false") || debugStr.equalsIgnoreCase(ModelConstants.NULL_STR));
   }
 }
-// 16:51:10,320 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@52f759d7 - End of configuration.
+// 17:08:25,806 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@3aeaafa6 - End of configuration.

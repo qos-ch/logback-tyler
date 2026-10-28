@@ -34,6 +34,8 @@ import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.classic.spi.Configurator;
 import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.ContextBase;
+import ch.qos.logback.core.OutputStreamAppender;
+import ch.qos.logback.core.pattern.PatternLayoutEncoderBase;
 import ch.qos.logback.core.joran.spi.JoranException;
 import ch.qos.logback.core.model.Model;
 import ch.qos.logback.core.read.ListAppender;
@@ -65,6 +67,12 @@ public class TwoPhaseTest {
 
     static final String LIST_APPENDER_CLASS = ListAppender.class.getName();
     static final String ASYNC_APPENDER_CLASS = "ch.qos.logback.classic.AsyncAppender";
+
+    /**
+     * Description of the logger context configured by the generated configurator in the last call to
+     * {@link #verify}, made before the context is stopped.
+     */
+    String lastDescription;
 
     static String isDefinedCondition(String key) {
         return "  <condition class=\"ch.qos.logback.core.boolex.IsPropertyDefinedCondition\"><key>" + key + "</key></condition>\n";
@@ -212,6 +220,55 @@ public class TwoPhaseTest {
     }
 
     @Test
+    void sameNamedAppendersInExclusiveBranches() throws Exception {
+        String input = "<configuration>\n"
+                        + "  <logger name=\"a\" level=\"DEBUG\"><appender-ref ref=\"OUT\"/></logger>\n"
+                        + isDefinedCondition("DEV")
+                        + "  <if>\n"
+                        + "    <then>\n"
+                        + "      <appender name=\"OUT\" class=\"ch.qos.logback.core.ConsoleAppender\">\n"
+                        + "        <encoder><pattern>DEV %m%n</pattern></encoder>\n"
+                        + "      </appender>\n"
+                        + "    </then>\n"
+                        + "    <else>\n"
+                        + "      <appender name=\"OUT\" class=\"ch.qos.logback.core.ConsoleAppender\">\n"
+                        + "        <encoder><pattern>PROD %m%n</pattern></encoder>\n"
+                        + "      </appender>\n"
+                        + "    </else>\n"
+                        + "  </if>\n"
+                        + "  <root level=\"INFO\"><appender-ref ref=\"OUT\"/></root>\n"
+                        + "</configuration>\n";
+        String source = translate(input);
+        assertEquals(1, countOccurrences(source, "protected Appender<ILoggingEvent> appenderOUT;"), source);
+        assertTrue(source.contains("this.appenderOUT = setupAppenderOUT();"), source);
+        assertTrue(source.contains("this.appenderOUT = setupAppenderOUT_1();"), source);
+
+        verify(input, "DEV");
+        assertTrue(lastDescription.contains("OUT:ConsoleAppender(started)[pattern=DEV %m%n]"), lastDescription);
+        verify(input);
+        assertTrue(lastDescription.contains("OUT:ConsoleAppender(started)[pattern=PROD %m%n]"), lastDescription);
+    }
+
+    @Test
+    void sameNamedAppendersOfDifferentClasses() throws Exception {
+        String input = "<configuration>\n"
+                        + "  <root level=\"INFO\"><appender-ref ref=\"OUT\"/></root>\n"
+                        + isDefinedCondition("DEV")
+                        + "  <if>\n"
+                        + "    <then><appender name=\"OUT\" class=\"" + LIST_APPENDER_CLASS + "\"/></then>\n"
+                        + "    <else><appender name=\"OUT\" class=\"ch.qos.logback.core.read.CyclicBufferAppender\"/></else>\n"
+                        + "  </if>\n"
+                        + "</configuration>\n";
+        // describe() compares appender classes
+        verify(input, "DEV");
+        verify(input);
+    }
+
+    static int countOccurrences(String s, String sub) {
+        return s.split(java.util.regex.Pattern.quote(sub), -1).length - 1;
+    }
+
+    @Test
     void appenderReferenceCycle() throws Exception {
         String input = "<configuration>\n"
                         + "  <appender name=\"A\" class=\"" + ASYNC_APPENDER_CLASS + "\"><appender-ref ref=\"B\"/></appender>\n"
@@ -227,6 +284,7 @@ public class TwoPhaseTest {
      * @return the logger context configured by the generated configurator
      */
     LoggerContext verify(String input, String... definedProperties) throws Exception {
+        lastDescription = null;
         LoggerContext joranContext = newLoggerContext(definedProperties);
         JoranConfigurator joranConfigurator = new JoranConfigurator();
         joranConfigurator.setContext(joranContext);
@@ -238,7 +296,8 @@ public class TwoPhaseTest {
                         .getConstructor().newInstance();
         configurator.configure(tylerContext);
 
-        assertEquals(describe(joranContext), describe(tylerContext), source);
+        lastDescription = describe(tylerContext);
+        assertEquals(describe(joranContext), lastDescription, source);
         joranContext.stop();
         tylerContext.stop();
         return tylerContext;
@@ -282,6 +341,10 @@ public class TwoPhaseTest {
     static String describe(Appender<?> appender) {
         StringBuilder sb = new StringBuilder(appender.getName()).append(':').append(appender.getClass().getSimpleName());
         sb.append(appender.isStarted() ? "(started)" : "(stopped)");
+        if (appender instanceof OutputStreamAppender<?> outputStreamAppender
+                        && outputStreamAppender.getEncoder() instanceof PatternLayoutEncoderBase<?> encoder) {
+            sb.append("[pattern=").append(encoder.getPattern()).append(']');
+        }
         if (appender instanceof AppenderAttachable<?> appenderAttachable) {
             List<String> nested = new ArrayList<>();
             Iterator<? extends Appender<?>> iterator = appenderAttachable.iteratorForAppenders();

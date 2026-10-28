@@ -5,7 +5,9 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.classic.spi.Configurator;
+import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.tyler.TylerConfiguratorBase;
+import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.FileAppender;
 import ch.qos.logback.core.model.ModelConstants;
 import ch.qos.logback.core.util.OptionHelper;
@@ -61,12 +63,12 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
   /**
    * Appender variable referencing the appender named "ASYNC".
    */
-  protected AsyncAppender appenderASYNC;
+  protected Appender<ILoggingEvent> appenderASYNC;
 
   /**
    * Appender variable referencing the appender named "FILE".
    */
-  protected FileAppender appenderFILE;
+  protected Appender<ILoggingEvent> appenderFILE;
 
   /**
    * Since TylerConfigurator is java based, the topURL is always null.
@@ -134,4 +136,4 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
     return !(OptionHelper.isNullOrEmptyOrAllSpaces(debugStr) || debugStr.equalsIgnoreCase("false") || debugStr.equalsIgnoreCase(ModelConstants.NULL_STR));
   }
 }
-// 16:51:10,309 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@491cc5c9 - End of configuration.
+// 17:08:25,795 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@7b69c6ba - End of configuration.

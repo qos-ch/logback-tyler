@@ -33,13 +33,10 @@ import ch.qos.logback.core.model.Model;
 import ch.qos.logback.core.model.processor.ModelHandlerBase;
 import ch.qos.logback.core.model.processor.ModelHandlerException;
 import ch.qos.logback.core.model.processor.ModelInterpretationContext;
-import ch.qos.logback.core.util.StringUtil;
 import ch.qos.logback.tyler.base.TylerModelInterpretationContext;
 import ch.qos.logback.tyler.base.util.ClassUtil;
 import ch.qos.logback.tyler.base.util.StringToVariableStament;
-import ch.qos.logback.tyler.base.util.VariableNameUtil;
 import com.squareup.javapoet.ClassName;
-import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.MethodSpec;
 
 import static ch.qos.logback.tyler.base.TylerConstants.*;
@@ -93,12 +90,10 @@ public class AppenderModelHandler extends ModelHandlerBase {
 
         ClassName desiredAppenderCN = tmic.makeClassName(fullyQualifiedAppenderClassName);
 
-        String fistLetterCapitalizedAppenderName = StringUtil.capitalizeFirstLetter(VariableNameUtil.toJavaIdentifierPart(appenderName));
-
-        String methodName = SETUP_APPENDER + fistLetterCapitalizedAppenderName;
-        String appenderVariableName = VariableNameUtil.appenderNameToVariableName(appenderName);
-        FieldSpec fieldSpec = tmic.createAppenderFieldSpec(desiredAppenderCN, appenderName);
-        tmic.getFieldSpecs().add(fieldSpec);
+        // appenders with the same name, e.g. in mutually exclusive branches, share the same field
+        // but each has its own setup method
+        String methodName = tmic.declareAppenderSetupMethodName(appenderName);
+        String appenderVariableName = tmic.declareAppenderField(appenderName);
 
         tmic.configureMethodSpecBuilder.addStatement("this.$N = $N()", appenderVariableName, methodName);
 

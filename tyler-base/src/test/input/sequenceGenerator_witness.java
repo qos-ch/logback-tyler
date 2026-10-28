@@ -4,7 +4,9 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.PatternLayout;
 import ch.qos.logback.classic.spi.Configurator;
+import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.tyler.TylerConfiguratorBase;
+import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.model.ModelConstants;
 import ch.qos.logback.core.spi.BasicSequenceNumberGenerator;
 import ch.qos.logback.core.spi.LifeCycle;
@@ -62,7 +64,7 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
   /**
    * Appender variable referencing the appender named "LIST".
    */
-  protected StringListAppender appenderLIST;
+  protected Appender<ILoggingEvent> appenderLIST;
 
   /**
    * Since TylerConfigurator is java based, the topURL is always null.
@@ -128,5 +130,5 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
     return !(OptionHelper.isNullOrEmptyOrAllSpaces(debugStr) || debugStr.equalsIgnoreCase("false") || debugStr.equalsIgnoreCase(ModelConstants.NULL_STR));
   }
 }
-// 16:51:10,273 |-INFO in ch.qos.logback.tyler.base.handler.SequenceNumberGeneratorModelHandler - About to configure SequenceNumberGenerator of type [ch.qos.logback.core.spi.BasicSequenceNumberGenerator]
-// 16:51:10,275 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@34cd072c - End of configuration.
+// 17:08:25,758 |-INFO in ch.qos.logback.tyler.base.handler.SequenceNumberGeneratorModelHandler - About to configure SequenceNumberGenerator of type [ch.qos.logback.core.spi.BasicSequenceNumberGenerator]
+// 17:08:25,759 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@1786dec2 - End of configuration.

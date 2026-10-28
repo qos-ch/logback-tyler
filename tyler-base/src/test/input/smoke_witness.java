@@ -4,7 +4,9 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.classic.spi.Configurator;
+import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.tyler.TylerConfiguratorBase;
+import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.model.ModelConstants;
 import ch.qos.logback.core.rolling.RollingFileAppender;
 import ch.qos.logback.core.rolling.TimeBasedRollingPolicy;
@@ -63,7 +65,7 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
   /**
    * Appender variable referencing the appender named "RFILE".
    */
-  protected RollingFileAppender appenderRFILE;
+  protected Appender<ILoggingEvent> appenderRFILE;
 
   /**
    * Since TylerConfigurator is java based, the topURL is always null.
@@ -146,4 +148,4 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
     return !(OptionHelper.isNullOrEmptyOrAllSpaces(debugStr) || debugStr.equalsIgnoreCase("false") || debugStr.equalsIgnoreCase(ModelConstants.NULL_STR));
   }
 }
-// 16:51:10,246 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@694e1548 - End of configuration.
+// 17:08:25,731 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@63e2203c - End of configuration.

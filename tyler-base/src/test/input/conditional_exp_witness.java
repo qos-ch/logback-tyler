@@ -4,7 +4,9 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.classic.spi.Configurator;
+import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.tyler.TylerConfiguratorBase;
+import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.ConsoleAppender;
 import ch.qos.logback.core.FileAppender;
 import ch.qos.logback.core.boolex.ExpressionPropertyCondition;
@@ -62,12 +64,12 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
   /**
    * Appender variable referencing the appender named "FILE".
    */
-  protected FileAppender appenderFILE;
+  protected Appender<ILoggingEvent> appenderFILE;
 
   /**
    * Appender variable referencing the appender named "CON".
    */
-  protected ConsoleAppender appenderCON;
+  protected Appender<ILoggingEvent> appenderCON;
 
   /**
    * Value of a condition evaluated in the configure method.
@@ -178,6 +180,6 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
     return !(OptionHelper.isNullOrEmptyOrAllSpaces(debugStr) || debugStr.equalsIgnoreCase("false") || debugStr.equalsIgnoreCase(ModelConstants.NULL_STR));
   }
 }
-// 16:51:10,305 |-INFO in ch.qos.logback.tyler.base.handler.ImplicitModelHandler - Assuming default type [ch.qos.logback.classic.encoder.PatternLayoutEncoder] for [encoder] property
-// 16:51:10,305 |-INFO in ch.qos.logback.tyler.base.handler.ImplicitModelHandler - Assuming default type [ch.qos.logback.classic.encoder.PatternLayoutEncoder] for [encoder] property
-// 16:51:10,305 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@ed9d034 - End of configuration.
+// 17:08:25,790 |-INFO in ch.qos.logback.tyler.base.handler.ImplicitModelHandler - Assuming default type [ch.qos.logback.classic.encoder.PatternLayoutEncoder] for [encoder] property
+// 17:08:25,790 |-INFO in ch.qos.logback.tyler.base.handler.ImplicitModelHandler - Assuming default type [ch.qos.logback.classic.encoder.PatternLayoutEncoder] for [encoder] property
+// 17:08:25,790 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@cb51256 - End of configuration.

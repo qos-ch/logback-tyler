@@ -4,7 +4,9 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.classic.spi.Configurator;
+import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.tyler.TylerConfiguratorBase;
+import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.FileAppender;
 import ch.qos.logback.core.joran.action.ActionUtil;
 import ch.qos.logback.core.model.ModelConstants;
@@ -62,7 +64,7 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
   /**
    * Appender variable referencing the appender named "FILE".
    */
-  protected FileAppender appenderFILE;
+  protected Appender<ILoggingEvent> appenderFILE;
 
   /**
    * Since TylerConfigurator is java based, the topURL is always null.
@@ -130,5 +132,5 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
     return !(OptionHelper.isNullOrEmptyOrAllSpaces(debugStr) || debugStr.equalsIgnoreCase("false") || debugStr.equalsIgnoreCase(ModelConstants.NULL_STR));
   }
 }
-// 16:51:10,312 |-INFO in ch.qos.logback.tyler.base.handler.ImplicitModelHandler - Assuming default type [ch.qos.logback.classic.encoder.PatternLayoutEncoder] for [encoder] property
-// 16:51:10,312 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@6a1aab78 - End of configuration.
+// 17:08:25,798 |-INFO in ch.qos.logback.tyler.base.handler.ImplicitModelHandler - Assuming default type [ch.qos.logback.classic.encoder.PatternLayoutEncoder] for [encoder] property
+// 17:08:25,798 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@12f41634 - End of configuration.

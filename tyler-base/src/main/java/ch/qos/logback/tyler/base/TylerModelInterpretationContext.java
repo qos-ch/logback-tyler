@@ -31,12 +31,15 @@ package ch.qos.logback.tyler.base;
     import ch.qos.logback.classic.Level;
     import ch.qos.logback.classic.LoggerContext;
     import ch.qos.logback.classic.spi.Configurator;
+    import ch.qos.logback.classic.spi.ILoggingEvent;
     import ch.qos.logback.classic.tyler.TylerConfiguratorBase;
+    import ch.qos.logback.core.Appender;
     import ch.qos.logback.core.Context;
     import ch.qos.logback.core.model.Model;
     import ch.qos.logback.core.model.processor.ModelFilter;
     import ch.qos.logback.core.model.processor.ModelInterpretationContext;
     import ch.qos.logback.core.spi.FilterReply;
+    import ch.qos.logback.core.util.StringUtil;
     import ch.qos.logback.tyler.base.spi.StaticImportData;
     import ch.qos.logback.tyler.base.util.ClassUtil;
     import ch.qos.logback.tyler.base.util.VariableNameUtil;
@@ -107,6 +110,16 @@ package ch.qos.logback.tyler.base;
          * For each logger name, the variable name of its most recent declaration.
          */
         final Map<String, String> loggerVariableNames = new HashMap<>();
+
+        /**
+         * Appender field names declared so far.
+         */
+        final Set<String> declaredAppenderFieldNames = new HashSet<>();
+
+        /**
+         * Appender setup method names declared so far.
+         */
+        final Set<String> declaredAppenderSetupMethodNames = new HashSet<>();
 
         /**
          * Conditions enclosing the model being handled, innermost last.
@@ -305,11 +318,42 @@ package ch.qos.logback.tyler.base;
         }
 
 
-        public FieldSpec createAppenderFieldSpec(ClassName desiredAppenderCN, String appenderName) {
+        /**
+         * Declare the field referencing the appender named <code>appenderName</code>, unless already
+         * declared. The field is shared by all declarations of appenders with that name, e.g. in mutually
+         * exclusive conditional branches, possibly with different classes. Hence, its type is
+         * <code>Appender&lt;ILoggingEvent&gt;</code>.
+         *
+         * @return the name of the field, see {@link VariableNameUtil#appenderNameToVariableName(String)}
+         * @since 1.0.6
+         */
+        public String declareAppenderField(String appenderName) {
             String appenderVariableName = VariableNameUtil.appenderNameToVariableName(appenderName);
-            FieldSpec.Builder fieldSpecBuilder = FieldSpec.builder(desiredAppenderCN, appenderVariableName).addModifiers(Modifier.PROTECTED);
-            fieldSpecBuilder.addJavadoc("Appender variable referencing the appender named $S.", appenderName);
-            return fieldSpecBuilder.build();
+            if (declaredAppenderFieldNames.add(appenderVariableName)) {
+                TypeName fieldType = ParameterizedTypeName.get(Appender.class, ILoggingEvent.class);
+                FieldSpec.Builder fieldSpecBuilder = FieldSpec.builder(fieldType, appenderVariableName).addModifiers(Modifier.PROTECTED);
+                fieldSpecBuilder.addJavadoc("Appender variable referencing the appender named $S.", appenderName);
+                addFieldSpec(fieldSpecBuilder.build());
+            }
+            return appenderVariableName;
+        }
+
+        /**
+         * Return a new name for the setup method of an appender named <code>appenderName</code>, i.e.
+         * "setupAppender" followed by the capitalized appender name made a valid identifier, followed by
+         * the suffix "_N", where N is the smallest positive integer yielding a name not declared earlier.
+         * The suffix is omitted if the unsuffixed name was not declared earlier.
+         *
+         * @since 1.0.6
+         */
+        public String declareAppenderSetupMethodName(String appenderName) {
+            String baseName = SETUP_APPENDER + StringUtil.capitalizeFirstLetter(VariableNameUtil.toJavaIdentifierPart(appenderName));
+            String methodName = baseName;
+            for (int count = 1; declaredAppenderSetupMethodNames.contains(methodName); count++) {
+                methodName = baseName + UNDERSCORE + count;
+            }
+            declaredAppenderSetupMethodNames.add(methodName);
+            return methodName;
         }
 
         public FieldSpec createPropertyConditionFieldSpec(ClassName className, String variableName) {
