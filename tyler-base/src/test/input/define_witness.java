@@ -125,4 +125,4 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
     }
 }
 // 14:17:39,244 |-INFO in ch.qos.logback.tyler.base.handler.DefineModelHandler - About to configure PropertyDefiner of type [ch.qos.logback.tyler.base.helper.ShapePropertyDefiner]
-// 14:17:39,266 |-INFO in ch.qos.logback.core.model.processor.DefaultProcessor@448c8166 - End of configuration.
+// 14:17:39,266 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@448c8166 - End of configuration.

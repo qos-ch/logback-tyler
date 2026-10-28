@@ -76,9 +76,9 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
   @Override
   public Configurator.ExecutionStatus configure(LoggerContext loggerContext) {
     setContext(loggerContext);
-    this.appenderLIST = setupAppenderLIST();
     this.propertyModelHandlerHelper.handlePropertyModel(this, "JO_PREFIX", "src/test/input/joran", "", "", "");
     // <include file="${JO_PREFIX}/included.xml"/> omitted: translation-time inclusion is disabled
+    this.appenderLIST = setupAppenderLIST();
     Logger logger_ROOT = setupLogger("ROOT", "debug", null);
     logger_ROOT.addAppender(appenderLIST);
     return ExecutionStatus.DO_NOT_INVOKE_NEXT_IF_ANY;
@@ -102,5 +102,5 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
     return appender;
   }
 }
-// 22:40:22,575 |-WARN in ch.qos.logback.tyler.base.handler.TylerIncludeModelHandler - Omitting <include file="${JO_PREFIX}/included.xml"/> on line 36: translation-time inclusion is disabled. Its contents will be missing from the generated configurator.
-// 22:40:22,575 |-INFO in ch.qos.logback.core.model.processor.DefaultProcessor@4b40f651 - End of configuration.
+// 16:38:46,215 |-WARN in ch.qos.logback.tyler.base.handler.TylerIncludeModelHandler - Omitting <include file="${JO_PREFIX}/included.xml"/> on line 36: translation-time inclusion is disabled. Its contents will be missing from the generated configurator.
+// 16:38:46,216 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@43738a82 - End of configuration.

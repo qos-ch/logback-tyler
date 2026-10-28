@@ -78,4 +78,4 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
 // 13:31:50,829 |-INFO in ch.qos.logback.tyler.base.handler.DefineModelHandler - About to configure PropertyDefiner of type [ch.qos.logback.Missing]
 // 13:31:50,834 |-ERROR in ch.qos.logback.tyler.base.handler.DefineModelHandler - Could not find class [ch.qos.logback.Missing]
 // 13:31:50,834 |-ERROR in ch.qos.logback.tyler.base.handler.DefineModelHandler - Could not make implicitModelHandlerData for [ch.qos.logback.Missing]
-// 13:31:50,839 |-INFO in ch.qos.logback.core.model.processor.DefaultProcessor@448c8166 - End of configuration.
+// 13:31:50,839 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@448c8166 - End of configuration.

@@ -1,30 +1,3 @@
-/*
- * Copyright (c) 2024 QOS.ch Sarl (Switzerland)
- * All rights reserved.
- *
- * Permission is hereby granted, free  of charge, to any person obtaining
- * a  copy  of this  software  and  associated  documentation files  (the
- * "Software"), to  deal in  the Software without  restriction, including
- * without limitation  the rights to  use, copy, modify,  merge, publish,
- * distribute,  sublicense, and/or sell  copies of  the Software,  and to
- * permit persons to whom the Software  is furnished to do so, subject to
- * the following conditions:
- *
- * The  above  copyright  notice  and  this permission  notice  shall  be
- * included in all copies or substantial portions of the Software.
- *
- * THE  SOFTWARE IS  PROVIDED  "AS  IS", WITHOUT  WARRANTY  OF ANY  KIND,
- * EXPRESS OR  IMPLIED, INCLUDING  BUT NOT LIMITED  TO THE  WARRANTIES OF
- * MERCHANTABILITY,    FITNESS    FOR    A   PARTICULAR    PURPOSE    AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
- * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
- * OF CONTRACT, TORT OR OTHERWISE,  ARISING FROM, OUT OF OR IN CONNECTION
- * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- *
- *
- *
- */
-
 package com.example;
 
 import ch.qos.logback.classic.AsyncAppender;
@@ -83,73 +56,66 @@ import java.net.URL;
  *
  */
 public class TylerConfigurator extends TylerConfiguratorBase implements Configurator {
-    /**
-     * Appender variable referencing the appender named "ASYNC".
-     */
-    protected AsyncAppender appenderASYNC;
+  /**
+   * Appender variable referencing the appender named "ASYNC".
+   */
+  protected AsyncAppender appenderASYNC;
 
-    /**
-     * Appender variable referencing the appender named "FILE".
-     */
-    protected FileAppender appenderFILE;
+  /**
+   * Appender variable referencing the appender named "FILE".
+   */
+  protected FileAppender appenderFILE;
 
+  /**
+   * Since TylerConfigurator is java based, the topURL is always null.
+   * However, it is still possible tos scan for changes using the
+   * <propertiesConfigurator> element.
+   */
+  protected final URL topURL = null;
 
-    /**
-     * Since TylerConfigurator is java based, the topURL is always null.
-     * However, it is still possible tos scan for changes using the
-     * <propertiesConfigurator> element.
-     */
-    protected final URL topURL = null;
+  /**
+   * <p>This method performs configuration per {@link Configurator} interface.</p>
+   *
+   * <p>If <code>TylerConfigurator</code> is installed as a configurator service, this
+   * method will be called by logback-classic during initialization.</p>
+   */
+  @Override
+  public Configurator.ExecutionStatus configure(LoggerContext loggerContext) {
+    setContext(loggerContext);
+    this.appenderFILE = setupAppenderFILE();
+    this.appenderASYNC = setupAppenderASYNC();
+    Logger logger_ROOT = setupLogger("ROOT", "DEBUG", null);
+    logger_ROOT.addAppender(appenderASYNC);
+    return ExecutionStatus.DO_NOT_INVOKE_NEXT_IF_ANY;
+  }
 
-    /**
-     * <p>This method performs configuration per {@link Configurator} interface.</p>
-     *
-     * <p>If <code>TylerConfgiurator</code> is installed as a configurator service, this
-     * method will be called by logback-classic during initialization.</p>
-     */
-    @Override
-    public Configurator.ExecutionStatus configure(LoggerContext loggerContext) {
-        setContext(loggerContext);
-        this.appenderFILE = setupAppenderFILE();
-        this.appenderASYNC = setupAppenderASYNC();
-        Logger logger_ROOT = setupLogger("ROOT", "DEBUG", null);
-        logger_ROOT.addAppender(appenderASYNC);
-        return ExecutionStatus.DO_NOT_INVOKE_NEXT_IF_ANY;
-    }
+  FileAppender setupAppenderFILE() {
+    FileAppender appender = new FileAppender();
+    appender.setContext(context);
+    appender.setName("FILE");
+    appender.setFile("myapp.log");
 
-    FileAppender setupAppenderFILE() {
-        FileAppender appender = new FileAppender();
-        appender.setContext(context);
-        appender.setName("FILE");
-        appender.setFile("myapp.log");
+    // Configure component of type PatternLayoutEncoder
+    PatternLayoutEncoder patternLayoutEncoder = new PatternLayoutEncoder();
+    patternLayoutEncoder.setContext(context);
+    patternLayoutEncoder.setPattern("%logger{35} -%kvp -%msg%n");
+    patternLayoutEncoder.setParent(appender);
+    patternLayoutEncoder.start();
+    // Inject component of type PatternLayoutEncoder into parent
+    appender.setEncoder(patternLayoutEncoder);
 
-        // Configure component of type PatternLayoutEncoder
-        PatternLayoutEncoder patternLayoutEncoder = new PatternLayoutEncoder();
-        patternLayoutEncoder.setContext(context);
-        patternLayoutEncoder.setPattern("%logger{35} -%kvp -%msg%n");
-        patternLayoutEncoder.setParent(appender);
-        patternLayoutEncoder.start();
+    appender.start();
+    return appender;
+  }
 
-        // Inject component of type PatternLayoutEncoder into parent
-        appender.setEncoder(patternLayoutEncoder);
+  AsyncAppender setupAppenderASYNC() {
+    AsyncAppender appender = new AsyncAppender();
+    appender.setContext(context);
+    appender.setName("ASYNC");
+    appender.addAppender(appenderFILE);
 
-        appender.start();
-        return appender;
-    }
-
-    AsyncAppender setupAppenderASYNC() {
-        AsyncAppender appender = new AsyncAppender();
-        appender.setContext(context);
-        appender.setName("ASYNC");
-        // WARNING: It is assumed at this stage that the appender named "FILE" was setup earlier.
-        if(appenderFILE == null) {
-            addError("Could not find appender named 'FILE'");
-        } else {
-            appender.addAppender(appenderFILE);
-        }
-
-        appender.start();
-        return appender;
-    }
+    appender.start();
+    return appender;
+  }
 }
-// 15:28:18,264 |-INFO in ch.qos.logback.core.model.processor.DefaultProcessor@2415fc55 - End of configuration.
+// 16:38:46,194 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@e720b71 - End of configuration.

@@ -27,7 +27,10 @@
 
 <configuration>
 
-    <if condition='isDefined("j")'>
+    <condition class="ch.qos.logback.core.boolex.IsPropertyDefinedCondition">
+        <key>j</key>
+    </condition>
+    <if>
         <then>
             <logger name="com.foo.Bar" level="INFO"/>
         </then>

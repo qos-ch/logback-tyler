@@ -61,5 +61,7 @@ public class TylerConstants {
 
     public static final String LOCAL_PROPERTY_CONDITION_FIELD_NAME = "propertyCondition";
 
+    public static final String CONDITION_FIELD_NAME_PREFIX = "condition_";
+
 
 }

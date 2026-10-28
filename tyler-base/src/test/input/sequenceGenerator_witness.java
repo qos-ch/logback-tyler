@@ -57,62 +57,60 @@ import java.net.URL;
  *
  */
 public class TylerConfigurator extends TylerConfiguratorBase implements Configurator {
-    /**
-     * Appender variable referencing the appender named "LIST".
-     */
-    protected StringListAppender appenderLIST;
+  /**
+   * Appender variable referencing the appender named "LIST".
+   */
+  protected StringListAppender appenderLIST;
 
+  /**
+   * Since TylerConfigurator is java based, the topURL is always null.
+   * However, it is still possible tos scan for changes using the
+   * <propertiesConfigurator> element.
+   */
+  protected final URL topURL = null;
 
+  /**
+   * <p>This method performs configuration per {@link Configurator} interface.</p>
+   *
+   * <p>If <code>TylerConfigurator</code> is installed as a configurator service, this
+   * method will be called by logback-classic during initialization.</p>
+   */
+  @Override
+  public Configurator.ExecutionStatus configure(LoggerContext loggerContext) {
+    setContext(loggerContext);
+    setupBasicSequenceNumberGenerator_0();
+    this.appenderLIST = setupAppenderLIST();
+    Logger logger_ROOT = setupLogger("ROOT", "DEBUG", null);
+    logger_ROOT.addAppender(appenderLIST);
+    return ExecutionStatus.DO_NOT_INVOKE_NEXT_IF_ANY;
+  }
 
-    /**
-     * Since TylerConfigurator is java based, the topURL is always null.
-     * However, it is still possible tos scan for changes using the
-     * <propertiesConfigurator> element.
-     */
-    protected final URL topURL = null;
+  void setupBasicSequenceNumberGenerator_0() {
+    BasicSequenceNumberGenerator basicSequenceNumberGenerator = new BasicSequenceNumberGenerator();
+    basicSequenceNumberGenerator.setContext(context);
 
-    /**
-     * <p>This method performs configuration per {@link Configurator} interface.</p>
-     *
-     * <p>If <code>TylerConfigurator</code> is installed as a configurator service, this
-     * method will be called by logback-classic during initialization.</p>
-     */
-    @Override
-    public Configurator.ExecutionStatus configure(LoggerContext loggerContext) {
-        setContext(loggerContext);
-        setupBasicSequenceNumberGenerator_0();
-        this.appenderLIST = setupAppenderLIST();
-        Logger logger_ROOT = setupLogger("ROOT", "DEBUG", null);
-        logger_ROOT.addAppender(appenderLIST);
-        return ExecutionStatus.DO_NOT_INVOKE_NEXT_IF_ANY;
+    if(basicSequenceNumberGenerator instanceof LifeCycle) {
+      ((LifeCycle)basicSequenceNumberGenerator).start();
     }
+  }
 
-    void setupBasicSequenceNumberGenerator_0() {
-        BasicSequenceNumberGenerator basicSequenceNumberGenerator = new BasicSequenceNumberGenerator();
-        basicSequenceNumberGenerator.setContext(context);
+  StringListAppender setupAppenderLIST() {
+    StringListAppender appender = new StringListAppender();
+    appender.setContext(context);
+    appender.setName("LIST");
 
-        if(basicSequenceNumberGenerator instanceof LifeCycle) {
-            ((LifeCycle)basicSequenceNumberGenerator).start();
-        }
-    }
+    // Configure component of type PatternLayout
+    PatternLayout patternLayout = new PatternLayout();
+    patternLayout.setContext(context);
+    patternLayout.setPattern("%msg");
+    // ===========no parent setter
+    patternLayout.start();
+    // Inject component of type PatternLayout into parent
+    appender.setLayout(patternLayout);
 
-    StringListAppender setupAppenderLIST() {
-        StringListAppender appender = new StringListAppender();
-        appender.setContext(context);
-        appender.setName("LIST");
-
-        // Configure component of type PatternLayout
-        PatternLayout patternLayout = new PatternLayout();
-        patternLayout.setContext(context);
-        patternLayout.setPattern("%msg");
-        // ===========no parent setter
-        patternLayout.start();
-        // Inject component of type PatternLayout into parent
-        appender.setLayout(patternLayout);
-
-        appender.start();
-        return appender;
-    }
+    appender.start();
+    return appender;
+  }
 }
-// 22:35:58,283 |-INFO in ch.qos.logback.tyler.base.handler.SequenceNumberGeneratorModelHandler - About to configure SequenceNumberGenerator of type [ch.qos.logback.core.spi.BasicSequenceNumberGenerator]
-// 22:35:58,308 |-INFO in ch.qos.logback.core.model.processor.DefaultProcessor@6692b6c6 - End of configuration.
+// 16:38:46,159 |-INFO in ch.qos.logback.tyler.base.handler.SequenceNumberGeneratorModelHandler - About to configure SequenceNumberGenerator of type [ch.qos.logback.core.spi.BasicSequenceNumberGenerator]
+// 16:38:46,160 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@458c1321 - End of configuration.

@@ -1,30 +1,3 @@
-/*
- * Copyright (c) 2024 QOS.ch Sarl (Switzerland)
- * All rights reserved.
- *
- * Permission is hereby granted, free  of charge, to any person obtaining
- * a  copy  of this  software  and  associated  documentation files  (the
- * "Software"), to  deal in  the Software without  restriction, including
- * without limitation  the rights to  use, copy, modify,  merge, publish,
- * distribute,  sublicense, and/or sell  copies of  the Software,  and to
- * permit persons to whom the Software  is furnished to do so, subject to
- * the following conditions:
- *
- * The  above  copyright  notice  and  this permission  notice  shall  be
- * included in all copies or substantial portions of the Software.
- *
- * THE  SOFTWARE IS  PROVIDED  "AS  IS", WITHOUT  WARRANTY  OF ANY  KIND,
- * EXPRESS OR  IMPLIED, INCLUDING  BUT NOT LIMITED  TO THE  WARRANTIES OF
- * MERCHANTABILITY,    FITNESS    FOR    A   PARTICULAR    PURPOSE    AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
- * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
- * OF CONTRACT, TORT OR OTHERWISE,  ARISING FROM, OUT OF OR IN CONNECTION
- * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- *
- *
- *
- */
-
 package com.example;
 
 import ch.qos.logback.classic.Logger;
@@ -84,64 +57,62 @@ import java.net.URL;
  *
  */
 public class TylerConfigurator extends TylerConfiguratorBase implements Configurator {
-    /**
-     * Appender variable referencing the appender named "FILE".
-     */
-    protected FileAppender appenderFILE;
+  /**
+   * Appender variable referencing the appender named "FILE".
+   */
+  protected FileAppender appenderFILE;
 
+  /**
+   * Since TylerConfigurator is java based, the topURL is always null.
+   * However, it is still possible tos scan for changes using the
+   * <propertiesConfigurator> element.
+   */
+  protected final URL topURL = null;
 
-    /**
-     * Since TylerConfigurator is java based, the topURL is always null.
-     * However, it is still possible tos scan for changes using the
-     * <propertiesConfigurator> element.
-     */
-    protected final URL topURL = null;
+  /**
+   * <p>This method performs configuration per {@link Configurator} interface.</p>
+   *
+   * <p>If <code>TylerConfigurator</code> is installed as a configurator service, this
+   * method will be called by logback-classic during initialization.</p>
+   */
+  @Override
+  public Configurator.ExecutionStatus configure(LoggerContext loggerContext) {
+    setContext(loggerContext);
+    timestamp_bySecond();
+    this.appenderFILE = setupAppenderFILE();
+    Logger logger_ROOT = setupLogger("ROOT", "DEBUG", null);
+    logger_ROOT.addAppender(appenderFILE);
+    return ExecutionStatus.DO_NOT_INVOKE_NEXT_IF_ANY;
+  }
 
-    /**
-     * <p>This method performs configuration per {@link Configurator} interface.</p>
-     *
-     * <p>If <code>TylerConfgiurator</code> is installed as a configurator service, this
-     * method will be called by logback-classic during initialization.</p>
-     */
-    @Override
-    public Configurator.ExecutionStatus configure(LoggerContext loggerContext) {
-        setContext(loggerContext);
-        timestamp_bySecond();
-        this.appenderFILE = setupAppenderFILE();
-        Logger logger_ROOT = setupLogger("ROOT", "DEBUG", null);
-        logger_ROOT.addAppender(appenderFILE);
-        return ExecutionStatus.DO_NOT_INVOKE_NEXT_IF_ANY;
-    }
+  void timestamp_bySecond() {
+    ActionUtil.Scope scope = ActionUtil.stringToScope("");
+    CachingDateFormatter cdf = new CachingDateFormatter("yyyyMMdd'T'HHmmss");
+    long timeReference = System.currentTimeMillis();
+    addInfo("Using current interpretation time, i.e. now, as time reference.");
+    String timeValue = cdf.format(timeReference);
+    addInfo("Adding property to the context with key='"+"bySecond"+"' and value="+timeValue+" to the "+scope+" scope");
+    ActionUtil.setProperty(this, "bySecond", timeValue, scope);
+  }
 
-    void timestamp_bySecond() {
-        ActionUtil.Scope scope = ActionUtil.stringToScope("");
-        CachingDateFormatter cdf = new CachingDateFormatter("yyyyMMdd'T'HHmmss");
-        long timeReference = System.currentTimeMillis();
-        addInfo("Using current interpretation time, i.e. now, as time reference.");
-        String timeValue = cdf.format(timeReference);
-        addInfo("Adding property to the context with key='"+"bySecond"+"' and value="+timeValue+" to the "+scope+" scope");
-        ActionUtil.setProperty(this, "bySecond", timeValue, scope);
-    }
+  FileAppender setupAppenderFILE() {
+    FileAppender appender = new FileAppender();
+    appender.setContext(context);
+    appender.setName("FILE");
+    appender.setFile(subst("log-${bySecond}.txt"));
 
-    FileAppender setupAppenderFILE() {
-        FileAppender appender = new FileAppender();
-        appender.setContext(context);
-        appender.setName("FILE");
-        appender.setFile(subst("log-${bySecond}.txt"));
+    // Configure component of type PatternLayoutEncoder
+    PatternLayoutEncoder patternLayoutEncoder = new PatternLayoutEncoder();
+    patternLayoutEncoder.setContext(context);
+    patternLayoutEncoder.setPattern("%logger{35} -%kvp- %msg%n");
+    patternLayoutEncoder.setParent(appender);
+    patternLayoutEncoder.start();
+    // Inject component of type PatternLayoutEncoder into parent
+    appender.setEncoder(patternLayoutEncoder);
 
-        // Configure component of type PatternLayoutEncoder
-        PatternLayoutEncoder patternLayoutEncoder = new PatternLayoutEncoder();
-        patternLayoutEncoder.setContext(context);
-        patternLayoutEncoder.setPattern("%logger{35} -%kvp- %msg%n");
-        patternLayoutEncoder.setParent(appender);
-        patternLayoutEncoder.start();
-
-        // Inject component of type PatternLayoutEncoder into parent
-        appender.setEncoder(patternLayoutEncoder);
-
-        appender.start();
-        return appender;
-    }
+    appender.start();
+    return appender;
+  }
 }
-// 18:10:06,175 |-INFO in ch.qos.logback.tyler.base.handler.ImplicitModelHandler - Assuming default type [ch.qos.logback.classic.encoder.PatternLayoutEncoder] for [encoder] property
-// 18:10:06,180 |-INFO in ch.qos.logback.core.model.processor.DefaultProcessor@64ec96c6 - End of configuration.
+// 16:38:46,197 |-INFO in ch.qos.logback.tyler.base.handler.ImplicitModelHandler - Assuming default type [ch.qos.logback.classic.encoder.PatternLayoutEncoder] for [encoder] property
+// 16:38:46,197 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@491cc5c9 - End of configuration.

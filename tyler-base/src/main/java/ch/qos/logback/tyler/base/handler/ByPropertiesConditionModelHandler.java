@@ -101,6 +101,8 @@ public class ByPropertiesConditionModelHandler extends ModelHandlerBase {
         MethodSpec.Builder propertyConditionSetupMethodSpec = MethodSpec.methodBuilder(methodName).returns(className)
                 .addStatement("$1T $2N = new $1T()", className, LOCAL_PROPERTY_CONDITION_FIELD_NAME)
                 .addStatement("$N.setContext($N)", LOCAL_PROPERTY_CONDITION_FIELD_NAME, tmic.getContextFieldSpec())
+                // as in Joran, properties local to the configurator are visible to the condition
+                .addStatement("$N.setLocalPropertyContainer(this)", LOCAL_PROPERTY_CONDITION_FIELD_NAME)
                 .addJavadoc("Setup method for $N\n", conditionVariableName);
 
         return propertyConditionSetupMethodSpec;

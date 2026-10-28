@@ -128,4 +128,4 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
     }
   }
 }
-// 12:00:32,082 |-INFO in ch.qos.logback.core.model.processor.DefaultProcessor@1b84f475 - End of configuration.
+// 16:38:46,211 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@28ac3dc3 - End of configuration.

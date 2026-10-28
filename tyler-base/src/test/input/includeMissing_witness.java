@@ -78,4 +78,4 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
 // 22:40:17,103 |-WARN in ch.qos.logback.core.model.processor.IncludeModelHandler - Failed to open [file:CWD/src/test/input/doesNotExist.xml]
 // 22:40:17,103 |-WARN in ch.qos.logback.tyler.base.handler.TylerIncludeModelHandler - Omitting <include file="src/test/input/doesNotExist.xml"/> on line 3: included file not available at translation time. Its contents will be missing from the generated configurator.
 // 22:40:17,103 |-WARN in ch.qos.logback.tyler.base.handler.TylerIncludeModelHandler - Omitting <include file="src/test/input/doesNotExistEither.xml" optional="true"/> on line 4: included file not available at translation time. Its contents will be missing from the generated configurator.
-// 22:40:17,104 |-INFO in ch.qos.logback.core.model.processor.DefaultProcessor@5ddf0d24 - End of configuration.
+// 22:40:17,104 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@5ddf0d24 - End of configuration.

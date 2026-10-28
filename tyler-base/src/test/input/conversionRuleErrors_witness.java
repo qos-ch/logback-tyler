@@ -77,4 +77,4 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
 // 12:00:53,465 |-ERROR in ch.qos.logback.tyler.base.handler.ConversionRuleModelHandler - Could not find Converter class [com.example.DoesNotExistConverter] on line 3
 // 12:00:53,466 |-ERROR in ch.qos.logback.tyler.base.handler.ConversionRuleModelHandler - Converter class [java.lang.Object] on line 4 is not of type [ch.qos.logback.core.pattern.DynamicConverter]
 // 12:00:53,466 |-ERROR in ch.qos.logback.tyler.base.handler.ConversionRuleModelHandler - Converter class [ch.qos.logback.classic.pattern.ClassicConverter] on line 5 must be public and concrete
-// 12:00:53,467 |-INFO in ch.qos.logback.core.model.processor.DefaultProcessor@2bb3058 - End of configuration.
+// 12:00:53,467 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@2bb3058 - End of configuration.

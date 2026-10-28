@@ -58,58 +58,58 @@ import java.net.URL;
  *
  */
 public class TylerConfigurator extends TylerConfiguratorBase implements Configurator {
-    /**
-     * Appender variable referencing the appender named "LIST".
-     */
-    protected StringListAppender appenderLIST;
+  /**
+   * Appender variable referencing the appender named "LIST".
+   */
+  protected StringListAppender appenderLIST;
 
+  /**
+   * Since TylerConfigurator is java based, the topURL is always null.
+   * However, it is still possible tos scan for changes using the
+   * <propertiesConfigurator> element.
+   */
+  protected final URL topURL = null;
 
-    /**
-     * Since TylerConfigurator is java based, the topURL is always null.
-     * However, it is still possible tos scan for changes using the
-     * <propertiesConfigurator> element.
-     */
-    protected final URL topURL = null;
-    /**
-     * <p>This method performs configuration per {@link Configurator} interface.</p>
-     *
-     * <p>If <code>TylerConfigurator</code> is installed as a configurator service, this
-     * method will be called by logback-classic during initialization.</p>
-     */
-    @Override
-    public Configurator.ExecutionStatus configure(LoggerContext loggerContext) {
-        setContext(loggerContext);
-        this.appenderLIST = setupAppenderLIST();
-        this.propertyModelHandlerHelper.handlePropertyModel(this, "JO_PREFIX", "src/test/input/joran", "", "", "");
-        PropertiesConfiguratorModel propertyConfiguratorModel = new PropertiesConfiguratorModel();
-        propertyConfiguratorModel.setFile(subst("${JO_PREFIX}/propertiesConfigurator/smoke.properties"));
-        PropertiesConfiguratorModelHandler propertiesConfiguratorModelHandler = new PropertiesConfiguratorModelHandler(context);
-        try {
-            propertiesConfiguratorModelHandler.detachedHandle(this, propertyConfiguratorModel, null);
-        } catch(ModelHandlerException e) {
-            addError("Failed to process PropertyConfiguratorModel", e);
-        }
-        Logger logger_ROOT = setupLogger("ROOT", "debug", null);
-        logger_ROOT.addAppender(appenderLIST);
-        return ExecutionStatus.DO_NOT_INVOKE_NEXT_IF_ANY;
+  /**
+   * <p>This method performs configuration per {@link Configurator} interface.</p>
+   *
+   * <p>If <code>TylerConfigurator</code> is installed as a configurator service, this
+   * method will be called by logback-classic during initialization.</p>
+   */
+  @Override
+  public Configurator.ExecutionStatus configure(LoggerContext loggerContext) {
+    setContext(loggerContext);
+    this.propertyModelHandlerHelper.handlePropertyModel(this, "JO_PREFIX", "src/test/input/joran", "", "", "");
+    PropertiesConfiguratorModel propertyConfiguratorModel = new PropertiesConfiguratorModel();
+    propertyConfiguratorModel.setFile(subst("${JO_PREFIX}/propertiesConfigurator/smoke.properties"));
+    PropertiesConfiguratorModelHandler propertiesConfiguratorModelHandler = new PropertiesConfiguratorModelHandler(context);
+    try {
+      propertiesConfiguratorModelHandler.detachedHandle(this, propertyConfiguratorModel, null);
+    } catch(ModelHandlerException e) {
+      addError("Failed to process PropertyConfiguratorModel", e);
     }
+    this.appenderLIST = setupAppenderLIST();
+    Logger logger_ROOT = setupLogger("ROOT", "debug", null);
+    logger_ROOT.addAppender(appenderLIST);
+    return ExecutionStatus.DO_NOT_INVOKE_NEXT_IF_ANY;
+  }
 
-    StringListAppender setupAppenderLIST() {
-        StringListAppender appender = new StringListAppender();
-        appender.setContext(context);
-        appender.setName("LIST");
+  StringListAppender setupAppenderLIST() {
+    StringListAppender appender = new StringListAppender();
+    appender.setContext(context);
+    appender.setName("LIST");
 
-        // Configure component of type PatternLayout
-        PatternLayout patternLayout = new PatternLayout();
-        patternLayout.setContext(context);
-        patternLayout.setPattern("%msg");
-        // ===========no parent setter
-        patternLayout.start();
-        // Inject component of type PatternLayout into parent
-        appender.setLayout(patternLayout);
+    // Configure component of type PatternLayout
+    PatternLayout patternLayout = new PatternLayout();
+    patternLayout.setContext(context);
+    patternLayout.setPattern("%msg");
+    // ===========no parent setter
+    patternLayout.start();
+    // Inject component of type PatternLayout into parent
+    appender.setLayout(patternLayout);
 
-        appender.start();
-        return appender;
-    }
+    appender.start();
+    return appender;
+  }
 }
-// 11:56:09,016 |-INFO in ch.qos.logback.core.model.processor.DefaultProcessor@44be0077 - End of configuration.
+// 16:38:46,201 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@37374a5e - End of configuration.

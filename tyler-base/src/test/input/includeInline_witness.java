@@ -70,11 +70,11 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
   public Configurator.ExecutionStatus configure(LoggerContext loggerContext) {
     setContext(loggerContext);
     // Start of contents inlined from <include file="src/test/input/included0.xml"/>
-    Logger logger_com_bazinga = setupLogger("com.bazinga", "INFO", null);
     // End of contents inlined from <include file="src/test/input/included0.xml"/>
+    Logger logger_com_bazinga = setupLogger("com.bazinga", "INFO", null);
     Logger logger_ROOT = setupLogger("ROOT", "DEBUG", null);
     return ExecutionStatus.DO_NOT_INVOKE_NEXT_IF_ANY;
   }
 }
-// 22:40:15,310 |-INFO in ch.qos.logback.core.model.processor.IncludeModelHandler - Including configuration file [file:CWD/src/test/input/included0.xml]
-// 22:40:15,312 |-INFO in ch.qos.logback.core.model.processor.DefaultProcessor@10a9d961 - End of configuration.
+// 13:34:54,048 |-INFO in ch.qos.logback.core.model.processor.IncludeModelHandler - Including configuration file [file:CWD/src/test/input/included0.xml]
+// 13:34:54,048 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@17d0685f - End of configuration.

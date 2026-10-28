@@ -57,63 +57,61 @@ import java.net.URL;
  *
  */
 public class TylerConfigurator extends TylerConfiguratorBase implements Configurator {
-    /**
-     * Appender variable referencing the appender named "CONSOLE".
-     */
-    protected ConsoleAppender appenderCONSOLE;
+  /**
+   * Appender variable referencing the appender named "CONSOLE".
+   */
+  protected ConsoleAppender appenderCONSOLE;
 
+  /**
+   * Since TylerConfigurator is java based, the topURL is always null.
+   * However, it is still possible tos scan for changes using the
+   * <propertiesConfigurator> element.
+   */
+  protected final URL topURL = null;
 
+  /**
+   * <p>This method performs configuration per {@link Configurator} interface.</p>
+   *
+   * <p>If <code>TylerConfigurator</code> is installed as a configurator service, this
+   * method will be called by logback-classic during initialization.</p>
+   */
+  @Override
+  public Configurator.ExecutionStatus configure(LoggerContext loggerContext) {
+    setContext(loggerContext);
+    insertFromJNDIAs_appName("appName", "java:comp/env/appName", null);
+    setContextName(subst("${appName}"));
+    this.appenderCONSOLE = setupAppenderCONSOLE();
+    Logger logger_ROOT = setupLogger("ROOT", "DEBUG", null);
+    logger_ROOT.addAppender(appenderCONSOLE);
+    return ExecutionStatus.DO_NOT_INVOKE_NEXT_IF_ANY;
+  }
 
-    /**
-     * Since TylerConfigurator is java based, the topURL is always null.
-     * However, it is still possible tos scan for changes using the
-     * <propertiesConfigurator> element.
-     */
-    protected final URL topURL = null;
+  ConsoleAppender setupAppenderCONSOLE() {
+    ConsoleAppender appender = new ConsoleAppender();
+    appender.setContext(context);
+    appender.setName("CONSOLE");
 
-    /**
-     * <p>This method performs configuration per {@link Configurator} interface.</p>
-     *
-     * <p>If <code>TylerConfigurator</code> is installed as a configurator service, this
-     * method will be called by logback-classic during initialization.</p>
-     */
-    @Override
-    public Configurator.ExecutionStatus configure(LoggerContext loggerContext) {
-        setContext(loggerContext);
-        insertFromJNDIAs_appName("appName", "java:comp/env/appName", null);
-        setContextName(subst("${appName}"));
-        this.appenderCONSOLE = setupAppenderCONSOLE();
-        Logger logger_ROOT = setupLogger("ROOT", "DEBUG", null);
-        logger_ROOT.addAppender(appenderCONSOLE);
-        return ExecutionStatus.DO_NOT_INVOKE_NEXT_IF_ANY;
-    }
+    // Configure component of type PatternLayoutEncoder
+    PatternLayoutEncoder patternLayoutEncoder = new PatternLayoutEncoder();
+    patternLayoutEncoder.setContext(context);
+    patternLayoutEncoder.setPattern(subst("%d ${CONTEXT_NAME} %level -%kvp- %msg %logger{50}%n"));
+    patternLayoutEncoder.setParent(appender);
+    patternLayoutEncoder.start();
+    // Inject component of type PatternLayoutEncoder into parent
+    appender.setEncoder(patternLayoutEncoder);
 
-    ConsoleAppender setupAppenderCONSOLE() {
-        ConsoleAppender appender = new ConsoleAppender();
-        appender.setContext(context);
-        appender.setName("CONSOLE");
+    appender.start();
+    return appender;
+  }
 
-        // Configure component of type PatternLayoutEncoder
-        PatternLayoutEncoder patternLayoutEncoder = new PatternLayoutEncoder();
-        patternLayoutEncoder.setContext(context);
-        patternLayoutEncoder.setPattern(subst("%d ${CONTEXT_NAME} %level -%kvp- %msg %logger{50}%n"));
-        patternLayoutEncoder.setParent(appender);
-        patternLayoutEncoder.start();
-        // Inject component of type PatternLayoutEncoder into parent
-        appender.setEncoder(patternLayoutEncoder);
-
-        appender.start();
-        return appender;
-    }
-
-    private void insertFromJNDIAs_appName(String asStr, String envEntryStr, String scopeStr) {
-        InsertFromJNDIModel insertFromJNDIModel = new InsertFromJNDIModel();
-        insertFromJNDIModel.setAs(subst("asStr"));
-        insertFromJNDIModel.setEnvEntryName(subst("envEntryStr"));
-        insertFromJNDIModel.setScopeStr(subst("scopeStr"));
-        InsertFromJNDIModelHandler insertFromJNDIModelHandler = new InsertFromJNDIModelHandler(context);
-        insertFromJNDIModelHandler.detachedHandle(this, insertFromJNDIModel);
-    }
+  private void insertFromJNDIAs_appName(String asStr, String envEntryStr, String scopeStr) {
+    InsertFromJNDIModel insertFromJNDIModel = new InsertFromJNDIModel();
+    insertFromJNDIModel.setAs(subst("asStr"));
+    insertFromJNDIModel.setEnvEntryName(subst("envEntryStr"));
+    insertFromJNDIModel.setScopeStr(subst("scopeStr"));
+    InsertFromJNDIModelHandler insertFromJNDIModelHandler = new InsertFromJNDIModelHandler(context);
+    insertFromJNDIModelHandler.detachedHandle(this, insertFromJNDIModel);
+  }
 }
-// 11:53:00,947 |-INFO in ch.qos.logback.tyler.base.handler.ImplicitModelHandler - Assuming default type [ch.qos.logback.classic.encoder.PatternLayoutEncoder] for [encoder] property
-// 11:53:00,952 |-INFO in ch.qos.logback.core.model.processor.DefaultProcessor@30b6ffe0 - End of configuration.
+// 16:38:46,227 |-INFO in ch.qos.logback.tyler.base.handler.ImplicitModelHandler - Assuming default type [ch.qos.logback.classic.encoder.PatternLayoutEncoder] for [encoder] property
+// 16:38:46,227 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@64485a47 - End of configuration.

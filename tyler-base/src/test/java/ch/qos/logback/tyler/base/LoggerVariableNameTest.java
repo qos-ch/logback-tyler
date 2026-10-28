@@ -69,7 +69,8 @@ public class LoggerVariableNameTest {
     void sameLoggerInNestedBlock() throws Exception {
         String input = "<configuration>\n" + LIST_APPENDER
                         + "  <logger name=\"a.b\" level=\"DEBUG\"/>\n"
-                        + "  <if condition='isDefined(\"j\")'>\n"
+                        + "  <condition class=\"ch.qos.logback.core.boolex.IsPropertyDefinedCondition\"><key>j</key></condition>\n"
+                        + "  <if>\n"
                         + "    <then>\n"
                         + "      <logger name=\"a.b\"><level value=\"TRACE\"/><appender-ref ref=\"LIST\"/></logger>\n"
                         + "    </then>\n"

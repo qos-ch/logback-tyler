@@ -38,12 +38,14 @@ import ch.qos.logback.tyler.base.TylerModelInterpretationContext;
 /**
  * Handler responsible for processing IfModel instances encountered during model interpretation.
  * <p>
- * This handler pushes the IfModel onto the interpretation stack, validates the condition
- * string and emits the corresponding Java "if" control flow into the Tyler configuration
- * method being built (via MethodSpec).
+ * This handler evaluates the condition once, storing its value in a field of the generated class, and
+ * pushes an {@link IfConditionRecord} naming that field for the &lt;then&gt; and &lt;else&gt;
+ * submodels, see {@link ThenModelHandler} and {@link ElseModelHandler}.
  * </p>
  */
 public class IfModelHandler extends ModelHandlerBase {
+
+    IfConditionRecord ifConditionRecord;
 
     /**
      * Create a new IfModelHandler.
@@ -76,8 +78,8 @@ public class IfModelHandler extends ModelHandlerBase {
     }
 
     /**
-     * Handle an {@link IfModel} by validating its condition and emitting the
-     * corresponding Java "if" statement into the Tyler method spec builder.
+     * Handle an {@link IfModel} by emitting the evaluation of its condition, taken from a preceding
+     * &lt;condition&gt; element or from the condition attribute, into a field.
      *
      * @param mic the model interpretation context
      * @param model the model to handle (expected to be {@link IfModel})
@@ -88,7 +90,6 @@ public class IfModelHandler extends ModelHandlerBase {
         IfModel ifModel = (IfModel) model;
         TylerModelInterpretationContext tmic = (TylerModelInterpretationContext) mic;
 
-
         Object o = tmic.peekObject();
         String conditionStr = null;
 
@@ -97,53 +98,47 @@ public class IfModelHandler extends ModelHandlerBase {
             mic.popObject();
         }
 
+        if(!OptionHelper.isNullOrEmptyOrAllSpaces(ifModel.getCondition())) {
+            addWarn("condition attribute no longer supported for <if> element. Line "+model.getLineNumber());
+        }
+
+        if (OptionHelper.isNullOrEmptyOrAllSpaces(conditionStr)) {
+            addError("Empty condition for <if> element on line "+model.getLineNumber());
+            ifModel.markAsSkipped();
+            return;
+        }
+
+        String fieldName = tmic.declareConditionField();
+        tmic.getConfigureMethodSpecBuilder().addStatement("this.$N = $L", fieldName, conditionStr);
+
+        ifConditionRecord = new IfConditionRecord(fieldName);
         mic.pushModel(ifModel);
-        if(conditionStr ==  null) {
-            conditionStr = ifModel.getCondition();
-        }
-
-        int lineNum = model.getLineNumber();
-
-        if (!OptionHelper.isNullOrEmptyOrAllSpaces(conditionStr)) {
-            addJavaStatement(tmic, conditionStr);
-        } else {
-            addError("Empty condition for <if> element on line "+lineNum);
-        }
+        mic.pushObject(ifConditionRecord);
     }
 
     /**
-     * Emit the Java "if" control flow for the given condition into the supplied
-     * TylerModelInterpretationContext's MethodSpec builder.
-     *
-     * @param tmic the Tyler model interpretation context containing the MethodSpec builder
-     * @param conditionStr the Java expression to use as the if condition
-     */
-    protected void addJavaStatement(TylerModelInterpretationContext tmic, String conditionStr) {
-        tmic.configureMethodSpecBuilder.beginControlFlow("if($N)", conditionStr);
-    }
-
-    /**
-     * Finalize handling of the {@link IfModel}: verify the model stack, end the
-     * emitted control flow and pop the model from the stack.
+     * Pop the objects pushed by {@link #handle}.
      *
      * @param mic the model interpretation context
      * @param model the model that was handled
      */
     @Override
     public void postHandle(ModelInterpretationContext mic, Model model) {
-        if(mic.isModelStackEmpty()) {
-            addError("Unexpected unexpected empty model stack.");
+        if(ifConditionRecord == null) {
             return;
         }
+
+        if (mic.peekObject() != ifConditionRecord) {
+            addWarn("The object at the top of the stack is not the IfConditionRecord pushed earlier.");
+            return;
+        }
+        mic.popObject();
 
         Object o = mic.peekModel();
         if (!(o instanceof IfModel)) {
             addWarn("The object [" + o + "] on the top the of the stack is not of type [" + IfModel.class);
         } else {
-            TylerModelInterpretationContext tmic = (TylerModelInterpretationContext) mic;
-            tmic.configureMethodSpecBuilder.endControlFlow();
             mic.popModel();
         }
-
     }
 }

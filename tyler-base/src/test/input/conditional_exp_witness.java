@@ -57,100 +57,112 @@ import java.net.URL;
  *
  */
 public class TylerConfigurator extends TylerConfiguratorBase implements Configurator {
-    /**
-     * Appender variable referencing the appender named "FILE".
-     */
-    protected FileAppender appenderFILE;
+  /**
+   * Appender variable referencing the appender named "FILE".
+   */
+  protected FileAppender appenderFILE;
 
-    /**
-     * Appender variable referencing the appender named "CON".
-     */
-    protected ConsoleAppender appenderCON;
+  /**
+   * Appender variable referencing the appender named "CON".
+   */
+  protected ConsoleAppender appenderCON;
 
-    /**
-     * Variable used in conditional processing
-     */
-    protected ExpressionPropertyCondition expressionPropertyCondition_0;
+  /**
+   * Value of a condition evaluated in the configure method.
+   */
+  protected boolean condition_0;
 
+  /**
+   * Variable used in conditional processing
+   */
+  protected ExpressionPropertyCondition expressionPropertyCondition_0;
 
-    /**
-     * Since TylerConfigurator is java based, the topURL is always null.
-     * However, it is still possible tos scan for changes using the
-     * <propertiesConfigurator> element.
-     */
-    protected final URL topURL = null;
-    /**
-     * <p>This method performs configuration per {@link Configurator} interface.</p>
-     *
-     * <p>If <code>TylerConfigurator</code> is installed as a configurator service, this
-     * method will be called by logback-classic during initialization.</p>
-     */
-    @Override
-    public Configurator.ExecutionStatus configure(LoggerContext loggerContext) {
-        setContext(loggerContext);
-        addOnConsoleStatusListener();
-        this.expressionPropertyCondition_0 = setupExpressionPropertyCondition_0();
-        if(this.expressionPropertyCondition_0.evaluate()) {
-            this.appenderCON = setupAppenderCON();
-            Logger logger_ROOT = setupLogger("ROOT", null, null);
-            logger_ROOT.addAppender(appenderCON);
-        } else {
-            this.appenderFILE = setupAppenderFILE();
-            Logger logger_ROOT_1 = setupLogger("ROOT", "ERROR", null);
-            logger_ROOT_1.addAppender(appenderFILE);
-        }
-        return ExecutionStatus.DO_NOT_INVOKE_NEXT_IF_ANY;
+  /**
+   * Since TylerConfigurator is java based, the topURL is always null.
+   * However, it is still possible tos scan for changes using the
+   * <propertiesConfigurator> element.
+   */
+  protected final URL topURL = null;
+
+  /**
+   * <p>This method performs configuration per {@link Configurator} interface.</p>
+   *
+   * <p>If <code>TylerConfigurator</code> is installed as a configurator service, this
+   * method will be called by logback-classic during initialization.</p>
+   */
+  @Override
+  public Configurator.ExecutionStatus configure(LoggerContext loggerContext) {
+    setContext(loggerContext);
+    addOnConsoleStatusListener();
+    this.expressionPropertyCondition_0 = setupExpressionPropertyCondition_0();
+    this.condition_0 = this.expressionPropertyCondition_0.evaluate();
+    if (this.condition_0) {
+      this.appenderCON = setupAppenderCON();
     }
-
-    /**
-     * Setup method for expressionPropertyCondition_0
-     */
-    ExpressionPropertyCondition setupExpressionPropertyCondition_0() {
-        ExpressionPropertyCondition propertyCondition = new ExpressionPropertyCondition();
-        propertyCondition.setContext(context);
-        propertyCondition.setExpression("isNull(\"environment\") && propertyEquals(\"HOSTNAME\", \"torino\")");
-
-        propertyCondition.start();
-        return propertyCondition;
+    if (!this.condition_0) {
+      this.appenderFILE = setupAppenderFILE();
     }
-
-    ConsoleAppender setupAppenderCON() {
-        ConsoleAppender appender = new ConsoleAppender();
-        appender.setContext(context);
-        appender.setName("CON");
-
-        // Configure component of type PatternLayoutEncoder
-        PatternLayoutEncoder patternLayoutEncoder = new PatternLayoutEncoder();
-        patternLayoutEncoder.setContext(context);
-        patternLayoutEncoder.setPattern("%d %-5level %logger{35} -%kvp- %msg %n");
-        patternLayoutEncoder.setParent(appender);
-        patternLayoutEncoder.start();
-        // Inject component of type PatternLayoutEncoder into parent
-        appender.setEncoder(patternLayoutEncoder);
-
-        appender.start();
-        return appender;
+    if (this.condition_0) {
+      Logger logger_ROOT = setupLogger("ROOT", null, null);
+      logger_ROOT.addAppender(appenderCON);
     }
-
-    FileAppender setupAppenderFILE() {
-        FileAppender appender = new FileAppender();
-        appender.setContext(context);
-        appender.setName("FILE");
-        appender.setFile(subst("${randomOutputDir}/conditional.log"));
-
-        // Configure component of type PatternLayoutEncoder
-        PatternLayoutEncoder patternLayoutEncoder = new PatternLayoutEncoder();
-        patternLayoutEncoder.setContext(context);
-        patternLayoutEncoder.setPattern("%d %-5level %logger{35} -%kvp- %msg %n");
-        patternLayoutEncoder.setParent(appender);
-        patternLayoutEncoder.start();
-        // Inject component of type PatternLayoutEncoder into parent
-        appender.setEncoder(patternLayoutEncoder);
-
-        appender.start();
-        return appender;
+    if (!this.condition_0) {
+      Logger logger_ROOT_1 = setupLogger("ROOT", "ERROR", null);
+      logger_ROOT_1.addAppender(appenderFILE);
     }
+    return ExecutionStatus.DO_NOT_INVOKE_NEXT_IF_ANY;
+  }
+
+  /**
+   * Setup method for expressionPropertyCondition_0
+   */
+  ExpressionPropertyCondition setupExpressionPropertyCondition_0() {
+    ExpressionPropertyCondition propertyCondition = new ExpressionPropertyCondition();
+    propertyCondition.setContext(context);
+    propertyCondition.setLocalPropertyContainer(this);
+    propertyCondition.setExpression("isNull(\"environment\") && propertyEquals(\"HOSTNAME\", \"torino\")");
+
+    propertyCondition.start();
+    return propertyCondition;
+  }
+
+  ConsoleAppender setupAppenderCON() {
+    ConsoleAppender appender = new ConsoleAppender();
+    appender.setContext(context);
+    appender.setName("CON");
+
+    // Configure component of type PatternLayoutEncoder
+    PatternLayoutEncoder patternLayoutEncoder = new PatternLayoutEncoder();
+    patternLayoutEncoder.setContext(context);
+    patternLayoutEncoder.setPattern("%d %-5level %logger{35} -%kvp- %msg %n");
+    patternLayoutEncoder.setParent(appender);
+    patternLayoutEncoder.start();
+    // Inject component of type PatternLayoutEncoder into parent
+    appender.setEncoder(patternLayoutEncoder);
+
+    appender.start();
+    return appender;
+  }
+
+  FileAppender setupAppenderFILE() {
+    FileAppender appender = new FileAppender();
+    appender.setContext(context);
+    appender.setName("FILE");
+    appender.setFile(subst("${randomOutputDir}/conditional.log"));
+
+    // Configure component of type PatternLayoutEncoder
+    PatternLayoutEncoder patternLayoutEncoder = new PatternLayoutEncoder();
+    patternLayoutEncoder.setContext(context);
+    patternLayoutEncoder.setPattern("%d %-5level %logger{35} -%kvp- %msg %n");
+    patternLayoutEncoder.setParent(appender);
+    patternLayoutEncoder.start();
+    // Inject component of type PatternLayoutEncoder into parent
+    appender.setEncoder(patternLayoutEncoder);
+
+    appender.start();
+    return appender;
+  }
 }
-// 15:32:52,721 |-INFO in ch.qos.logback.tyler.base.handler.ImplicitModelHandler - Assuming default type [ch.qos.logback.classic.encoder.PatternLayoutEncoder] for [encoder] property
-// 15:32:52,722 |-INFO in ch.qos.logback.tyler.base.handler.ImplicitModelHandler - Assuming default type [ch.qos.logback.classic.encoder.PatternLayoutEncoder] for [encoder] property
-// 15:32:52,723 |-INFO in ch.qos.logback.core.model.processor.DefaultProcessor@35399441 - End of configuration.
+// 16:38:46,187 |-INFO in ch.qos.logback.tyler.base.handler.ImplicitModelHandler - Assuming default type [ch.qos.logback.classic.encoder.PatternLayoutEncoder] for [encoder] property
+// 16:38:46,188 |-INFO in ch.qos.logback.tyler.base.handler.ImplicitModelHandler - Assuming default type [ch.qos.logback.classic.encoder.PatternLayoutEncoder] for [encoder] property
+// 16:38:46,188 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@76a3e297 - End of configuration.

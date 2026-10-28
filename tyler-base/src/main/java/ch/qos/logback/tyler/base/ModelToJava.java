@@ -156,11 +156,11 @@ public class ModelToJava {
 
         LogbackClassicDefaultNestedComponentRules.addDefaultNestedComponentRegistryRules(tmic.getDefaultNestedComponentRegistry());
 
-        DefaultProcessor defaultProcessor = new DefaultProcessor(context, tmic);
+        TylerProcessor tylerProcessor = new TylerProcessor(context, tmic);
         // this is where we link model classes to their Tyler-specific handlers
-        addModelHandlerAssociations(defaultProcessor);
+        addModelHandlerAssociations(tylerProcessor);
 
-        defaultProcessor.process(topModel);
+        tylerProcessor.process(topModel);
 
 
         tmic.configureMethodSpecBuilder.addStatement("return ExecutionStatus.DO_NOT_INVOKE_NEXT_IF_ANY");

@@ -54,41 +54,55 @@ import java.net.URL;
  *
  */
 public class TylerConfigurator extends TylerConfiguratorBase implements Configurator {
-    protected IsPropertyDefinedCondition isPropertyDefinedCondition_0;
+  /**
+   * Value of a condition evaluated in the configure method.
+   */
+  protected boolean condition_0;
 
-    /**
-     * Since TylerConfigurator is java based, the topURL is always null.
-     * However, it is still possible tos scan for changes using the
-     * <propertiesConfigurator> element.
-     */
-    protected final URL topURL = null;
+  /**
+   * Variable used in conditional processing
+   */
+  protected IsPropertyDefinedCondition isPropertyDefinedCondition_0;
 
-    /**
-     * <p>This method performs configuration per {@link Configurator} interface.</p>
-     *
-     * <p>If <code>TylerConfigurator</code> is installed as a configurator service, this
-     * method will be called by logback-classic during initialization.</p>
-     */
-    @Override
-    public Configurator.ExecutionStatus configure(LoggerContext loggerContext) {
-        setContext(loggerContext);
-        this.isPropertyDefinedCondition_0 = setupIsPropertyDefinedCondition_0();
-        if(this.isPropertyDefinedCondition_0.evaluate()) {
-            Logger logger_com_foo_Bar = setupLogger("com.foo.Bar", "INFO", null);
-        } else {
-            Logger logger_com_foo_Bar_1 = setupLogger("com.foo.Bar", "DEBUG", null);
-        }
-        Logger logger_ROOT = setupLogger("ROOT", "DEBUG", null);
-        return ExecutionStatus.DO_NOT_INVOKE_NEXT_IF_ANY;
+  /**
+   * Since TylerConfigurator is java based, the topURL is always null.
+   * However, it is still possible tos scan for changes using the
+   * <propertiesConfigurator> element.
+   */
+  protected final URL topURL = null;
+
+  /**
+   * <p>This method performs configuration per {@link Configurator} interface.</p>
+   *
+   * <p>If <code>TylerConfigurator</code> is installed as a configurator service, this
+   * method will be called by logback-classic during initialization.</p>
+   */
+  @Override
+  public Configurator.ExecutionStatus configure(LoggerContext loggerContext) {
+    setContext(loggerContext);
+    this.isPropertyDefinedCondition_0 = setupIsPropertyDefinedCondition_0();
+    this.condition_0 = this.isPropertyDefinedCondition_0.evaluate();
+    if (this.condition_0) {
+      Logger logger_com_foo_Bar = setupLogger("com.foo.Bar", "INFO", null);
     }
-
-    IsPropertyDefinedCondition setupIsPropertyDefinedCondition_0() {
-        IsPropertyDefinedCondition propertyCondition = new IsPropertyDefinedCondition();
-        propertyCondition.setContext(context);
-        propertyCondition.setKey("j");
-
-        propertyCondition.start();
-        return propertyCondition;
+    if (!this.condition_0) {
+      Logger logger_com_foo_Bar_1 = setupLogger("com.foo.Bar", "DEBUG", null);
     }
+    Logger logger_ROOT = setupLogger("ROOT", "DEBUG", null);
+    return ExecutionStatus.DO_NOT_INVOKE_NEXT_IF_ANY;
+  }
+
+  /**
+   * Setup method for isPropertyDefinedCondition_0
+   */
+  IsPropertyDefinedCondition setupIsPropertyDefinedCondition_0() {
+    IsPropertyDefinedCondition propertyCondition = new IsPropertyDefinedCondition();
+    propertyCondition.setContext(context);
+    propertyCondition.setLocalPropertyContainer(this);
+    propertyCondition.setKey("j");
+
+    propertyCondition.start();
+    return propertyCondition;
+  }
 }
-// 18:45:17,081 |-INFO in ch.qos.logback.core.model.processor.DefaultProcessor@797b0699 - End of configuration.
+// 13:34:54,025 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@5bcea91b - End of configuration.

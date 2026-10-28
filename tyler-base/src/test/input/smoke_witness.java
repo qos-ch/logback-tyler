@@ -59,28 +59,28 @@ import java.net.URL;
  */
 public class TylerConfigurator extends TylerConfiguratorBase implements Configurator {
   /**
-   * Appender variable referencing the appender named "appenderRFILE".
+   * Appender variable referencing the appender named "RFILE".
    */
   protected RollingFileAppender appenderRFILE;
 
+  /**
+   * Since TylerConfigurator is java based, the topURL is always null.
+   * However, it is still possible tos scan for changes using the
+   * <propertiesConfigurator> element.
+   */
+  protected final URL topURL = null;
 
-    /**
-     * Since TylerConfigurator is java based, the topURL is always null.
-     * However, it is still possible tos scan for changes using the
-     * <propertiesConfigurator> element.
-     */
-    protected final URL topURL = null;
   /**
    * <p>This method performs configuration per {@link Configurator} interface.</p>
    *
-   * <p>If <code>TylerConfgiurator</code> is installed as a configurator service, this
+   * <p>If <code>TylerConfigurator</code> is installed as a configurator service, this
    * method will be called by logback-classic during initialization.</p>
    */
   @Override
   public Configurator.ExecutionStatus configure(LoggerContext loggerContext) {
     setContext(loggerContext);
     setupOnConsoleStatusListener_0();
-      this.propertyModelHandlerHelper.handlePropertyModel(this, "USER_HOME", "/home/alice", "", "", "");
+    this.propertyModelHandlerHelper.handlePropertyModel(this, "USER_HOME", "/home/alice", "", "", "");
     setContextName(subst("${APPNAME}"));
     this.appenderRFILE = setupAppenderRFILE();
     Logger logger_com_foo_Bar = setupLogger("com.foo.Bar", "DEBUG", null);
@@ -114,7 +114,6 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
     timeBasedRollingPolicy.setTotalSizeCap(ch.qos.logback.core.util.FileSize.valueOf("3GB"));
     timeBasedRollingPolicy.setParent(appender);
     timeBasedRollingPolicy.start();
-
     // Inject component of type TimeBasedRollingPolicy into parent
     appender.setRollingPolicy(timeBasedRollingPolicy);
 
@@ -124,7 +123,6 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
     patternLayoutEncoder.setPattern("%-4relative [%thread] %-5level %logger{35} -%kvp- %msg%n");
     patternLayoutEncoder.setParent(appender);
     patternLayoutEncoder.start();
-
     // Inject component of type PatternLayoutEncoder into parent
     appender.setEncoder(patternLayoutEncoder);
 
@@ -132,4 +130,4 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
     return appender;
   }
 }
-// 21:32:27,561 |-INFO in ch.qos.logback.core.model.processor.DefaultProcessor@5f20155b - End of configuration.
+// 16:38:46,132 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@614ddd49 - End of configuration.

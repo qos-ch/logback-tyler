@@ -64,15 +64,14 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
    */
   protected StringListAppender appenderLIST;
 
+  /**
+   * Since TylerConfigurator is java based, the topURL is always null.
+   * However, it is still possible tos scan for changes using the
+   * <propertiesConfigurator> element.
+   */
+  protected final URL topURL = null;
 
-    /**
-     * Since TylerConfigurator is java based, the topURL is always null.
-     * However, it is still possible tos scan for changes using the
-     * <propertiesConfigurator> element.
-     */
-    protected final URL topURL = null;
-
-    /**
+  /**
    * <p>This method performs configuration per {@link Configurator} interface.</p>
    *
    * <p>If <code>TylerConfigurator</code> is installed as a configurator service, this
@@ -81,7 +80,6 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
   @Override
   public Configurator.ExecutionStatus configure(LoggerContext loggerContext) {
     setContext(loggerContext);
-    this.appenderLIST = setupAppenderLIST();
     this.propertyModelHandlerHelper.handlePropertyModel(this, "JO_PREFIX", "src/test/input/joran", "", "", "");
     PropertiesConfiguratorModel propertyConfiguratorModel = new PropertiesConfiguratorModel();
     propertyConfiguratorModel.setFile(subst("${JO_PREFIX}/propertiesConfigurator/smoke.properties"));
@@ -91,13 +89,14 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
     } catch(ModelHandlerException e) {
       addError("Failed to process PropertyConfiguratorModel", e);
     }
-    Logger logger_ROOT = setupLogger("ROOT", "debug", null);
-    logger_ROOT.addAppender(appenderLIST);
     ConfigurationModelHandlerFull configurationMHF = new ConfigurationModelHandlerFull(context);
     String scanPeriodStr = subst("30 seconds");
     // schedule a ReconfigureOnChangeTask which periodically checks the watched
     // configuration files for changes, reconfiguring logback if any are detected
     configurationMHF.detachedPostProcess(scanPeriodStr);
+    this.appenderLIST = setupAppenderLIST();
+    Logger logger_ROOT = setupLogger("ROOT", "debug", null);
+    logger_ROOT.addAppender(appenderLIST);
     return ExecutionStatus.DO_NOT_INVOKE_NEXT_IF_ANY;
   }
 
@@ -119,4 +118,4 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
     return appender;
   }
 }
-// 20:15:10,587 |-INFO in ch.qos.logback.core.model.processor.DefaultProcessor@5e21e98f - End of configuration.
+// 16:38:46,203 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@2db7a79b - End of configuration.

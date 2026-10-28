@@ -99,4 +99,4 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
     return parsed != null ? parsed : Boolean.TRUE;
   }
 }
-// 18:48:44,444 |-INFO in ch.qos.logback.core.model.processor.DefaultProcessor@1d8062d2 - End of configuration.
+// 18:48:44,444 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@1d8062d2 - End of configuration.

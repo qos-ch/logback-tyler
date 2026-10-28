@@ -83,4 +83,4 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
 // 10:31:57,737 |-WARN in ch.qos.logback.classic.joran.action.LevelAction - Please use "level" attribute within <logger> or <root> elements instead.
 // 10:31:57,738 |-WARN in ch.qos.logback.classic.joran.action.LevelAction - <level> element is deprecated. Near [level] on line 7
 // 10:31:57,738 |-WARN in ch.qos.logback.classic.joran.action.LevelAction - Please use "level" attribute within <logger> or <root> elements instead.
-// 10:31:57,793 |-INFO in ch.qos.logback.core.model.processor.DefaultProcessor@1c9b0314 - End of configuration.
+// 10:31:57,793 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@1c9b0314 - End of configuration.

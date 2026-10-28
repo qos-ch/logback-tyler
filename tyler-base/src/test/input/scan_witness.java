@@ -77,4 +77,4 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
     return ExecutionStatus.DO_NOT_INVOKE_NEXT_IF_ANY;
   }
 }
-// 18:48:44,444 |-INFO in ch.qos.logback.core.model.processor.DefaultProcessor@1d8062d2 - End of configuration.
+// 18:48:44,444 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@1d8062d2 - End of configuration.

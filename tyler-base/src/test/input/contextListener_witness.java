@@ -87,4 +87,4 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
     }
 }
 // 13:10:28,615 |-INFO in ch.qos.logback.tyler.base.handler.LoggerContextListenerModelHandler - About to configure LoggerContextListener of type [ch.qos.logback.classic.jul.LevelChangePropagator]
-// 13:10:28,628 |-INFO in ch.qos.logback.core.model.processor.DefaultProcessor@22f59fa - End of configuration.
+// 13:10:28,628 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@22f59fa - End of configuration.

@@ -76,4 +76,4 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
   }
 }
 // 22:40:20,803 |-WARN in ch.qos.logback.tyler.base.handler.TylerIncludeModelHandler - Omitting <include file="${INCLUDE_DIR}/included0.xml"/> on line 5: variables are not supported in include attributes. Its contents will be missing from the generated configurator.
-// 22:40:20,804 |-INFO in ch.qos.logback.core.model.processor.DefaultProcessor@78641d23 - End of configuration.
+// 22:40:20,804 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@78641d23 - End of configuration.

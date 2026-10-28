@@ -64,11 +64,11 @@ public class AppenderRefModelHandler extends ModelHandlerBase {
         if(o instanceof String) {
             String loggerName  = (String) o;
             String variableName = tmic.getLoggerVariableName(loggerName);
-            addJavaStatement(tmic.configureMethodSpecBuilder, variableName, appenderRefModel.getRef());
+            addJavaStatement(tmic, tmic.configureMethodSpecBuilder, variableName, appenderRefModel.getRef());
         } else if(o instanceof ImplicitModelHandlerData) {
             ImplicitModelHandlerData implicitModelHandlerData = (ImplicitModelHandlerData) o;
              String variableName = implicitModelHandlerData.variableName;
-             addJavaStatementForNestedAppender(implicitModelHandlerData.methodSpecBuilder, variableName, appenderRefModel.getRef());
+             addJavaStatement(tmic, implicitModelHandlerData.methodSpecBuilder, variableName, appenderRefModel.getRef());
         } else {
             inError = true;
             addError("Was expecting an object of type AppenderAttachableData");
@@ -77,20 +77,30 @@ public class AppenderRefModelHandler extends ModelHandlerBase {
 
     }
 
-    private void addJavaStatement(MethodSpec.Builder methodSpecBuilder, String variableName, String ref) {
+    /**
+     * Appenders are set up before being referenced, see {@link ch.qos.logback.tyler.base.TylerProcessor}.
+     * However, the referenced appender may be declared only under conditions which do not hold, or not
+     * at all, in which case the attachment is skipped with a warning, as in Joran. The null check is
+     * emitted only if the appender is not certainly set up.
+     */
+    private void addJavaStatement(TylerModelInterpretationContext tmic, MethodSpec.Builder methodSpecBuilder, String variableName, String ref) {
         String appenderVariableName = VariableNameUtil.appenderNameToVariableName(ref);
-        methodSpecBuilder.addStatement("$N.addAppender($N)", variableName, appenderVariableName);
-    }
+        String warning = "Appender named [" + ref + "] could not be found. Skipping attachment to ";
 
-    private void addJavaStatementForNestedAppender(MethodSpec.Builder methodSpecBuilder, String variableName, String ref) {
-        String nestedAppenderVariableName = VariableNameUtil.appenderNameToVariableName(ref);
-        methodSpecBuilder.addComment("WARNING: It is assumed at this stage that the appender named $S was setup earlier.", ref);
-        methodSpecBuilder.beginControlFlow("if($N == null)", nestedAppenderVariableName);
-        methodSpecBuilder.addStatement("addError(\"Could not find appender named '$N'\")", ref);
-        methodSpecBuilder.nextControlFlow("else");
-        methodSpecBuilder.addStatement("$N.addAppender($N)", variableName, nestedAppenderVariableName);
-        methodSpecBuilder.endControlFlow();
+        switch (tmic.getAppenderAvailability(tmic.subst(ref))) {
+            case CERTAIN -> methodSpecBuilder.addStatement("$N.addAppender($N)", variableName, appenderVariableName);
+            case UNCERTAIN -> {
+                methodSpecBuilder.beginControlFlow("if($N == null)", appenderVariableName);
+                methodSpecBuilder.addStatement("addWarn($S + $N + \".\")", warning, variableName);
+                methodSpecBuilder.nextControlFlow("else");
+                methodSpecBuilder.addStatement("$N.addAppender($N)", variableName, appenderVariableName);
+                methodSpecBuilder.endControlFlow();
+            }
+            case UNDECLARED -> {
+                addWarn("Appender named [" + ref + "] is not declared. Attachment will be skipped at runtime.");
+                methodSpecBuilder.addStatement("addWarn($S + $N + \".\")", warning, variableName);
+            }
+        }
     }
-
 
 }

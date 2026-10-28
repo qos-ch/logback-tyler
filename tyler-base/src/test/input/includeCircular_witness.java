@@ -70,13 +70,13 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
   public Configurator.ExecutionStatus configure(LoggerContext loggerContext) {
     setContext(loggerContext);
     // Start of contents inlined from <include file="src/test/input/includedSelf.xml"/>
-    Logger logger_com_foo = setupLogger("com.foo", "INFO", null);
     // <include file="src/test/input/includedSelf.xml"/> omitted: circular inclusion
     // End of contents inlined from <include file="src/test/input/includedSelf.xml"/>
+    Logger logger_com_foo = setupLogger("com.foo", "INFO", null);
     Logger logger_ROOT = setupLogger("ROOT", "DEBUG", null);
     return ExecutionStatus.DO_NOT_INVOKE_NEXT_IF_ANY;
   }
 }
-// 22:40:18,966 |-INFO in ch.qos.logback.core.model.processor.IncludeModelHandler - Including configuration file [file:CWD/src/test/input/includedSelf.xml]
-// 22:40:18,969 |-WARN in ch.qos.logback.tyler.base.handler.TylerIncludeModelHandler - Omitting <include file="src/test/input/includedSelf.xml"/> on line 3: circular inclusion. Its contents will be missing from the generated configurator.
-// 22:40:18,969 |-INFO in ch.qos.logback.core.model.processor.DefaultProcessor@363a52f - End of configuration.
+// 13:34:54,051 |-INFO in ch.qos.logback.core.model.processor.IncludeModelHandler - Including configuration file [file:CWD/src/test/input/includedSelf.xml]
+// 13:34:54,051 |-WARN in ch.qos.logback.tyler.base.handler.TylerIncludeModelHandler - Omitting <include file="src/test/input/includedSelf.xml"/> on line 3: circular inclusion. Its contents will be missing from the generated configurator.
+// 13:34:54,051 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@2de8284b - End of configuration.

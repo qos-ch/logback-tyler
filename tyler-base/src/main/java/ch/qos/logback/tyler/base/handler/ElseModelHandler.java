@@ -28,13 +28,19 @@ package ch.qos.logback.tyler.base.handler;
 
 import ch.qos.logback.core.Context;
 import ch.qos.logback.core.model.Model;
+import ch.qos.logback.core.model.conditional.IfModel;
 import ch.qos.logback.core.model.conditional.ElseModel;
 import ch.qos.logback.core.model.processor.ModelHandlerBase;
-import ch.qos.logback.core.model.processor.ModelHandlerException;
 import ch.qos.logback.core.model.processor.ModelInterpretationContext;
 import ch.qos.logback.tyler.base.TylerModelInterpretationContext;
+import com.squareup.javapoet.CodeBlock;
 
-public class ElseModelHandler extends ModelHandlerBase {
+import static ch.qos.logback.core.spi.ErrorCodes.MISSING_IF_EMPTY_MODEL_STACK;
+
+/**
+ * Guards the submodels of &lt;else&gt; with the negation of the condition of the enclosing &lt;if&gt;.
+ */
+public class ElseModelHandler extends GuardModelHandler {
 
     public ElseModelHandler(Context context) {
         super(context);
@@ -49,13 +55,25 @@ public class ElseModelHandler extends ModelHandlerBase {
         return ElseModel.class;
     }
 
+    /**
+     * The condition was stored in a field by {@link IfModelHandler}.
+     */
     @Override
-    public void handle(ModelInterpretationContext mic, Model model) throws ModelHandlerException {
-        ElseModel elseModel = (ElseModel) model;
-        TylerModelInterpretationContext tmic = (TylerModelInterpretationContext) mic;
-        addJavaStatement(tmic);
+    protected boolean storeGuardExpression() {
+        return false;
     }
-    protected void addJavaStatement(TylerModelInterpretationContext tmic) {
-        tmic.configureMethodSpecBuilder.nextControlFlow("else");
+
+    @Override
+    protected CodeBlock guardExpression(TylerModelInterpretationContext tmic, Model model) {
+        if(tmic.isModelStackEmpty()) {
+            addError(MISSING_IF_EMPTY_MODEL_STACK);
+            return null;
+        }
+        Model parent = tmic.peekModel();
+        if (!(parent instanceof IfModel) || !(tmic.peekObject() instanceof IfConditionRecord ifConditionRecord)) {
+            addError("Unexpected type for parent model [" + parent + "]");
+            return null;
+        }
+        return CodeBlock.of("!this.$N", ifConditionRecord.fieldName());
     }
 }

@@ -33,7 +33,10 @@ package ch.qos.logback.tyler.base;
     import ch.qos.logback.classic.spi.Configurator;
     import ch.qos.logback.classic.tyler.TylerConfiguratorBase;
     import ch.qos.logback.core.Context;
+    import ch.qos.logback.core.model.Model;
+    import ch.qos.logback.core.model.processor.ModelFilter;
     import ch.qos.logback.core.model.processor.ModelInterpretationContext;
+    import ch.qos.logback.core.spi.FilterReply;
     import ch.qos.logback.tyler.base.spi.StaticImportData;
     import ch.qos.logback.tyler.base.util.ClassUtil;
     import ch.qos.logback.tyler.base.util.VariableNameUtil;
@@ -104,6 +107,26 @@ package ch.qos.logback.tyler.base;
          * For each logger name, the variable name of its most recent declaration.
          */
         final Map<String, String> loggerVariableNames = new HashMap<>();
+
+        /**
+         * Conditions enclosing the model being handled, innermost last.
+         */
+        final Deque<CodeBlock> guards = new ArrayDeque<>();
+
+        /**
+         * Number of condition fields declared so far.
+         */
+        int conditionFieldCount = 0;
+
+        /**
+         * For each appender name, the guards of its declarations, see {@link #declareAppender}.
+         */
+        final Map<String, List<List<CodeBlock>>> appenderDeclarationGuards = new HashMap<>();
+
+        /**
+         * Filter denying models whose handling is deferred, null if no deferral is in progress.
+         */
+        ModelFilter deferralFilter;
 
 
         public TylerModelInterpretationContext(Context context) {
@@ -425,5 +448,116 @@ package ch.qos.logback.tyler.base;
         public String getLoggerVariableName(String loggerName) {
             String variableName = loggerVariableNames.get(loggerName);
             return variableName != null ? variableName : VariableNameUtil.loggerNameToVariableName(loggerName);
+        }
+
+        /**
+         * Declare a new boolean field in the generated class, used to store the value of a condition
+         * evaluated once in the configure method.
+         *
+         * @return the name of the field, "condition_N" where N is the number of fields declared earlier
+         * @since 1.0.6
+         */
+        public String declareConditionField() {
+            String fieldName = CONDITION_FIELD_NAME_PREFIX + conditionFieldCount++;
+            FieldSpec fieldSpec = FieldSpec.builder(boolean.class, fieldName).addModifiers(Modifier.PROTECTED)
+                            .addJavadoc("Value of a condition evaluated in the configure method.").build();
+            addFieldSpec(fieldSpec);
+            return fieldName;
+        }
+
+        /**
+         * Push a condition, e.g. <code>this.condition_0</code>, enclosing the models handled until the
+         * matching {@link #popGuard()}. The condition must be an expression whose value does not change
+         * during configuration, typically a field set by {@link #declareConditionField()}.
+         *
+         * @since 1.0.6
+         */
+        public void pushGuard(CodeBlock condition) {
+            guards.addLast(condition);
+        }
+
+        /**
+         * @since 1.0.6
+         */
+        public void popGuard() {
+            guards.removeLast();
+        }
+
+        /**
+         * @return the conditions pushed by {@link #pushGuard(CodeBlock)} and not yet popped, outermost
+         * first. The returned list is a copy.
+         * @since 1.0.6
+         */
+        public List<CodeBlock> currentGuards() {
+            return List.copyOf(guards);
+        }
+
+        /**
+         * Whether an appender is set up by the time it is referenced, see
+         * {@link #getAppenderAvailability(String)}.
+         *
+         * @since 1.0.6
+         */
+        public enum AppenderAvailability {
+            /**
+             * The appender is set up whenever the reference is reached.
+             */
+            CERTAIN,
+            /**
+             * The appender is declared, but only under conditions which may not hold when the
+             * reference is reached.
+             */
+            UNCERTAIN,
+            /**
+             * No appender with the given name is declared.
+             */
+            UNDECLARED
+        }
+
+        /**
+         * Record that the appender named <code>appenderName</code> is declared under the given guards.
+         * Called by {@link TylerProcessor} before appenders are referenced.
+         */
+        void declareAppender(String appenderName, List<CodeBlock> guards) {
+            appenderDeclarationGuards.computeIfAbsent(appenderName, k -> new ArrayList<>()).add(guards);
+        }
+
+        /**
+         * Appenders are set up before loggers and before appenders referencing them, see
+         * {@link TylerProcessor}. Thus, a referenced appender is certainly set up if one of its
+         * declarations is guarded by conditions which all enclose the reference.
+         *
+         * @return the availability of the appender named <code>appenderName</code> at the reference
+         * being handled
+         * @since 1.0.6
+         */
+        public AppenderAvailability getAppenderAvailability(String appenderName) {
+            List<List<CodeBlock>> declarationGuards = appenderDeclarationGuards.get(appenderName);
+            if (declarationGuards == null) {
+                return AppenderAvailability.UNDECLARED;
+            }
+            List<CodeBlock> referenceGuards = currentGuards();
+            boolean certain = declarationGuards.stream().anyMatch(referenceGuards::containsAll);
+            return certain ? AppenderAvailability.CERTAIN : AppenderAvailability.UNCERTAIN;
+        }
+
+        void setDeferralFilter(ModelFilter deferralFilter) {
+            this.deferralFilter = deferralFilter;
+        }
+
+        /**
+         * @return true if the handling of the given model is deferred by {@link TylerProcessor}
+         * @since 1.0.6
+         */
+        public boolean isDeferred(Model model) {
+            return deferralFilter != null && deferralFilter.decide(model) == FilterReply.DENY;
+        }
+
+        /**
+         * @return true if at least one submodel of the given model is handled in place, i.e. not deferred
+         * @since 1.0.6
+         */
+        public boolean hasSubmodelHandledInPlace(Model model) {
+            return model.getSubModels().stream().anyMatch(submodel -> !isDeferred(submodel));
         }
     }
