@@ -5,7 +5,9 @@ import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.PatternLayout;
 import ch.qos.logback.classic.spi.Configurator;
 import ch.qos.logback.classic.tyler.TylerConfiguratorBase;
+import ch.qos.logback.core.model.ModelConstants;
 import ch.qos.logback.core.testUtil.StringListAppender;
+import ch.qos.logback.core.util.OptionHelper;
 import java.net.URL;
 
 /**
@@ -76,6 +78,9 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
   @Override
   public Configurator.ExecutionStatus configure(LoggerContext loggerContext) {
     setContext(loggerContext);
+    if (toDebugBoolean(null)) {
+      addOnConsoleStatusListener();
+    }
     this.propertyModelHandlerHelper.handlePropertyModel(this, "JO_PREFIX", "src/test/input/joran", "", "", "");
     // <include file="${JO_PREFIX}/included.xml"/> omitted: translation-time inclusion is disabled
     this.appenderLIST = setupAppenderLIST();
@@ -101,6 +106,17 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
     appender.start();
     return appender;
   }
+
+  /**
+   * Interprets the logback.debug system property, or if not set, the raw debug attribute using properties of the running context.
+   */
+  private boolean toDebugBoolean(String debugAttribute) {
+    String debugStr = OptionHelper.getSystemProperty(ModelConstants.DEBUG_SYSTEM_PROPERTY_KEY, null);
+    if (debugStr == null) {
+      debugStr = subst(debugAttribute);
+    }
+    return !(OptionHelper.isNullOrEmptyOrAllSpaces(debugStr) || debugStr.equalsIgnoreCase("false") || debugStr.equalsIgnoreCase(ModelConstants.NULL_STR));
+  }
 }
-// 16:38:46,215 |-WARN in ch.qos.logback.tyler.base.handler.TylerIncludeModelHandler - Omitting <include file="${JO_PREFIX}/included.xml"/> on line 36: translation-time inclusion is disabled. Its contents will be missing from the generated configurator.
-// 16:38:46,216 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@43738a82 - End of configuration.
+// 16:51:10,328 |-WARN in ch.qos.logback.tyler.base.handler.TylerIncludeModelHandler - Omitting <include file="${JO_PREFIX}/included.xml"/> on line 36: translation-time inclusion is disabled. Its contents will be missing from the generated configurator.
+// 16:51:10,328 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@1fc2b765 - End of configuration.

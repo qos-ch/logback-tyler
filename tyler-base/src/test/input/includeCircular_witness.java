@@ -4,6 +4,8 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.spi.Configurator;
 import ch.qos.logback.classic.tyler.TylerConfiguratorBase;
+import ch.qos.logback.core.model.ModelConstants;
+import ch.qos.logback.core.util.OptionHelper;
 import java.net.URL;
 
 /**
@@ -69,6 +71,9 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
   @Override
   public Configurator.ExecutionStatus configure(LoggerContext loggerContext) {
     setContext(loggerContext);
+    if (toDebugBoolean(null)) {
+      addOnConsoleStatusListener();
+    }
     // Start of contents inlined from <include file="src/test/input/includedSelf.xml"/>
     // <include file="src/test/input/includedSelf.xml"/> omitted: circular inclusion
     // End of contents inlined from <include file="src/test/input/includedSelf.xml"/>
@@ -76,7 +81,18 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
     Logger logger_ROOT = setupLogger("ROOT", "DEBUG", null);
     return ExecutionStatus.DO_NOT_INVOKE_NEXT_IF_ANY;
   }
+
+  /**
+   * Interprets the logback.debug system property, or if not set, the raw debug attribute using properties of the running context.
+   */
+  private boolean toDebugBoolean(String debugAttribute) {
+    String debugStr = OptionHelper.getSystemProperty(ModelConstants.DEBUG_SYSTEM_PROPERTY_KEY, null);
+    if (debugStr == null) {
+      debugStr = subst(debugAttribute);
+    }
+    return !(OptionHelper.isNullOrEmptyOrAllSpaces(debugStr) || debugStr.equalsIgnoreCase("false") || debugStr.equalsIgnoreCase(ModelConstants.NULL_STR));
+  }
 }
-// 13:34:54,051 |-INFO in ch.qos.logback.core.model.processor.IncludeModelHandler - Including configuration file [file:CWD/src/test/input/includedSelf.xml]
-// 13:34:54,051 |-WARN in ch.qos.logback.tyler.base.handler.TylerIncludeModelHandler - Omitting <include file="src/test/input/includedSelf.xml"/> on line 3: circular inclusion. Its contents will be missing from the generated configurator.
-// 13:34:54,051 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@2de8284b - End of configuration.
+// 16:51:10,340 |-INFO in ch.qos.logback.core.model.processor.IncludeModelHandler - Including configuration file [file:CWD/src/test/input/includedSelf.xml]
+// 16:51:10,341 |-WARN in ch.qos.logback.tyler.base.handler.TylerIncludeModelHandler - Omitting <include file="src/test/input/includedSelf.xml"/> on line 3: circular inclusion. Its contents will be missing from the generated configurator.
+// 16:51:10,341 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@4fb64261 - End of configuration.

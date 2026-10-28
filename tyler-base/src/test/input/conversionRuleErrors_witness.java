@@ -4,6 +4,8 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.spi.Configurator;
 import ch.qos.logback.classic.tyler.TylerConfiguratorBase;
+import ch.qos.logback.core.model.ModelConstants;
+import ch.qos.logback.core.util.OptionHelper;
 import java.net.URL;
 
 /**
@@ -69,12 +71,26 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
   @Override
   public Configurator.ExecutionStatus configure(LoggerContext loggerContext) {
     setContext(loggerContext);
+    if (toDebugBoolean(null)) {
+      addOnConsoleStatusListener();
+    }
     Logger logger_ROOT = setupLogger("ROOT", "DEBUG", null);
     return ExecutionStatus.DO_NOT_INVOKE_NEXT_IF_ANY;
   }
+
+  /**
+   * Interprets the logback.debug system property, or if not set, the raw debug attribute using properties of the running context.
+   */
+  private boolean toDebugBoolean(String debugAttribute) {
+    String debugStr = OptionHelper.getSystemProperty(ModelConstants.DEBUG_SYSTEM_PROPERTY_KEY, null);
+    if (debugStr == null) {
+      debugStr = subst(debugAttribute);
+    }
+    return !(OptionHelper.isNullOrEmptyOrAllSpaces(debugStr) || debugStr.equalsIgnoreCase("false") || debugStr.equalsIgnoreCase(ModelConstants.NULL_STR));
+  }
 }
-// 12:00:53,450 |-ERROR in ch.qos.logback.core.joran.action.ConversionRuleAction - Missing attribute [conversionWord]. See element [conversionRule] near line 6
-// 12:00:53,465 |-ERROR in ch.qos.logback.tyler.base.handler.ConversionRuleModelHandler - Could not find Converter class [com.example.DoesNotExistConverter] on line 3
-// 12:00:53,466 |-ERROR in ch.qos.logback.tyler.base.handler.ConversionRuleModelHandler - Converter class [java.lang.Object] on line 4 is not of type [ch.qos.logback.core.pattern.DynamicConverter]
-// 12:00:53,466 |-ERROR in ch.qos.logback.tyler.base.handler.ConversionRuleModelHandler - Converter class [ch.qos.logback.classic.pattern.ClassicConverter] on line 5 must be public and concrete
-// 12:00:53,467 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@2bb3058 - End of configuration.
+// 16:51:10,325 |-ERROR in ch.qos.logback.core.joran.action.ConversionRuleAction - Missing attribute [conversionWord]. See element [conversionRule] near line 6
+// 16:51:10,325 |-ERROR in ch.qos.logback.tyler.base.handler.ConversionRuleModelHandler - Could not find Converter class [com.example.DoesNotExistConverter] on line 3
+// 16:51:10,325 |-ERROR in ch.qos.logback.tyler.base.handler.ConversionRuleModelHandler - Converter class [java.lang.Object] on line 4 is not of type [ch.qos.logback.core.pattern.DynamicConverter]
+// 16:51:10,325 |-ERROR in ch.qos.logback.tyler.base.handler.ConversionRuleModelHandler - Converter class [ch.qos.logback.classic.pattern.ClassicConverter] on line 5 must be public and concrete
+// 16:51:10,325 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@1d371b2d - End of configuration.

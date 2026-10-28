@@ -6,8 +6,10 @@ import ch.qos.logback.classic.PatternLayout;
 import ch.qos.logback.classic.spi.Configurator;
 import ch.qos.logback.classic.tyler.TylerConfiguratorBase;
 import ch.qos.logback.core.CoreConstants;
+import ch.qos.logback.core.model.ModelConstants;
 import ch.qos.logback.core.pattern.DynamicConverter;
 import ch.qos.logback.core.testUtil.StringListAppender;
+import ch.qos.logback.core.util.OptionHelper;
 import ch.qos.logback.tyler.base.UpperCaseMessageConverter;
 import java.net.URL;
 import java.util.HashMap;
@@ -82,6 +84,9 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
   @Override
   public Configurator.ExecutionStatus configure(LoggerContext loggerContext) {
     setContext(loggerContext);
+    if (toDebugBoolean(null)) {
+      addOnConsoleStatusListener();
+    }
     addConversionRule("upperMsg", "ch.qos.logback.tyler.base.UpperCaseMessageConverter", UpperCaseMessageConverter::new);
     addConversionRule("upperMsg2", "ch.qos.logback.tyler.base.UpperCaseMessageConverter", UpperCaseMessageConverter::new);
     this.appenderLIST = setupAppenderLIST();
@@ -109,6 +114,17 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
   }
 
   /**
+   * Interprets the logback.debug system property, or if not set, the raw debug attribute using properties of the running context.
+   */
+  private boolean toDebugBoolean(String debugAttribute) {
+    String debugStr = OptionHelper.getSystemProperty(ModelConstants.DEBUG_SYSTEM_PROPERTY_KEY, null);
+    if (debugStr == null) {
+      debugStr = subst(debugAttribute);
+    }
+    return !(OptionHelper.isNullOrEmptyOrAllSpaces(debugStr) || debugStr.equalsIgnoreCase("false") || debugStr.equalsIgnoreCase(ModelConstants.NULL_STR));
+  }
+
+  /**
    * <p>Registers a converter supplier for the given conversion word in the pattern rule
    * registry of the context.</p>
    */
@@ -128,4 +144,4 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
     }
   }
 }
-// 16:38:46,211 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@28ac3dc3 - End of configuration.
+// 16:51:10,323 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@4e718207 - End of configuration.

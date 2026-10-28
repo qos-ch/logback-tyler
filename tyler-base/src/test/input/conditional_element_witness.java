@@ -5,6 +5,8 @@ import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.spi.Configurator;
 import ch.qos.logback.classic.tyler.TylerConfiguratorBase;
 import ch.qos.logback.core.boolex.IsPropertyDefinedCondition;
+import ch.qos.logback.core.model.ModelConstants;
+import ch.qos.logback.core.util.OptionHelper;
 import java.net.URL;
 
 /**
@@ -80,6 +82,9 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
   @Override
   public Configurator.ExecutionStatus configure(LoggerContext loggerContext) {
     setContext(loggerContext);
+    if (toDebugBoolean(null)) {
+      addOnConsoleStatusListener();
+    }
     this.isPropertyDefinedCondition_0 = setupIsPropertyDefinedCondition_0();
     this.condition_0 = this.isPropertyDefinedCondition_0.evaluate();
     if (this.condition_0) {
@@ -104,5 +109,16 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
     propertyCondition.start();
     return propertyCondition;
   }
+
+  /**
+   * Interprets the logback.debug system property, or if not set, the raw debug attribute using properties of the running context.
+   */
+  private boolean toDebugBoolean(String debugAttribute) {
+    String debugStr = OptionHelper.getSystemProperty(ModelConstants.DEBUG_SYSTEM_PROPERTY_KEY, null);
+    if (debugStr == null) {
+      debugStr = subst(debugAttribute);
+    }
+    return !(OptionHelper.isNullOrEmptyOrAllSpaces(debugStr) || debugStr.equalsIgnoreCase("false") || debugStr.equalsIgnoreCase(ModelConstants.NULL_STR));
+  }
 }
-// 13:34:54,025 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@5bcea91b - End of configuration.
+// 16:51:10,300 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@46daef40 - End of configuration.

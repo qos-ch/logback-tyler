@@ -4,7 +4,9 @@ import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.jul.LevelChangePropagator;
 import ch.qos.logback.classic.spi.Configurator;
 import ch.qos.logback.classic.tyler.TylerConfiguratorBase;
+import ch.qos.logback.core.model.ModelConstants;
 import ch.qos.logback.core.spi.LifeCycle;
+import ch.qos.logback.core.util.OptionHelper;
 import java.net.URL;
 
 /**
@@ -54,37 +56,49 @@ import java.net.URL;
  *
  */
 public class TylerConfigurator extends TylerConfiguratorBase implements Configurator {
+  /**
+   * Since TylerConfigurator is java based, the topURL is always null.
+   * However, it is still possible tos scan for changes using the
+   * <propertiesConfigurator> element.
+   */
+  protected final URL topURL = null;
 
-    /**
-     * Since TylerConfigurator is java based, the topURL is always null.
-     * However, it is still possible tos scan for changes using the
-     * <propertiesConfigurator> element.
-     */
-    protected final URL topURL = null;
-
-    /**
-     * <p>This method performs configuration per {@link Configurator} interface.</p>
-     *
-     * <p>If <code>TylerConfgiurator</code> is installed as a configurator service, this
-     * method will be called by logback-classic during initialization.</p>
-     */
-    @Override
-    public Configurator.ExecutionStatus configure(LoggerContext loggerContext) {
-        setContext(loggerContext);
-        addOnConsoleStatusListener();
-        setupLevelChangePropagator_0();
-        return ExecutionStatus.DO_NOT_INVOKE_NEXT_IF_ANY;
+  /**
+   * <p>This method performs configuration per {@link Configurator} interface.</p>
+   *
+   * <p>If <code>TylerConfigurator</code> is installed as a configurator service, this
+   * method will be called by logback-classic during initialization.</p>
+   */
+  @Override
+  public Configurator.ExecutionStatus configure(LoggerContext loggerContext) {
+    setContext(loggerContext);
+    if (toDebugBoolean("true")) {
+      addOnConsoleStatusListener();
     }
+    setupLevelChangePropagator_0();
+    return ExecutionStatus.DO_NOT_INVOKE_NEXT_IF_ANY;
+  }
 
-    void setupLevelChangePropagator_0() {
-        LevelChangePropagator levelChangePropagator = new LevelChangePropagator();
-        levelChangePropagator.setContext(context);
-        levelChangePropagator.setResetJUL(true);
+  void setupLevelChangePropagator_0() {
+    LevelChangePropagator levelChangePropagator = new LevelChangePropagator();
+    levelChangePropagator.setContext(context);
+    levelChangePropagator.setResetJUL(true);
 
-        if(levelChangePropagator instanceof LifeCycle) {
-            ((LifeCycle)levelChangePropagator).start();
-        }
+    if(levelChangePropagator instanceof LifeCycle) {
+      ((LifeCycle)levelChangePropagator).start();
     }
+  }
+
+  /**
+   * Interprets the logback.debug system property, or if not set, the raw debug attribute using properties of the running context.
+   */
+  private boolean toDebugBoolean(String debugAttribute) {
+    String debugStr = OptionHelper.getSystemProperty(ModelConstants.DEBUG_SYSTEM_PROPERTY_KEY, null);
+    if (debugStr == null) {
+      debugStr = subst(debugAttribute);
+    }
+    return !(OptionHelper.isNullOrEmptyOrAllSpaces(debugStr) || debugStr.equalsIgnoreCase("false") || debugStr.equalsIgnoreCase(ModelConstants.NULL_STR));
+  }
 }
-// 13:10:28,615 |-INFO in ch.qos.logback.tyler.base.handler.LoggerContextListenerModelHandler - About to configure LoggerContextListener of type [ch.qos.logback.classic.jul.LevelChangePropagator]
-// 13:10:28,628 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@22f59fa - End of configuration.
+// 16:51:10,278 |-INFO in ch.qos.logback.tyler.base.handler.LoggerContextListenerModelHandler - About to configure LoggerContextListener of type [ch.qos.logback.classic.jul.LevelChangePropagator]
+// 16:51:10,279 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@2f943d71 - End of configuration.

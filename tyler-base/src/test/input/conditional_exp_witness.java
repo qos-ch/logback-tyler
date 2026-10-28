@@ -8,6 +8,8 @@ import ch.qos.logback.classic.tyler.TylerConfiguratorBase;
 import ch.qos.logback.core.ConsoleAppender;
 import ch.qos.logback.core.FileAppender;
 import ch.qos.logback.core.boolex.ExpressionPropertyCondition;
+import ch.qos.logback.core.model.ModelConstants;
+import ch.qos.logback.core.util.OptionHelper;
 import java.net.URL;
 
 /**
@@ -93,7 +95,9 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
   @Override
   public Configurator.ExecutionStatus configure(LoggerContext loggerContext) {
     setContext(loggerContext);
-    addOnConsoleStatusListener();
+    if (toDebugBoolean("true")) {
+      addOnConsoleStatusListener();
+    }
     this.expressionPropertyCondition_0 = setupExpressionPropertyCondition_0();
     this.condition_0 = this.expressionPropertyCondition_0.evaluate();
     if (this.condition_0) {
@@ -162,7 +166,18 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
     appender.start();
     return appender;
   }
+
+  /**
+   * Interprets the logback.debug system property, or if not set, the raw debug attribute using properties of the running context.
+   */
+  private boolean toDebugBoolean(String debugAttribute) {
+    String debugStr = OptionHelper.getSystemProperty(ModelConstants.DEBUG_SYSTEM_PROPERTY_KEY, null);
+    if (debugStr == null) {
+      debugStr = subst(debugAttribute);
+    }
+    return !(OptionHelper.isNullOrEmptyOrAllSpaces(debugStr) || debugStr.equalsIgnoreCase("false") || debugStr.equalsIgnoreCase(ModelConstants.NULL_STR));
+  }
 }
-// 16:38:46,187 |-INFO in ch.qos.logback.tyler.base.handler.ImplicitModelHandler - Assuming default type [ch.qos.logback.classic.encoder.PatternLayoutEncoder] for [encoder] property
-// 16:38:46,188 |-INFO in ch.qos.logback.tyler.base.handler.ImplicitModelHandler - Assuming default type [ch.qos.logback.classic.encoder.PatternLayoutEncoder] for [encoder] property
-// 16:38:46,188 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@76a3e297 - End of configuration.
+// 16:51:10,305 |-INFO in ch.qos.logback.tyler.base.handler.ImplicitModelHandler - Assuming default type [ch.qos.logback.classic.encoder.PatternLayoutEncoder] for [encoder] property
+// 16:51:10,305 |-INFO in ch.qos.logback.tyler.base.handler.ImplicitModelHandler - Assuming default type [ch.qos.logback.classic.encoder.PatternLayoutEncoder] for [encoder] property
+// 16:51:10,305 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@ed9d034 - End of configuration.

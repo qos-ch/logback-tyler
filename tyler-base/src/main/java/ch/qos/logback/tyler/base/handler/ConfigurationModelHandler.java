@@ -26,10 +26,12 @@
 
 package ch.qos.logback.tyler.base.handler;
 
+import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.model.ConfigurationModel;
 import ch.qos.logback.classic.model.processor.ConfigurationModelHandlerFull;
 import ch.qos.logback.core.Context;
 import ch.qos.logback.core.model.Model;
+import ch.qos.logback.core.model.ModelConstants;
 import ch.qos.logback.core.model.processor.ModelHandlerBase;
 import ch.qos.logback.core.model.processor.ModelHandlerException;
 import ch.qos.logback.core.model.processor.ModelInterpretationContext;
@@ -40,15 +42,15 @@ import com.squareup.javapoet.MethodSpec;
 
 import javax.lang.model.element.Modifier;
 
-import static ch.qos.logback.core.model.ModelConstants.DEBUG_SYSTEM_PROPERTY_KEY;
-import static ch.qos.logback.core.model.ModelConstants.NULL_STR;
 import static ch.qos.logback.tyler.base.TylerConstants.ADD_ON_CONSOLE_STATUS_LISTENER;
+import static ch.qos.logback.tyler.base.TylerConstants.LOGGER_CONTEXT_PARAMETER_NAME;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 
 public class ConfigurationModelHandler extends ModelHandlerBase {
 
     static final String TO_SCAN_BOOLEAN_METHOD_NAME = "toScanBoolean";
+    static final String TO_DEBUG_BOOLEAN_METHOD_NAME = "toDebugBoolean";
     static final String VARIABLE_START = "${";
 
     /**
@@ -78,14 +80,12 @@ public class ConfigurationModelHandler extends ModelHandlerBase {
         ConfigurationModel configurationModel = (ConfigurationModel) model;
         TylerModelInterpretationContext tmic = (TylerModelInterpretationContext) mic;
 
-        // TODO: check alignment with logback-classic's ConfigurationModelHandler.handle() and ConfigurationModelHandler.postHandle()
-        String debugAttrib = OptionHelper.getSystemProperty(DEBUG_SYSTEM_PROPERTY_KEY, null);
-        if (debugAttrib == null) {
-            debugAttrib = mic.subst(configurationModel.getDebugStr());
-        }
-        if (!(OptionHelper.isNullOrEmptyOrAllSpaces(debugAttrib) || debugAttrib.equalsIgnoreCase(FALSE.toString()) || debugAttrib.equalsIgnoreCase(NULL_STR))) {
-            tmic.configureMethodSpecBuilder.addStatement("$N()", ADD_ON_CONSOLE_STATUS_LISTENER);
-        }
+        // The logback.debug system property and the debug attribute are interpreted when the
+        // generated configure() method runs, as the translator's environment is irrelevant.
+        addToDebugBooleanMethod(tmic);
+        tmic.configureMethodSpecBuilder.beginControlFlow("if ($N($S))", TO_DEBUG_BOOLEAN_METHOD_NAME, configurationModel.getDebugStr());
+        tmic.configureMethodSpecBuilder.addStatement("$N()", ADD_ON_CONSOLE_STATUS_LISTENER);
+        tmic.configureMethodSpecBuilder.endControlFlow();
 
 
         String scanAttribute = configurationModel.getScanStr();
@@ -105,6 +105,26 @@ public class ConfigurationModelHandler extends ModelHandlerBase {
             tmic.setTopScanCodeBlock(CodeBlock.of("$T.TRUE", Boolean.class));
         } else {
             scanMode = ScanMode.OFF;
+        }
+
+        addPackagingDataStatement(tmic, configurationModel.getPackagingDataStr());
+    }
+
+    /**
+     * Joran sets packaging data even if the attribute is absent. As a Tyler configurator is applied
+     * to a fresh context, i.e. never on reconfiguration from XML, no statement is needed in that case.
+     */
+    void addPackagingDataStatement(TylerModelInterpretationContext tmic, String packagingDataAttribute) {
+        if (OptionHelper.isNullOrEmptyOrAllSpaces(packagingDataAttribute)) {
+            return;
+        }
+        if (packagingDataAttribute.contains(VARIABLE_START)) {
+            tmic.configureMethodSpecBuilder.addStatement("$N.setPackagingDataEnabled($T.toBoolean(subst($S), $T.DEFAULT_PACKAGING_DATA))",
+                            LOGGER_CONTEXT_PARAMETER_NAME, OptionHelper.class, packagingDataAttribute, LoggerContext.class);
+        } else {
+            // without variables, substitution leaves the value unchanged, so it can be evaluated now
+            boolean packagingData = OptionHelper.toBoolean(packagingDataAttribute, LoggerContext.DEFAULT_PACKAGING_DATA);
+            tmic.configureMethodSpecBuilder.addStatement("$N.setPackagingDataEnabled($L)", LOGGER_CONTEXT_PARAMETER_NAME, packagingData);
         }
     }
 
@@ -146,6 +166,26 @@ public class ConfigurationModelHandler extends ModelHandlerBase {
     // TODO: once a logback release makes ConfigurationModelHandler.scanStringToBoolean public,
     // have generated code call it, e.g. this.topScan = ConfigurationModelHandler.scanStringToBoolean(subst(...)),
     // and remove addToScanBooleanMethod, scanStringToBoolean below and ConfigurationModelHandlerTest.
+
+    /**
+     * Emits {@code toDebugBoolean}, which applies the rule of logback-classic's
+     * ConfigurationModelHandler: the logback.debug system property, if set, takes precedence
+     * over the substituted debug attribute.
+     */
+    private void addToDebugBooleanMethod(TylerModelInterpretationContext tmic) {
+        MethodSpec.Builder method = MethodSpec.methodBuilder(TO_DEBUG_BOOLEAN_METHOD_NAME)
+                .addModifiers(Modifier.PRIVATE)
+                .returns(boolean.class)
+                .addParameter(String.class, "debugAttribute")
+                .addJavadoc("Interprets the logback.debug system property, or if not set, the raw debug attribute using properties of the running context.\n");
+        method.addStatement("$T debugStr = $T.getSystemProperty($T.DEBUG_SYSTEM_PROPERTY_KEY, null)", String.class, OptionHelper.class, ModelConstants.class);
+        method.beginControlFlow("if (debugStr == null)");
+        method.addStatement("debugStr = subst(debugAttribute)");
+        method.endControlFlow();
+        method.addStatement("return !($T.isNullOrEmptyOrAllSpaces(debugStr) || debugStr.equalsIgnoreCase($S) || debugStr.equalsIgnoreCase($T.NULL_STR))",
+                        OptionHelper.class, FALSE.toString(), ModelConstants.class);
+        tmic.mapOfMethodSpecBuilders.put(TO_DEBUG_BOOLEAN_METHOD_NAME, method);
+    }
 
     /**
      * Emits {@code toScanBoolean} once. The generated method substitutes the raw

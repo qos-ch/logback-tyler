@@ -4,6 +4,8 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.spi.Configurator;
 import ch.qos.logback.classic.tyler.TylerConfiguratorBase;
+import ch.qos.logback.core.model.ModelConstants;
+import ch.qos.logback.core.util.OptionHelper;
 import java.net.URL;
 
 /**
@@ -69,12 +71,26 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
   @Override
   public Configurator.ExecutionStatus configure(LoggerContext loggerContext) {
     setContext(loggerContext);
+    if (toDebugBoolean(null)) {
+      addOnConsoleStatusListener();
+    }
     // Start of contents inlined from <include file="src/test/input/included0.xml"/>
     // End of contents inlined from <include file="src/test/input/included0.xml"/>
     Logger logger_com_bazinga = setupLogger("com.bazinga", "INFO", null);
     Logger logger_ROOT = setupLogger("ROOT", "DEBUG", null);
     return ExecutionStatus.DO_NOT_INVOKE_NEXT_IF_ANY;
   }
+
+  /**
+   * Interprets the logback.debug system property, or if not set, the raw debug attribute using properties of the running context.
+   */
+  private boolean toDebugBoolean(String debugAttribute) {
+    String debugStr = OptionHelper.getSystemProperty(ModelConstants.DEBUG_SYSTEM_PROPERTY_KEY, null);
+    if (debugStr == null) {
+      debugStr = subst(debugAttribute);
+    }
+    return !(OptionHelper.isNullOrEmptyOrAllSpaces(debugStr) || debugStr.equalsIgnoreCase("false") || debugStr.equalsIgnoreCase(ModelConstants.NULL_STR));
+  }
 }
-// 13:34:54,048 |-INFO in ch.qos.logback.core.model.processor.IncludeModelHandler - Including configuration file [file:CWD/src/test/input/included0.xml]
-// 13:34:54,048 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@17d0685f - End of configuration.
+// 16:51:10,330 |-INFO in ch.qos.logback.core.model.processor.IncludeModelHandler - Including configuration file [file:CWD/src/test/input/included0.xml]
+// 16:51:10,335 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@7e0e6aa2 - End of configuration.

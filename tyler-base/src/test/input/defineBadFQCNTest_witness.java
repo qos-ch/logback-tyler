@@ -4,6 +4,8 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.spi.Configurator;
 import ch.qos.logback.classic.tyler.TylerConfiguratorBase;
+import ch.qos.logback.core.model.ModelConstants;
+import ch.qos.logback.core.util.OptionHelper;
 import java.net.URL;
 
 /**
@@ -53,29 +55,41 @@ import java.net.URL;
  *
  */
 public class TylerConfigurator extends TylerConfiguratorBase implements Configurator {
+  /**
+   * Since TylerConfigurator is java based, the topURL is always null.
+   * However, it is still possible tos scan for changes using the
+   * <propertiesConfigurator> element.
+   */
+  protected final URL topURL = null;
 
-
-    /**
-     * Since TylerConfigurator is java based, the topURL is always null.
-     * However, it is still possible tos scan for changes using the
-     * <propertiesConfigurator> element.
-     */
-    protected final URL topURL = null;
-
-    /**
-     * <p>This method performs configuration per {@link Configurator} interface.</p>
-     *
-     * <p>If <code>TylerConfgiurator</code> is installed as a configurator service, this
-     * method will be called by logback-classic during initialization.</p>
-     */
-    @Override
-    public Configurator.ExecutionStatus configure(LoggerContext loggerContext) {
-        setContext(loggerContext);
-        Logger logger_ROOT = setupLogger("ROOT", subst("${rootLevel}"), null);
-        return ExecutionStatus.DO_NOT_INVOKE_NEXT_IF_ANY;
+  /**
+   * <p>This method performs configuration per {@link Configurator} interface.</p>
+   *
+   * <p>If <code>TylerConfigurator</code> is installed as a configurator service, this
+   * method will be called by logback-classic during initialization.</p>
+   */
+  @Override
+  public Configurator.ExecutionStatus configure(LoggerContext loggerContext) {
+    setContext(loggerContext);
+    if (toDebugBoolean(null)) {
+      addOnConsoleStatusListener();
     }
+    Logger logger_ROOT = setupLogger("ROOT", subst("${rootLevel}"), null);
+    return ExecutionStatus.DO_NOT_INVOKE_NEXT_IF_ANY;
+  }
+
+  /**
+   * Interprets the logback.debug system property, or if not set, the raw debug attribute using properties of the running context.
+   */
+  private boolean toDebugBoolean(String debugAttribute) {
+    String debugStr = OptionHelper.getSystemProperty(ModelConstants.DEBUG_SYSTEM_PROPERTY_KEY, null);
+    if (debugStr == null) {
+      debugStr = subst(debugAttribute);
+    }
+    return !(OptionHelper.isNullOrEmptyOrAllSpaces(debugStr) || debugStr.equalsIgnoreCase("false") || debugStr.equalsIgnoreCase(ModelConstants.NULL_STR));
+  }
 }
-// 13:31:50,829 |-INFO in ch.qos.logback.tyler.base.handler.DefineModelHandler - About to configure PropertyDefiner of type [ch.qos.logback.Missing]
-// 13:31:50,834 |-ERROR in ch.qos.logback.tyler.base.handler.DefineModelHandler - Could not find class [ch.qos.logback.Missing]
-// 13:31:50,834 |-ERROR in ch.qos.logback.tyler.base.handler.DefineModelHandler - Could not make implicitModelHandlerData for [ch.qos.logback.Missing]
-// 13:31:50,839 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@448c8166 - End of configuration.
+// 16:51:10,291 |-INFO in ch.qos.logback.tyler.base.handler.DefineModelHandler - About to configure PropertyDefiner of type [ch.qos.logback.Missing]
+// 16:51:10,292 |-ERROR in ch.qos.logback.tyler.base.handler.DefineModelHandler - Could not find class [ch.qos.logback.Missing]
+// 16:51:10,292 |-ERROR in ch.qos.logback.tyler.base.handler.DefineModelHandler - Could not make implicitModelHandlerData for [ch.qos.logback.Missing]
+// 16:51:10,292 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@27808f31 - End of configuration.

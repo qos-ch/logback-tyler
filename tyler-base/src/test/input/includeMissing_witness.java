@@ -4,6 +4,8 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.spi.Configurator;
 import ch.qos.logback.classic.tyler.TylerConfiguratorBase;
+import ch.qos.logback.core.model.ModelConstants;
+import ch.qos.logback.core.util.OptionHelper;
 import java.net.URL;
 
 /**
@@ -69,13 +71,27 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
   @Override
   public Configurator.ExecutionStatus configure(LoggerContext loggerContext) {
     setContext(loggerContext);
+    if (toDebugBoolean(null)) {
+      addOnConsoleStatusListener();
+    }
     // <include file="src/test/input/doesNotExist.xml"/> omitted: included file not available at translation time
     // <include file="src/test/input/doesNotExistEither.xml" optional="true"/> omitted: included file not available at translation time
     Logger logger_ROOT = setupLogger("ROOT", "DEBUG", null);
     return ExecutionStatus.DO_NOT_INVOKE_NEXT_IF_ANY;
   }
+
+  /**
+   * Interprets the logback.debug system property, or if not set, the raw debug attribute using properties of the running context.
+   */
+  private boolean toDebugBoolean(String debugAttribute) {
+    String debugStr = OptionHelper.getSystemProperty(ModelConstants.DEBUG_SYSTEM_PROPERTY_KEY, null);
+    if (debugStr == null) {
+      debugStr = subst(debugAttribute);
+    }
+    return !(OptionHelper.isNullOrEmptyOrAllSpaces(debugStr) || debugStr.equalsIgnoreCase("false") || debugStr.equalsIgnoreCase(ModelConstants.NULL_STR));
+  }
 }
-// 22:40:17,103 |-WARN in ch.qos.logback.core.model.processor.IncludeModelHandler - Failed to open [file:CWD/src/test/input/doesNotExist.xml]
-// 22:40:17,103 |-WARN in ch.qos.logback.tyler.base.handler.TylerIncludeModelHandler - Omitting <include file="src/test/input/doesNotExist.xml"/> on line 3: included file not available at translation time. Its contents will be missing from the generated configurator.
-// 22:40:17,103 |-WARN in ch.qos.logback.tyler.base.handler.TylerIncludeModelHandler - Omitting <include file="src/test/input/doesNotExistEither.xml" optional="true"/> on line 4: included file not available at translation time. Its contents will be missing from the generated configurator.
-// 22:40:17,104 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@5ddf0d24 - End of configuration.
+// 16:51:10,338 |-WARN in ch.qos.logback.core.model.processor.IncludeModelHandler - Failed to open [file:CWD/src/test/input/doesNotExist.xml]
+// 16:51:10,338 |-WARN in ch.qos.logback.tyler.base.handler.TylerIncludeModelHandler - Omitting <include file="src/test/input/doesNotExist.xml"/> on line 3: included file not available at translation time. Its contents will be missing from the generated configurator.
+// 16:51:10,338 |-WARN in ch.qos.logback.tyler.base.handler.TylerIncludeModelHandler - Omitting <include file="src/test/input/doesNotExistEither.xml" optional="true"/> on line 4: included file not available at translation time. Its contents will be missing from the generated configurator.
+// 16:51:10,338 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@18bf3d14 - End of configuration.

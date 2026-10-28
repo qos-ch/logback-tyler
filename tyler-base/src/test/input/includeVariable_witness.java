@@ -4,6 +4,8 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.spi.Configurator;
 import ch.qos.logback.classic.tyler.TylerConfiguratorBase;
+import ch.qos.logback.core.model.ModelConstants;
+import ch.qos.logback.core.util.OptionHelper;
 import java.net.URL;
 
 /**
@@ -69,11 +71,25 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
   @Override
   public Configurator.ExecutionStatus configure(LoggerContext loggerContext) {
     setContext(loggerContext);
+    if (toDebugBoolean(null)) {
+      addOnConsoleStatusListener();
+    }
     this.propertyModelHandlerHelper.handlePropertyModel(this, "INCLUDE_DIR", "src/test/input", "", "", "");
     // <include file="${INCLUDE_DIR}/included0.xml"/> omitted: variables are not supported in include attributes
     Logger logger_ROOT = setupLogger("ROOT", "DEBUG", null);
     return ExecutionStatus.DO_NOT_INVOKE_NEXT_IF_ANY;
   }
+
+  /**
+   * Interprets the logback.debug system property, or if not set, the raw debug attribute using properties of the running context.
+   */
+  private boolean toDebugBoolean(String debugAttribute) {
+    String debugStr = OptionHelper.getSystemProperty(ModelConstants.DEBUG_SYSTEM_PROPERTY_KEY, null);
+    if (debugStr == null) {
+      debugStr = subst(debugAttribute);
+    }
+    return !(OptionHelper.isNullOrEmptyOrAllSpaces(debugStr) || debugStr.equalsIgnoreCase("false") || debugStr.equalsIgnoreCase(ModelConstants.NULL_STR));
+  }
 }
-// 22:40:20,803 |-WARN in ch.qos.logback.tyler.base.handler.TylerIncludeModelHandler - Omitting <include file="${INCLUDE_DIR}/included0.xml"/> on line 5: variables are not supported in include attributes. Its contents will be missing from the generated configurator.
-// 22:40:20,804 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@78641d23 - End of configuration.
+// 16:51:10,342 |-WARN in ch.qos.logback.tyler.base.handler.TylerIncludeModelHandler - Omitting <include file="${INCLUDE_DIR}/included0.xml"/> on line 5: variables are not supported in include attributes. Its contents will be missing from the generated configurator.
+// 16:51:10,342 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@42607a4f - End of configuration.

@@ -7,8 +7,10 @@ import ch.qos.logback.classic.model.PropertiesConfiguratorModel;
 import ch.qos.logback.classic.model.processor.PropertiesConfiguratorModelHandler;
 import ch.qos.logback.classic.spi.Configurator;
 import ch.qos.logback.classic.tyler.TylerConfiguratorBase;
+import ch.qos.logback.core.model.ModelConstants;
 import ch.qos.logback.core.model.processor.ModelHandlerException;
 import ch.qos.logback.core.testUtil.StringListAppender;
+import ch.qos.logback.core.util.OptionHelper;
 import java.net.URL;
 
 /**
@@ -79,6 +81,9 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
   @Override
   public Configurator.ExecutionStatus configure(LoggerContext loggerContext) {
     setContext(loggerContext);
+    if (toDebugBoolean(null)) {
+      addOnConsoleStatusListener();
+    }
     this.propertyModelHandlerHelper.handlePropertyModel(this, "JO_PREFIX", "src/test/input/joran", "", "", "");
     PropertiesConfiguratorModel propertyConfiguratorModel = new PropertiesConfiguratorModel();
     propertyConfiguratorModel.setFile(subst("${JO_PREFIX}/propertiesConfigurator/smoke.properties"));
@@ -112,5 +117,16 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
     appender.start();
     return appender;
   }
+
+  /**
+   * Interprets the logback.debug system property, or if not set, the raw debug attribute using properties of the running context.
+   */
+  private boolean toDebugBoolean(String debugAttribute) {
+    String debugStr = OptionHelper.getSystemProperty(ModelConstants.DEBUG_SYSTEM_PROPERTY_KEY, null);
+    if (debugStr == null) {
+      debugStr = subst(debugAttribute);
+    }
+    return !(OptionHelper.isNullOrEmptyOrAllSpaces(debugStr) || debugStr.equalsIgnoreCase("false") || debugStr.equalsIgnoreCase(ModelConstants.NULL_STR));
+  }
 }
-// 16:38:46,206 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@b7dd107 - End of configuration.
+// 16:51:10,320 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@52f759d7 - End of configuration.

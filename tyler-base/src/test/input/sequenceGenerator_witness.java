@@ -5,9 +5,11 @@ import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.PatternLayout;
 import ch.qos.logback.classic.spi.Configurator;
 import ch.qos.logback.classic.tyler.TylerConfiguratorBase;
+import ch.qos.logback.core.model.ModelConstants;
 import ch.qos.logback.core.spi.BasicSequenceNumberGenerator;
 import ch.qos.logback.core.spi.LifeCycle;
 import ch.qos.logback.core.testUtil.StringListAppender;
+import ch.qos.logback.core.util.OptionHelper;
 import java.net.URL;
 
 /**
@@ -78,6 +80,9 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
   @Override
   public Configurator.ExecutionStatus configure(LoggerContext loggerContext) {
     setContext(loggerContext);
+    if (toDebugBoolean(null)) {
+      addOnConsoleStatusListener();
+    }
     setupBasicSequenceNumberGenerator_0();
     this.appenderLIST = setupAppenderLIST();
     Logger logger_ROOT = setupLogger("ROOT", "DEBUG", null);
@@ -111,6 +116,17 @@ public class TylerConfigurator extends TylerConfiguratorBase implements Configur
     appender.start();
     return appender;
   }
+
+  /**
+   * Interprets the logback.debug system property, or if not set, the raw debug attribute using properties of the running context.
+   */
+  private boolean toDebugBoolean(String debugAttribute) {
+    String debugStr = OptionHelper.getSystemProperty(ModelConstants.DEBUG_SYSTEM_PROPERTY_KEY, null);
+    if (debugStr == null) {
+      debugStr = subst(debugAttribute);
+    }
+    return !(OptionHelper.isNullOrEmptyOrAllSpaces(debugStr) || debugStr.equalsIgnoreCase("false") || debugStr.equalsIgnoreCase(ModelConstants.NULL_STR));
+  }
 }
-// 16:38:46,159 |-INFO in ch.qos.logback.tyler.base.handler.SequenceNumberGeneratorModelHandler - About to configure SequenceNumberGenerator of type [ch.qos.logback.core.spi.BasicSequenceNumberGenerator]
-// 16:38:46,160 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@458c1321 - End of configuration.
+// 16:51:10,273 |-INFO in ch.qos.logback.tyler.base.handler.SequenceNumberGeneratorModelHandler - About to configure SequenceNumberGenerator of type [ch.qos.logback.core.spi.BasicSequenceNumberGenerator]
+// 16:51:10,275 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@34cd072c - End of configuration.

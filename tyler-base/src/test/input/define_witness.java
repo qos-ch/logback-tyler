@@ -1,30 +1,3 @@
-/*
- * Copyright (c) 2024 QOS.ch Sarl (Switzerland)
- * All rights reserved.
- *
- * Permission is hereby granted, free  of charge, to any person obtaining
- * a  copy  of this  software  and  associated  documentation files  (the
- * "Software"), to  deal in  the Software without  restriction, including
- * without limitation  the rights to  use, copy, modify,  merge, publish,
- * distribute,  sublicense, and/or sell  copies of  the Software,  and to
- * permit persons to whom the Software  is furnished to do so, subject to
- * the following conditions:
- *
- * The  above  copyright  notice  and  this permission  notice  shall  be
- * included in all copies or substantial portions of the Software.
- *
- * THE  SOFTWARE IS  PROVIDED  "AS  IS", WITHOUT  WARRANTY  OF ANY  KIND,
- * EXPRESS OR  IMPLIED, INCLUDING  BUT NOT LIMITED  TO THE  WARRANTIES OF
- * MERCHANTABILITY,    FITNESS    FOR    A   PARTICULAR    PURPOSE    AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
- * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
- * OF CONTRACT, TORT OR OTHERWISE,  ARISING FROM, OUT OF OR IN CONNECTION
- * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- *
- *
- *
- */
-
 package com.example;
 
 import ch.qos.logback.classic.Logger;
@@ -32,7 +5,9 @@ import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.spi.Configurator;
 import ch.qos.logback.classic.tyler.TylerConfiguratorBase;
 import ch.qos.logback.core.joran.action.ActionUtil;
+import ch.qos.logback.core.model.ModelConstants;
 import ch.qos.logback.core.spi.LifeCycle;
+import ch.qos.logback.core.util.OptionHelper;
 import ch.qos.logback.tyler.base.helper.ShapePropertyDefiner;
 import java.net.URL;
 
@@ -83,46 +58,58 @@ import java.net.URL;
  *
  */
 public class TylerConfigurator extends TylerConfiguratorBase implements Configurator {
+  /**
+   * Since TylerConfigurator is java based, the topURL is always null.
+   * However, it is still possible tos scan for changes using the
+   * <propertiesConfigurator> element.
+   */
+  protected final URL topURL = null;
 
-
-    /**
-     * Since TylerConfigurator is java based, the topURL is always null.
-     * However, it is still possible tos scan for changes using the
-     * <propertiesConfigurator> element.
-     */
-    protected final URL topURL = null;
-
-    /**
-     * <p>This method performs configuration per {@link Configurator} interface.</p>
-     *
-     * <p>If <code>TylerConfgiurator</code> is installed as a configurator service, this
-     * method will be called by logback-classic during initialization.</p>
-     */
-    @Override
-    public Configurator.ExecutionStatus configure(LoggerContext loggerContext) {
-        setContext(loggerContext);
-        setupShapePropertyDefiner_0();
-        Logger logger_ROOT = setupLogger("ROOT", subst("${rootLevel}"), null);
-        return ExecutionStatus.DO_NOT_INVOKE_NEXT_IF_ANY;
+  /**
+   * <p>This method performs configuration per {@link Configurator} interface.</p>
+   *
+   * <p>If <code>TylerConfigurator</code> is installed as a configurator service, this
+   * method will be called by logback-classic during initialization.</p>
+   */
+  @Override
+  public Configurator.ExecutionStatus configure(LoggerContext loggerContext) {
+    setContext(loggerContext);
+    if (toDebugBoolean(null)) {
+      addOnConsoleStatusListener();
     }
+    setupShapePropertyDefiner_0();
+    Logger logger_ROOT = setupLogger("ROOT", subst("${rootLevel}"), null);
+    return ExecutionStatus.DO_NOT_INVOKE_NEXT_IF_ANY;
+  }
 
-    void setupShapePropertyDefiner_0() {
-        ShapePropertyDefiner shapePropertyDefiner = new ShapePropertyDefiner();
-        shapePropertyDefiner.setContext(context);
-        ActionUtil.Scope scope  = ActionUtil.stringToScope(null);
-        String propertyValue = shapePropertyDefiner.getPropertyValue();
-        if(propertyValue != null) {
-            addInfo("Setting property 'rootLevel' to '"+propertyValue+"' in scope "+scope);
-            ActionUtil.setProperty(this, "rootLevel", propertyValue, scope);
-        }
-        shapePropertyDefiner.setShape("round");
-        shapePropertyDefiner.setColor("brown");
-        shapePropertyDefiner.setSize(24);
-
-        if(shapePropertyDefiner instanceof LifeCycle) {
-            ((LifeCycle)shapePropertyDefiner).start();
-        }
+  void setupShapePropertyDefiner_0() {
+    ShapePropertyDefiner shapePropertyDefiner = new ShapePropertyDefiner();
+    shapePropertyDefiner.setContext(context);
+    ActionUtil.Scope scope  = ActionUtil.stringToScope(null);
+    String propertyValue = shapePropertyDefiner.getPropertyValue();
+    if(propertyValue != null) {
+      addInfo("Setting property 'rootLevel' to '"+propertyValue+"' in scope "+scope);
+      ActionUtil.setProperty(this, "rootLevel", propertyValue, scope);
     }
+    shapePropertyDefiner.setShape("round");
+    shapePropertyDefiner.setColor("brown");
+    shapePropertyDefiner.setSize(24);
+
+    if(shapePropertyDefiner instanceof LifeCycle) {
+      ((LifeCycle)shapePropertyDefiner).start();
+    }
+  }
+
+  /**
+   * Interprets the logback.debug system property, or if not set, the raw debug attribute using properties of the running context.
+   */
+  private boolean toDebugBoolean(String debugAttribute) {
+    String debugStr = OptionHelper.getSystemProperty(ModelConstants.DEBUG_SYSTEM_PROPERTY_KEY, null);
+    if (debugStr == null) {
+      debugStr = subst(debugAttribute);
+    }
+    return !(OptionHelper.isNullOrEmptyOrAllSpaces(debugStr) || debugStr.equalsIgnoreCase("false") || debugStr.equalsIgnoreCase(ModelConstants.NULL_STR));
+  }
 }
-// 14:17:39,244 |-INFO in ch.qos.logback.tyler.base.handler.DefineModelHandler - About to configure PropertyDefiner of type [ch.qos.logback.tyler.base.helper.ShapePropertyDefiner]
-// 14:17:39,266 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@448c8166 - End of configuration.
+// 16:51:10,288 |-INFO in ch.qos.logback.tyler.base.handler.DefineModelHandler - About to configure PropertyDefiner of type [ch.qos.logback.tyler.base.helper.ShapePropertyDefiner]
+// 16:51:10,289 |-INFO in ch.qos.logback.tyler.base.TylerProcessor@36b4cef0 - End of configuration.

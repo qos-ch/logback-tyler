@@ -190,7 +190,7 @@ public class TwoPhaseTest {
                         + "  </if>\n"
                         + "</configuration>\n";
         String source = translate(input);
-        assertFalse(source.contains("== null"), source);
+        assertFalse(source.matches("(?s).*appender\\w+ == null.*"), source);
         verify(input);
         verify(input, "x");
     }
