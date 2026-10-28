@@ -36,6 +36,7 @@ import ch.qos.logback.core.model.processor.ModelInterpretationContext;
 import ch.qos.logback.core.util.StringUtil;
 import ch.qos.logback.tyler.base.TylerModelInterpretationContext;
 import ch.qos.logback.tyler.base.util.ClassUtil;
+import ch.qos.logback.tyler.base.util.StringToVariableStament;
 import ch.qos.logback.tyler.base.util.VariableNameUtil;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.FieldSpec;
@@ -67,7 +68,9 @@ public class AppenderModelHandler extends ModelHandlerBase {
 
         TylerModelInterpretationContext tmic = (TylerModelInterpretationContext) mic;
 
-        String appenderName = tmic.subst(appenderModel.getName());
+        // as in Joran, the appender name is substituted at runtime. Field and method names are derived
+        // from the raw name, as are those referenced by appender-ref elements.
+        String appenderName = appenderModel.getName();
 
         String originalClassName = appenderModel.getClassName();
         String className = mic.getImport(originalClassName);
@@ -102,7 +105,7 @@ public class AppenderModelHandler extends ModelHandlerBase {
         MethodSpec.Builder appenderSetupMethodSpec = MethodSpec.methodBuilder(methodName).returns(desiredAppenderCN)
                         .addStatement("$1T $2N = new $1T()", desiredAppenderCN, LOCAL_APPENDER_FIELD_NAME)
                         .addStatement("$N.setContext($N)", LOCAL_APPENDER_FIELD_NAME, tmic.getContextFieldSpec())
-                        .addStatement("$N.setName($S)", LOCAL_APPENDER_FIELD_NAME, appenderName);
+                        .addStatement("$N.setName($L)", LOCAL_APPENDER_FIELD_NAME, StringToVariableStament.stringToSubstitutedExpression(appenderName));
 
         return appenderSetupMethodSpec;
     }

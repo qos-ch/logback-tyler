@@ -36,6 +36,7 @@ import ch.qos.logback.core.model.processor.ModelInterpretationContext;
 import ch.qos.logback.core.util.OptionHelper;
 import ch.qos.logback.tyler.base.TylerModelInterpretationContext;
 import ch.qos.logback.tyler.base.util.StringToVariableStament;
+import com.squareup.javapoet.CodeBlock;
 
 import static ch.qos.logback.classic.tyler.TylerConfiguratorBase.SETUP_LOGGER_METHOD_NAME;
 
@@ -88,8 +89,10 @@ public class LoggerModelHandler  extends ModelHandlerBase {
         boolean containsVariable = StringToVariableStament.containsVariable(levelStr);
         String levelStrPart = containsVariable ? "subst($S)" : "$S";
 
-        tmic.configureMethodSpecBuilder.addStatement("$T $N = $N($S, "+levelStrPart+", $N)", Logger.class, loggerVariableName,
-                SETUP_LOGGER_METHOD_NAME, loggerName, levelStr, additivityStr );
+        // as in Joran, the logger name is substituted at runtime. The variable name is derived from the raw name.
+        CodeBlock loggerNameExpression = StringToVariableStament.stringToSubstitutedExpression(loggerName);
+        tmic.configureMethodSpecBuilder.addStatement("$T $N = $N($L, "+levelStrPart+", $N)", Logger.class, loggerVariableName,
+                SETUP_LOGGER_METHOD_NAME, loggerNameExpression, levelStr, additivityStr );
     }
 
     @Override

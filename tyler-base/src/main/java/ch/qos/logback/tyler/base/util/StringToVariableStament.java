@@ -30,6 +30,8 @@ import ch.qos.logback.core.joran.util.StringToObjectConverter;
 
 import java.nio.charset.Charset;
 
+import com.squareup.javapoet.CodeBlock;
+
 public class StringToVariableStament {
 
     static final String DOLLAR_LEFT_ACCOLADE = "${";
@@ -42,6 +44,15 @@ public class StringToVariableStament {
         }
     }
     
+    /**
+     * @return a Java expression evaluating to the given string, substituted at runtime if it contains
+     * variables, e.g. <code>subst("${name}")</code>, or else the string literal itself
+     * @since 1.0.6
+     */
+    public static CodeBlock stringToSubstitutedExpression(String input) {
+        return containsVariable(input) ? CodeBlock.of("subst($S)", input) : CodeBlock.of("$S", input);
+    }
+
     public static String booleanObjectToString(Boolean bool) {
         if(bool == null)
             return "null";

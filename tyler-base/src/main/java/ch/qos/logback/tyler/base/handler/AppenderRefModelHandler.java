@@ -33,7 +33,9 @@ import ch.qos.logback.core.model.processor.ModelHandlerBase;
 import ch.qos.logback.core.model.processor.ModelHandlerException;
 import ch.qos.logback.core.model.processor.ModelInterpretationContext;
 import ch.qos.logback.tyler.base.TylerModelInterpretationContext;
+import ch.qos.logback.tyler.base.util.StringToVariableStament;
 import ch.qos.logback.tyler.base.util.VariableNameUtil;
+import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.MethodSpec;
 
 
@@ -85,20 +87,25 @@ public class AppenderRefModelHandler extends ModelHandlerBase {
      */
     private void addJavaStatement(TylerModelInterpretationContext tmic, MethodSpec.Builder methodSpecBuilder, String variableName, String ref) {
         String appenderVariableName = VariableNameUtil.appenderNameToVariableName(ref);
-        String warning = "Appender named [" + ref + "] could not be found. Skipping attachment to ";
+        // as in Joran, the warning mentions the substituted name
+        String suffix = "] could not be found. Skipping attachment to ";
+        CodeBlock warning = StringToVariableStament.containsVariable(ref)
+                        ? CodeBlock.of("addWarn($S + subst($S) + $S + $N + \".\")", "Appender named [", ref, suffix, variableName)
+                        : CodeBlock.of("addWarn($S + $N + \".\")", "Appender named [" + ref + suffix, variableName);
 
-        switch (tmic.getAppenderAvailability(tmic.subst(ref))) {
+        switch (tmic.getAppenderAvailability(ref)) {
             case CERTAIN -> methodSpecBuilder.addStatement("$N.addAppender($N)", variableName, appenderVariableName);
             case UNCERTAIN -> {
                 methodSpecBuilder.beginControlFlow("if($N == null)", appenderVariableName);
-                methodSpecBuilder.addStatement("addWarn($S + $N + \".\")", warning, variableName);
+                methodSpecBuilder.addStatement(warning);
                 methodSpecBuilder.nextControlFlow("else");
                 methodSpecBuilder.addStatement("$N.addAppender($N)", variableName, appenderVariableName);
                 methodSpecBuilder.endControlFlow();
             }
             case UNDECLARED -> {
-                addWarn("Appender named [" + ref + "] is not declared. Attachment will be skipped at runtime.");
-                methodSpecBuilder.addStatement("addWarn($S + $N + \".\")", warning, variableName);
+                String hint = StringToVariableStament.containsVariable(ref) ? " References are matched with appender names as written, before substitution." : "";
+                addWarn("Appender named [" + ref + "] is not declared. Attachment will be skipped at runtime." + hint);
+                methodSpecBuilder.addStatement(warning);
             }
         }
     }

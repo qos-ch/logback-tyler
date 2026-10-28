@@ -128,7 +128,7 @@ public class TylerProcessor extends DefaultProcessor {
     void declareAppenders() {
         for (DeferredModel deferredModel : deferredModels) {
             if (deferredModel.model() instanceof AppenderModel appenderModel) {
-                tmic.declareAppender(tmic.subst(appenderModel.getName()), deferredModel.guards());
+                tmic.declareAppender(appenderModel.getName(), deferredModel.guards());
             }
         }
     }
@@ -180,6 +180,9 @@ public class TylerProcessor extends DefaultProcessor {
     /**
      * Orders appenders so that each appender comes after the appenders it references. Otherwise, document
      * order is preserved. References to undeclared appenders are ignored.
+     *
+     * <p>As appender names are substituted at runtime, references are matched with appenders by their raw
+     * names, as in generated field names.</p>
      */
     class AppenderSorter {
 
@@ -235,14 +238,14 @@ public class TylerProcessor extends DefaultProcessor {
         void collectReferences(Model model, List<String> references) {
             for (Model submodel : model.getSubModels()) {
                 if (submodel instanceof AppenderRefModel appenderRefModel) {
-                    references.add(tmic.subst(appenderRefModel.getRef()));
+                    references.add(appenderRefModel.getRef());
                 }
                 collectReferences(submodel, references);
             }
         }
 
         String nameOf(DeferredModel appender) {
-            return tmic.subst(((AppenderModel) appender.model()).getName());
+            return ((AppenderModel) appender.model()).getName();
         }
     }
 }
