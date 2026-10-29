@@ -64,6 +64,35 @@ import java.util.Objects;
 
 import static ch.qos.logback.tyler.base.util.StringToVariableStament.booleanObjectToString;
 
+/**
+ * Translates a logback-classic XML configuration into the Java source code of a custom configurator, i.e. a
+ * class implementing <code>ch.qos.logback.classic.spi.Configurator</code>.
+ *
+ * <p>Translation takes place in two steps. First, {@link #extractModel(String)} or
+ * {@link #extractModel(InputSource)} parses the XML into a {@link Model} tree. Second,
+ * {@link #toJava(Model)} walks that tree and emits the Java source:</p>
+ *
+ * <pre>
+ * Context context = new ContextBase();
+ * TranslationOptions options = TranslationOptions.builder().generatedClassName("com.example.MyConfigurator").build();
+ * ModelToJava modelToJava = new ModelToJava(context, options);
+ * Model topModel = modelToJava.extractModel(xmlString);
+ * String javaSource = modelToJava.toJava(topModel);
+ * </pre>
+ *
+ * <p>Problems encountered during either step, e.g. unknown or disallowed classes, are not thrown but
+ * reported as statuses to the {@link Context} passed to the constructor. Callers should inspect the
+ * status manager of the context, or use {@link #statusToStringList()}, before using the generated code.
+ * {@link ConfigurationFileTranslator} wraps both steps and collects errors and warnings for translating a
+ * file.</p>
+ *
+ * <p>The XML is parsed but never executed: classes referenced by the configuration are loaded, without
+ * being instantiated, only to analyse their properties. Which classes may be loaded, and by which class
+ * loader, is governed by {@link TranslationOptions}.</p>
+ *
+ * <p>Subclasses can support additional elements by overriding {@link #createJoranConfigurator()} and
+ * {@link #addModelHandlerAssociations(DefaultProcessor)}.</p>
+ */
 public class ModelToJava {
 
 
@@ -73,14 +102,18 @@ public class ModelToJava {
     /**
      * Uses {@link TranslationOptions#DEFAULT}. In particular, translation-time inclusion is disabled.
      * Consequently, &lt;include&gt; elements are omitted from the generated code, each with a warning.
+     *
+     * @param context the context to which statuses are reported
      */
     public ModelToJava(Context context) {
         this(context, TranslationOptions.DEFAULT);
     }
 
     /**
-     * @param context the context
-     * @param translationOptions options governing the translation
+     * Create an instance translating according to the given options.
+     *
+     * @param context the context to which statuses are reported
+     * @param translationOptions options governing the translation, cannot be null
      * @since 1.0.5
      */
     public ModelToJava(Context context, TranslationOptions translationOptions) {
@@ -93,6 +126,10 @@ public class ModelToJava {
      * Build a model from the given XML string. As the string is already decoded, it is passed to the
      * parser as a character stream. Consequently, the encoding declaration of the document, if any,
      * is ignored.
+     *
+     * @param input the XML configuration
+     * @return the top model
+     * @throws JoranException if the XML cannot be parsed
      */
     public Model extractModel(String input) throws JoranException {
         InputSource inputSource = new InputSource(new StringReader(input));
@@ -107,6 +144,7 @@ public class ModelToJava {
      *
      * @param inputSource the XML input
      * @return the top model
+     * @throws JoranException if the XML cannot be parsed
      * @since 1.0.6
      */
     public Model extractModel(InputSource inputSource) throws JoranException {
@@ -134,6 +172,8 @@ public class ModelToJava {
     }
 
     /**
+     * Return the context passed to the constructor.
+     *
      * @return the context passed to the constructor
      * @since 1.0.5
      */
@@ -141,6 +181,18 @@ public class ModelToJava {
         return context;
     }
 
+    /**
+     * Translate the given model into the Java source code of the generated configurator, as named by
+     * {@link TranslationOptions#getGeneratedClassName()}.
+     *
+     * <p>Errors are reported as statuses to the context rather than thrown. In that case, the returned
+     * source is incomplete and should not be used.</p>
+     *
+     * @param topModel the top model, as returned by {@link #extractModel(String)} or
+     *                 {@link #extractModel(InputSource)}
+     * @return the Java source code
+     * @throws IOException if writing the generated source fails
+     */
     public StringBuffer toJavaAsStringBuffer(Model topModel) throws IOException {
         TylerModelInterpretationContext tmic = new TylerModelInterpretationContext(context, translationOptions);
         tmic.setTopModel(topModel);
@@ -189,11 +241,25 @@ public class ModelToJava {
         return sb;
     }
 
+    /**
+     * Same as {@link #toJavaAsStringBuffer(Model)}, returning a String.
+     *
+     * @param topModel the top model, as returned by {@link #extractModel(String)} or
+     *                 {@link #extractModel(InputSource)}
+     * @return the Java source code
+     * @throws IOException if writing the generated source fails
+     */
     public String toJava(Model topModel) throws IOException {
         StringBuffer buf = toJavaAsStringBuffer(topModel);
         return buf.toString();
     }
 
+    /**
+     * Return the statuses of the context, one entry per line, each prefixed with "// " so that
+     * they can be appended to the generated source as comments.
+     *
+     * @return the statuses of the context as Java comment lines
+     */
     public List<String>  statusToStringList() {
         List<String> resultList = new ArrayList<>();
         StatusPrinter2 statusPrinter2 = new StatusPrinter2();
