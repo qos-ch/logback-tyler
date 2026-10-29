@@ -35,6 +35,7 @@ import ch.qos.logback.core.model.processor.ModelInterpretationContext;
 import ch.qos.logback.core.spi.LifeCycle;
 import ch.qos.logback.core.util.OptionHelper;
 import ch.qos.logback.tyler.base.TylerModelInterpretationContext;
+import ch.qos.logback.tyler.base.util.ClassLoaderUtil;
 import ch.qos.logback.tyler.base.util.ClassUtil;
 import ch.qos.logback.tyler.base.util.VariableNameUtil;
 import com.squareup.javapoet.ClassName;
@@ -76,16 +77,18 @@ public abstract class ComponentModelHandler extends ModelHandlerBase {
         }
 
         addInfo("About to configure " + getTargetType() + " of type [" + componentClassName + "]");
-        MethodSpec.Builder methodSpec = addJavaStatement(tmic, componentModel, componentClassName);
-        addAdditionalJavaStatement(methodSpec, componentModel);
-        this.implicitModelHandlerData = ImplicitModelHandlerData.makeInstance(this, methodSpec, componentClassName);
-        if(implicitModelHandlerData != null) {
-            mic.pushObject(implicitModelHandlerData);
-        } else {
-            addError("Could not make implicitModelHandlerData for ["+componentClassName+"]");
+        // the class is loaded before any code is emitted
+        Class<?> aClass = ClassLoaderUtil.loadAllowedClassOrReportError(this, tmic.getTranslationOptions(), componentClassName);
+        if (aClass == null) {
             model.markAsSkipped();
             inError = true;
+            return;
         }
+
+        MethodSpec.Builder methodSpec = addJavaStatement(tmic, componentModel, componentClassName);
+        addAdditionalJavaStatement(methodSpec, componentModel);
+        this.implicitModelHandlerData = ImplicitModelHandlerData.makeInstance(methodSpec, aClass);
+        mic.pushObject(implicitModelHandlerData);
     }
 
     protected void addAdditionalJavaStatement(MethodSpec.Builder methodSpec, ComponentModel componentModel) {

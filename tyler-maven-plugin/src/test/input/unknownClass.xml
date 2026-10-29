@@ -1,0 +1,6 @@
+<configuration>
+  <appender name="X" class="com.example.NonExistentAppender"/>
+  <root level="INFO">
+    <appender-ref ref="X"/>
+  </root>
+</configuration>

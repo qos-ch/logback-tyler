@@ -160,7 +160,9 @@ public class TylerRegressionTest {
 
     @Test
     void conversionRuleErrorsTest() throws JoranException, IOException {
-        verify(INPUT_PREFIX + "conversionRuleErrors.xml", INPUT_PREFIX + "conversionRuleErrors_witness.java");
+        // all packages are allowed so as to exercise the checks of converter classes
+        ModelToJava m2jAllPackages = new ModelToJava(context, TranslationOptions.builder().allowAllPackages().build());
+        verify(m2jAllPackages, INPUT_PREFIX + "conversionRuleErrors.xml", INPUT_PREFIX + "conversionRuleErrors_witness.java");
     }
 
     @Test

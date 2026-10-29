@@ -41,6 +41,7 @@ package ch.qos.logback.tyler.base;
     import ch.qos.logback.core.spi.FilterReply;
     import ch.qos.logback.core.util.StringUtil;
     import ch.qos.logback.tyler.base.spi.StaticImportData;
+    import ch.qos.logback.tyler.base.util.ClassLoaderUtil;
     import ch.qos.logback.tyler.base.util.ClassUtil;
     import ch.qos.logback.tyler.base.util.VariableNameUtil;
     import com.squareup.javapoet.*;
@@ -233,7 +234,7 @@ package ch.qos.logback.tyler.base;
         void checkSuperclass(String superclassName) {
             Class<?> superclass;
             try {
-                superclass = Class.forName(superclassName, false, TylerModelInterpretationContext.class.getClassLoader());
+                superclass = Class.forName(superclassName, false, ClassLoaderUtil.getClassLoader(context, translationOptions));
             } catch (ClassNotFoundException | LinkageError e) {
                 return;
             }

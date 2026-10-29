@@ -41,6 +41,7 @@ import ch.qos.logback.core.util.AggregationType;
 import ch.qos.logback.core.util.OptionHelper;
 import ch.qos.logback.core.util.StringUtil;
 import ch.qos.logback.tyler.base.TylerModelInterpretationContext;
+import ch.qos.logback.tyler.base.util.ClassLoaderUtil;
 import ch.qos.logback.tyler.base.util.ClassUtil;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.MethodSpec;
@@ -141,7 +142,7 @@ public class ImplicitModelHandler extends ModelHandlerBase {
         try {
 
             if (!OptionHelper.isNullOrEmptyOrAllSpaces(fqcn)) {
-                componentClass = ClassUtil.restrictecLoadClass(fqcn, context);
+                componentClass = ClassLoaderUtil.loadAllowedClass(fqcn, context, tmic.getTranslationOptions());
             } else {
                 // guess class name via implicit rules
                 componentClass = aggregationAssessor.getClassNameViaImplicitRules(nestedElementTagName, aggregationType,

@@ -34,6 +34,7 @@ import ch.qos.logback.core.model.processor.ModelHandlerBase;
 import ch.qos.logback.core.model.processor.ModelHandlerException;
 import ch.qos.logback.core.model.processor.ModelInterpretationContext;
 import ch.qos.logback.tyler.base.TylerModelInterpretationContext;
+import ch.qos.logback.tyler.base.util.ClassLoaderUtil;
 import ch.qos.logback.tyler.base.util.ClassUtil;
 import ch.qos.logback.tyler.base.util.StringToVariableStament;
 import com.squareup.javapoet.ClassName;
@@ -72,16 +73,16 @@ public class AppenderModelHandler extends ModelHandlerBase {
         String originalClassName = appenderModel.getClassName();
         String className = mic.getImport(originalClassName);
 
-        MethodSpec.Builder methodSpec = addJavaStatementForAppenderInitialization(tmic, appenderName, className);
-        try {
-            Class appenderClass = Class.forName(className);
-            implicitModelHandlerData = new ImplicitModelHandlerData(appenderClass, LOCAL_APPENDER_FIELD_NAME, methodSpec);
-
-            mic.pushObject(implicitModelHandlerData);
-        } catch (ClassNotFoundException e) {
-            addError("Could not find class", e);
+        // the class is loaded before any code is emitted
+        Class<?> appenderClass = ClassLoaderUtil.loadAllowedClassOrReportError(this, tmic.getTranslationOptions(), className);
+        if (appenderClass == null) {
             inError = true;
+            return;
         }
+
+        MethodSpec.Builder methodSpec = addJavaStatementForAppenderInitialization(tmic, appenderName, className);
+        implicitModelHandlerData = new ImplicitModelHandlerData(appenderClass, LOCAL_APPENDER_FIELD_NAME, methodSpec);
+        mic.pushObject(implicitModelHandlerData);
 
     }
 

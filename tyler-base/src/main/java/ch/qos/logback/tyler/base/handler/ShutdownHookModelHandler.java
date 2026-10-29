@@ -37,6 +37,7 @@ import ch.qos.logback.core.model.processor.ModelInterpretationContext;
 import ch.qos.logback.core.util.OptionHelper;
 import ch.qos.logback.core.util.StringUtil;
 import ch.qos.logback.tyler.base.TylerModelInterpretationContext;
+import ch.qos.logback.tyler.base.util.ClassLoaderUtil;
 import ch.qos.logback.tyler.base.util.ClassUtil;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.FieldSpec;
@@ -89,15 +90,17 @@ public class ShutdownHookModelHandler  extends ModelHandlerBase  {
 
         addInfo("About to instantiate shutdown hook of type [" + className + "]");
 
-        MethodSpec.Builder methodSpec = addJavaStatement(tmic, className);
-        this.implicitModelHandlerData = ImplicitModelHandlerData.makeInstance(this, methodSpec, className);
-        if(implicitModelHandlerData != null) {
-            mic.pushObject(implicitModelHandlerData);
-        } else {
-            addError("Could not make implicitModelHandlerData for ["+className+"]");
+        // the class is loaded before any code is emitted
+        Class<?> aClass = ClassLoaderUtil.loadAllowedClassOrReportError(this, tmic.getTranslationOptions(), className);
+        if (aClass == null) {
             model.markAsSkipped();
             inError = true;
+            return;
         }
+
+        MethodSpec.Builder methodSpec = addJavaStatement(tmic, className);
+        this.implicitModelHandlerData = ImplicitModelHandlerData.makeInstance(methodSpec, aClass);
+        mic.pushObject(implicitModelHandlerData);
 
     }
 

@@ -35,6 +35,7 @@ import ch.qos.logback.core.model.processor.ModelInterpretationContext;
 import ch.qos.logback.core.spi.LifeCycle;
 import ch.qos.logback.core.util.OptionHelper;
 import ch.qos.logback.tyler.base.TylerModelInterpretationContext;
+import ch.qos.logback.tyler.base.util.ClassLoaderUtil;
 import ch.qos.logback.tyler.base.util.ClassUtil;
 import ch.qos.logback.tyler.base.util.VariableNameUtil;
 import com.squareup.javapoet.ClassName;
@@ -78,15 +79,17 @@ public class StatusListenerModelHandler extends ModelHandlerBase {
             statusListenerClassName = mic.getImport(statusListenerClassName);
         }
 
-        MethodSpec.Builder methodSpec = addJavaStatement(tmic, statusListenerClassName);
-        this.implicitModelHandlerData = ImplicitModelHandlerData.makeInstance(this, methodSpec, statusListenerClassName);
-        if(implicitModelHandlerData != null) {
-            mic.pushObject(implicitModelHandlerData);
-        } else {
-            addError("Could not make implicitModelHandlerData for ["+statusListenerClassName+"]");
+        // the class is loaded before any code is emitted
+        Class<?> aClass = ClassLoaderUtil.loadAllowedClassOrReportError(this, tmic.getTranslationOptions(), statusListenerClassName);
+        if (aClass == null) {
             model.markAsSkipped();
             inError = true;
+            return;
         }
+
+        MethodSpec.Builder methodSpec = addJavaStatement(tmic, statusListenerClassName);
+        this.implicitModelHandlerData = ImplicitModelHandlerData.makeInstance(methodSpec, aClass);
+        mic.pushObject(implicitModelHandlerData);
     }
 
     MethodSpec.Builder addJavaStatement(TylerModelInterpretationContext tmic,

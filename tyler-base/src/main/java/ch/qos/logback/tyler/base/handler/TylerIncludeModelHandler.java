@@ -34,6 +34,8 @@ import ch.qos.logback.core.model.processor.ModelInterpretationContext;
 import ch.qos.logback.core.util.OptionHelper;
 import ch.qos.logback.tyler.base.TylerModelInterpretationContext;
 
+import java.net.URL;
+
 /**
  * Handles &lt;include&gt; elements by inlining the contents of the included file at translation time.
  *
@@ -90,6 +92,8 @@ public class TylerIncludeModelHandler extends ModelHandlerBase {
             return;
         }
 
+        resolveResourceWithClassLoaderOfOptions(tmic, includeModel);
+
         IncludeModelHandler includeModelHandler = new IncludeModelHandler(context);
         // topURL and topScan are null as included files are not watched at translation time
         Model modelFromIncludedFile = includeModelHandler.buildModelFromIncludedFile(tmic, null, null, includeModel);
@@ -113,6 +117,24 @@ public class TylerIncludeModelHandler extends ModelHandlerBase {
         TylerModelInterpretationContext tmic = (TylerModelInterpretationContext) mic;
         tmic.configureMethodSpecBuilder.addComment("End of contents inlined from $L", inlinedDescription);
         tmic.exitInclude(inlinedDescription);
+    }
+
+    /**
+     * Logback looks up resources with its own class loader. If the translation options specify a class
+     * loader, the resource is looked up with that class loader instead, and the include model refers to
+     * its URL.
+     */
+    void resolveResourceWithClassLoaderOfOptions(TylerModelInterpretationContext tmic, IncludeModel includeModel) {
+        ClassLoader classLoader = tmic.getTranslationOptions().getClassLoader();
+        String resource = includeModel.getResource();
+        if (classLoader == null || OptionHelper.isNullOrEmptyOrAllSpaces(resource)) {
+            return;
+        }
+        URL url = classLoader.getResource(resource.trim());
+        if (url != null) {
+            includeModel.setResource(null);
+            includeModel.setUrl(url.toString());
+        }
     }
 
     void omitInclude(TylerModelInterpretationContext tmic, IncludeModel includeModel, String description, String reason) {

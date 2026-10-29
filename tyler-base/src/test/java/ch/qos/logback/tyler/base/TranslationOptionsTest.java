@@ -29,14 +29,17 @@ package ch.qos.logback.tyler.base;
 import ch.qos.logback.core.ContextBase;
 import ch.qos.logback.core.joran.spi.JoranException;
 import ch.qos.logback.core.model.Model;
+import ch.qos.logback.core.status.Status;
 import ch.qos.logback.tyler.base.compiler.CompilationVerifier;
 import ch.qos.logback.tyler.base.compiler.CompilerVerificationResult;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -53,6 +56,7 @@ public class TranslationOptionsTest {
     void defaults() {
         TranslationOptions options = TranslationOptions.DEFAULT;
         assertFalse(options.isTranslationTimeInclusionEnabled());
+        assertNull(options.getClassLoader());
         assertEquals("com.example.TylerConfigurator", options.getGeneratedClassName());
         assertEquals("com.example", options.getGeneratedClassPackageName());
         assertEquals("TylerConfigurator", options.getGeneratedClassSimpleName());
@@ -121,6 +125,153 @@ public class TranslationOptionsTest {
         assertFalse(result.contains("package "), result);
         assertTrue(result.contains("public class AcmeConfigurator "), result);
         assertCompiles("AcmeConfigurator", result);
+    }
+
+    static final String CUSTOM_ENCODER_INPUT = """
+                    <configuration>
+                      <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+                        <encoder class="org.example.tyler.CustomEncoder">
+                          <pattern>%msg%n</pattern>
+                        </encoder>
+                      </appender>
+                      <root level="DEBUG">
+                        <appender-ref ref="CONSOLE"/>
+                      </root>
+                    </configuration>
+                    """;
+
+    static final String CUSTOM_CONDITION_INPUT = """
+                    <configuration>
+                      <condition class="org.example.tyler.AlwaysTrueCondition"/>
+                      <if>
+                        <then>
+                          <logger name="com.foo" level="INFO"/>
+                        </then>
+                      </if>
+                      <root level="DEBUG"/>
+                    </configuration>
+                    """;
+
+    @Test
+    void allowedPackages() {
+        TranslationOptions defaults = TranslationOptions.DEFAULT;
+        assertFalse(defaults.isAllPackagesAllowed());
+        assertEquals(TranslationOptions.DEFAULT_ALLOWED_PACKAGES, defaults.getAllowedPackages());
+        assertTrue(defaults.isClassAllowed("ch.qos.logback.classic.encoder.PatternLayoutEncoder"));
+        assertTrue(defaults.isClassAllowed("chapters.layouts.MySampleLayout"));
+        assertFalse(defaults.isClassAllowed("org.example.tyler.CustomEncoder"));
+        // package boundaries are respected
+        assertFalse(defaults.isClassAllowed("ch.qos.logbackx.Foo"));
+        assertFalse(defaults.isClassAllowed("ch.qos.logback"));
+
+        TranslationOptions whitelist = TranslationOptions.builder().allowedPackages(List.of("org.example")).build();
+        assertEquals(List.of("org.example"), whitelist.getAllowedPackages());
+        assertTrue(whitelist.isClassAllowed("org.example.tyler.CustomEncoder"));
+        // logback is implicitly allowed, whereas default packages are replaced
+        assertTrue(whitelist.isClassAllowed("ch.qos.logback.classic.encoder.PatternLayoutEncoder"));
+        assertFalse(whitelist.isClassAllowed("chapters.layouts.MySampleLayout"));
+        assertFalse(whitelist.isClassAllowed("org.examplex.Foo"));
+
+        TranslationOptions all = TranslationOptions.builder().allowAllPackages().build();
+        assertTrue(all.isAllPackagesAllowed());
+        assertEquals(List.of(), all.getAllowedPackages());
+        assertTrue(all.isClassAllowed("org.example.tyler.CustomEncoder"));
+    }
+
+    @Test
+    void invalidAllowedPackages() {
+        assertThrows(IllegalArgumentException.class, () -> TranslationOptions.builder().allowedPackages(null));
+        assertThrows(IllegalArgumentException.class, () -> TranslationOptions.builder().allowedPackages(List.of("org.example.")));
+        assertThrows(IllegalArgumentException.class, () -> TranslationOptions.builder().allowedPackages(List.of("org.class")));
+    }
+
+    @Test
+    void nestedComponentInDisallowedPackage() throws JoranException, IOException {
+        ContextBase context = new ContextBase();
+        String result = translate(context, TranslationOptions.DEFAULT, CUSTOM_ENCODER_INPUT);
+        assertFalse(result.contains("CustomEncoder"), result);
+        List<String> errors = errors(context);
+        assertEquals(1, errors.size(), errors.toString());
+        assertTrue(errors.get(0).contains("Class [org.example.tyler.CustomEncoder] is not in an allowed package"), errors.get(0));
+    }
+
+    @Test
+    void nestedComponentInAllowedPackage() throws JoranException, IOException {
+        for (TranslationOptions options : List.of(TranslationOptions.builder().allowedPackages(List.of("org.example.tyler")).build(),
+                        TranslationOptions.builder().allowAllPackages().build())) {
+            ContextBase context = new ContextBase();
+            String result = translate(context, options, CUSTOM_ENCODER_INPUT);
+            assertTrue(result.contains("CustomEncoder customEncoder = new CustomEncoder();"), result);
+            assertEquals(List.of(), errors(context));
+            assertCompiles("com.example.TylerConfigurator", result);
+        }
+    }
+
+    @Test
+    void conditionInDisallowedPackage() throws JoranException, IOException {
+        ContextBase context = new ContextBase();
+        String result = translate(context, TranslationOptions.DEFAULT, CUSTOM_CONDITION_INPUT);
+        assertFalse(result.contains("AlwaysTrueCondition"), result);
+        List<String> errors = errors(context);
+        assertTrue(errors.stream().anyMatch(e -> e.contains("Class [org.example.tyler.AlwaysTrueCondition] is not in an allowed package")),
+                        errors.toString());
+    }
+
+    @Test
+    void conditionInAllowedPackage() throws JoranException, IOException {
+        ContextBase context = new ContextBase();
+        TranslationOptions options = TranslationOptions.builder().allowedPackages(List.of("org.example.tyler")).build();
+        String result = translate(context, options, CUSTOM_CONDITION_INPUT);
+        assertTrue(result.contains("AlwaysTrueCondition"), result);
+        assertEquals(List.of(), errors(context));
+        assertCompiles("com.example.TylerConfigurator", result);
+    }
+
+    static final String CUSTOM_APPENDER_AND_CONVERTER_INPUT = """
+                    <configuration>
+                      <conversionRule conversionWord="custom" class="org.example.tyler.CustomConverter"/>
+                      <appender name="CUSTOM" class="org.example.tyler.CustomAppender">
+                        <encoder>
+                          <pattern>%custom%n</pattern>
+                        </encoder>
+                      </appender>
+                      <root level="DEBUG"/>
+                    </configuration>
+                    """;
+
+    @Test
+    void appenderAndConverterInDisallowedPackage() throws JoranException, IOException {
+        ContextBase context = new ContextBase();
+        String result = translate(context, TranslationOptions.DEFAULT, CUSTOM_APPENDER_AND_CONVERTER_INPUT);
+        assertFalse(result.contains("CustomAppender"), result);
+        assertFalse(result.contains("CustomConverter"), result);
+        List<String> errors = errors(context);
+        assertTrue(errors.stream().anyMatch(e -> e.contains("Class [org.example.tyler.CustomAppender] is not in an allowed package")),
+                        errors.toString());
+        assertTrue(errors.stream().anyMatch(e -> e.contains("Class [org.example.tyler.CustomConverter] is not in an allowed package")),
+                        errors.toString());
+    }
+
+    @Test
+    void appenderAndConverterInAllowedPackage() throws JoranException, IOException {
+        ContextBase context = new ContextBase();
+        TranslationOptions options = TranslationOptions.builder().allowedPackages(List.of("org.example.tyler")).build();
+        String result = translate(context, options, CUSTOM_APPENDER_AND_CONVERTER_INPUT);
+        assertTrue(result.contains("CustomAppender appender = new CustomAppender();"), result);
+        assertTrue(result.contains("CustomConverter::new"), result);
+        assertEquals(List.of(), errors(context));
+        assertCompiles("com.example.TylerConfigurator", result);
+    }
+
+    List<String> errors(ContextBase context) {
+        return context.getStatusManager().getCopyOfStatusList().stream().filter(s -> s.getLevel() == Status.ERROR)
+                        .map(s -> s.getMessage() + " " + s.getThrowable()).toList();
+    }
+
+    String translate(ContextBase context, TranslationOptions options, String input) throws JoranException, IOException {
+        ModelToJava m2j = new ModelToJava(context, options);
+        Model model = m2j.extractModel(input);
+        return m2j.toJava(model);
     }
 
     String translate(String generatedClassName) throws JoranException, IOException {

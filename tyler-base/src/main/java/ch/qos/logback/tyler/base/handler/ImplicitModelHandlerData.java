@@ -77,17 +77,8 @@ public class ImplicitModelHandlerData {
         return methodSpecBuilder;
     }
 
-    public static ImplicitModelHandlerData makeInstance(ContextAware contextAware, MethodSpec.Builder methodSpec, String fqcn) {
-        String variableName = VariableNameUtil.fullyQualifiedClassNameToVariableName(fqcn);
-
-        try {
-            Class aClass = Class.forName(fqcn);
-            ImplicitModelHandlerData implicitModelHandlerData = new ImplicitModelHandlerData(aClass, variableName,
-                    methodSpec);
-           return implicitModelHandlerData;
-        } catch (ClassNotFoundException e) {
-            contextAware.addError("Could not find class ["+fqcn+"]");
-            return null;
-        }
+    public static ImplicitModelHandlerData makeInstance(MethodSpec.Builder methodSpec, Class<?> aClass) {
+        String variableName = VariableNameUtil.fullyQualifiedClassNameToVariableName(aClass.getName());
+        return new ImplicitModelHandlerData(aClass, variableName, methodSpec);
     }
 }

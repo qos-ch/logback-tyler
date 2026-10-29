@@ -26,11 +26,9 @@
 
 package ch.qos.logback.tyler.base.util;
 
-import ch.qos.logback.core.Context;
 import ch.qos.logback.core.joran.spi.NoAutoStart;
 import ch.qos.logback.core.spi.ContextAware;
 import ch.qos.logback.core.spi.LifeCycle;
-import ch.qos.logback.core.util.Loader;
 
 import static ch.qos.logback.core.CoreConstants.DOT;
 import static ch.qos.logback.tyler.base.TylerConstants.NOT_FOUND;
@@ -53,26 +51,6 @@ public class ClassUtil {
     static public boolean notMarkedWithNoAutoStart(Class<?> aClass) {
         NoAutoStart a = aClass.getAnnotation(NoAutoStart.class);
         return a == null;
-    }
-
-    static final String[] AUTHORIZED_PREFIXES = {"ch.qos.logback", "chapters.appenders", "chapters.layouts", "chapters.filters"};
-
-    static public boolean isAuthorized(String classStr) {
-        for(String s: AUTHORIZED_PREFIXES) {
-            if (classStr.startsWith(s)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public static Class<?> restrictecLoadClass(String classStr, Context context) throws ClassNotFoundException {
-        if(!isAuthorized(classStr)) {
-            throw new IllegalArgumentException("Class name "+classStr+ " not supported");
-        }
-
-        ClassLoader cl = Loader.getClassLoaderOfObject(context);
-        return cl.loadClass(classStr);
     }
 
     public static String extractPackageName(String fqcn) {

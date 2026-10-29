@@ -36,6 +36,7 @@ import ch.qos.logback.core.model.processor.ModelInterpretationContext;
 import ch.qos.logback.core.pattern.DynamicConverter;
 import ch.qos.logback.core.util.OptionHelper;
 import ch.qos.logback.tyler.base.TylerModelInterpretationContext;
+import ch.qos.logback.tyler.base.util.ClassLoaderUtil;
 import com.squareup.javapoet.AnnotationSpec;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.MethodSpec;
@@ -100,7 +101,7 @@ public class ConversionRuleModelHandler extends ModelHandlerBase {
             return;
         }
 
-        Class<?> converterClass = checkConverterClass(converterClassName, model.getLineNumber());
+        Class<?> converterClass = checkConverterClass(tmic, converterClassName, model.getLineNumber());
         if (converterClass == null) {
             return;
         }
@@ -116,10 +117,10 @@ public class ConversionRuleModelHandler extends ModelHandlerBase {
      *
      * @return the converter class, or null if it does not meet the above requirements
      */
-    Class<?> checkConverterClass(String converterClassName, int lineNumber) {
+    Class<?> checkConverterClass(TylerModelInterpretationContext tmic, String converterClassName, int lineNumber) {
         String errorPrefix = "Converter class [" + converterClassName + "] on line " + lineNumber;
         try {
-            Class<?> converterClass = Class.forName(converterClassName);
+            Class<?> converterClass = ClassLoaderUtil.loadAllowedClass(converterClassName, context, tmic.getTranslationOptions());
             if (!DynamicConverter.class.isAssignableFrom(converterClass)) {
                 addError(errorPrefix + " is not of type [" + DynamicConverter.class.getName() + "]");
                 return null;
@@ -133,6 +134,8 @@ public class ConversionRuleModelHandler extends ModelHandlerBase {
             return converterClass;
         } catch (ClassNotFoundException e) {
             addError("Could not find " + errorPrefix);
+        } catch (IllegalArgumentException e) {
+            addError(e.getMessage());
         } catch (NoSuchMethodException e) {
             addError(errorPrefix + " must have a public no-argument constructor");
         }

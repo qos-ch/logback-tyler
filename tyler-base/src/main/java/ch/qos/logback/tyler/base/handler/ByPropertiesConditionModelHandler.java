@@ -34,6 +34,7 @@ import ch.qos.logback.core.model.processor.ModelHandlerException;
 import ch.qos.logback.core.model.processor.ModelInterpretationContext;
 import ch.qos.logback.core.util.StringUtil;
 import ch.qos.logback.tyler.base.TylerModelInterpretationContext;
+import ch.qos.logback.tyler.base.util.ClassLoaderUtil;
 import ch.qos.logback.tyler.base.util.VariableNameUtil;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.FieldSpec;
@@ -70,19 +71,20 @@ public class ByPropertiesConditionModelHandler extends ModelHandlerBase {
         String originalClassName = byPropertiesConditionModel.getClassName();
         String classNameStr = mic.getImport(originalClassName);
         String conditionVariableName = VariableNameUtil.conditionModelToVariableName(classNameStr, instanceNum);
-        MethodSpec.Builder methodSpecBuilder = addJavaStatementForAppenderInitialization(tmic, conditionVariableName, classNameStr);
 
-
+        // the class is loaded before any code is emitted
+        Class<?> propertyConditionClass;
         try {
-            Class<?> propertyConditionClass = Class.forName(classNameStr);
-            implicitModelHandlerData = new ImplicitModelHandlerData(propertyConditionClass, LOCAL_PROPERTY_CONDITION_FIELD_NAME, methodSpecBuilder);
-
-            mic.pushObject(implicitModelHandlerData);
-        } catch (ClassNotFoundException e) {
-            addError("Could not find class", e);
+            propertyConditionClass = ClassLoaderUtil.loadAllowedClass(classNameStr, context, tmic.getTranslationOptions());
+        } catch (ClassNotFoundException | IllegalArgumentException e) {
+            addError("Could not load condition class [" + classNameStr + "]", e);
             inError = true;
             throw new ModelHandlerException(e);
         }
+
+        MethodSpec.Builder methodSpecBuilder = addJavaStatementForAppenderInitialization(tmic, conditionVariableName, classNameStr);
+        implicitModelHandlerData = new ImplicitModelHandlerData(propertyConditionClass, LOCAL_PROPERTY_CONDITION_FIELD_NAME, methodSpecBuilder);
+        mic.pushObject(implicitModelHandlerData);
     }
 
     MethodSpec.Builder addJavaStatementForAppenderInitialization(TylerModelInterpretationContext tmic, String conditionVariableName,
