@@ -26,11 +26,9 @@
 
 package ch.qos.logback.tyler.maven;
 
-import ch.qos.logback.core.ContextBase;
 import ch.qos.logback.core.joran.spi.JoranException;
-import ch.qos.logback.core.model.Model;
-import ch.qos.logback.core.status.Status;
-import ch.qos.logback.tyler.base.ModelToJava;
+import ch.qos.logback.tyler.base.ConfigurationFileTranslator;
+import ch.qos.logback.tyler.base.ConfigurationFileTranslator.TranslationResult;
 import ch.qos.logback.tyler.base.TranslationOptions;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.model.Resource;
@@ -42,11 +40,9 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
-import org.xml.sax.InputSource;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -72,7 +68,7 @@ import java.util.Set;
 @Mojo(name = "generate", defaultPhase = LifecyclePhase.GENERATE_SOURCES, requiresDependencyResolution = ResolutionScope.COMPILE, threadSafe = true)
 public class TylerMojo extends AbstractMojo {
 
-    static final String CONFIGURATOR_SERVICE_FILE = "META-INF/services/ch.qos.logback.classic.spi.Configurator";
+    static final String CONFIGURATOR_SERVICE_FILE = ConfigurationFileTranslator.CONFIGURATOR_SERVICE_FILE;
 
     /**
      * The logback.xml file to translate.
@@ -148,18 +144,17 @@ public class TylerMojo extends AbstractMojo {
 
         getLog().info("Translating [" + configurationFile + "] into [" + className + "]");
 
-        List<String> errors = new ArrayList<>();
-        List<String> warnings = new ArrayList<>();
-        String javaSource = translate(errors, warnings);
+        TranslationResult result = translate();
 
-        warnings.forEach(w -> getLog().warn(w));
-        errors.forEach(e -> getLog().error(e));
-        if (!errors.isEmpty() || javaSource == null) {
-            throw new MojoFailureException("Translation of [" + configurationFile + "] failed with " + errors.size() + " error(s)");
+        result.warnings().forEach(w -> getLog().warn(w));
+        result.errors().forEach(e -> getLog().error(e));
+        if (!result.isSuccessful()) {
+            throw new MojoFailureException("Translation of [" + configurationFile + "] failed with " + result.errors().size() + " error(s)");
         }
-        if (failOnWarning && !warnings.isEmpty()) {
-            throw new MojoFailureException("Translation of [" + configurationFile + "] issued " + warnings.size() + " warning(s)");
+        if (failOnWarning && !result.warnings().isEmpty()) {
+            throw new MojoFailureException("Translation of [" + configurationFile + "] issued " + result.warnings().size() + " warning(s)");
         }
+        String javaSource = result.javaSource();
 
         Path javaFile = outputDirectory.toPath().resolve(className.replace('.', '/') + ".java");
         Path serviceFile = resourcesOutputDirectory.toPath().resolve(CONFIGURATOR_SERVICE_FILE);
@@ -180,7 +175,7 @@ public class TylerMojo extends AbstractMojo {
      * analysed, and resources it includes can be found. As it delegates to the class loader of the plugin
      * first, logback and logback-tyler are those of the plugin.
      */
-    String translate(List<String> errors, List<String> warnings) throws MojoExecutionException {
+    TranslationResult translate() throws MojoExecutionException {
         try (URLClassLoader classLoader = new URLClassLoader(projectClassPath(), TylerMojo.class.getClassLoader())) {
             TranslationOptions.Builder builder = TranslationOptions.builder().generatedClassName(className)
                             .translationTimeInclusionEnabled(translationTimeInclusionEnabled).classLoader(classLoader);
@@ -193,41 +188,11 @@ public class TylerMojo extends AbstractMojo {
             } else {
                 builder.allowedPackages(allowedPackages);
             }
-
-            ContextBase context = new ContextBase();
-            ModelToJava m2j = new ModelToJava(context, builder.build());
-
-            String result;
-            try (InputStream in = Files.newInputStream(configurationFile.toPath())) {
-                InputSource inputSource = new InputSource(in);
-                inputSource.setSystemId(configurationFile.toURI().toString());
-                Model model = m2j.extractModel(inputSource);
-                result = model == null ? null : m2j.toJava(model);
-            }
-
-            for (Status status : context.getStatusManager().getCopyOfStatusList()) {
-                collect(status, errors, warnings);
-            }
-            return result;
+            return new ConfigurationFileTranslator(builder.build()).translate(configurationFile);
         } catch (IllegalArgumentException e) {
             throw new MojoExecutionException("Invalid configuration of the plugin: " + e.getMessage(), e);
         } catch (JoranException | IOException e) {
             throw new MojoExecutionException("Failed to translate [" + configurationFile + "]", e);
-        }
-    }
-
-    static void collect(Status status, List<String> errors, List<String> warnings) {
-        String message = status.getMessage();
-        if (status.getThrowable() != null) {
-            message += " " + status.getThrowable();
-        }
-        if (status.getLevel() == Status.ERROR) {
-            errors.add(message);
-        } else if (status.getLevel() == Status.WARN) {
-            warnings.add(message);
-        }
-        if (status.hasChildren()) {
-            status.iterator().forEachRemaining(child -> collect(child, errors, warnings));
         }
     }
 

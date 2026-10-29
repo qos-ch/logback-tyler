@@ -31,3 +31,8 @@ replay_pid*
 .idea/
 
 target
+# Gradle build of tyler-gradle-plugin
+.gradle/
+.kotlin/
+tyler-gradle-plugin/build/
+!tyler-gradle-plugin/gradle/wrapper/gradle-wrapper.jar
