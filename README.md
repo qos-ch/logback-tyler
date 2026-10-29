@@ -233,6 +233,7 @@ TranslationOptions options = TranslationOptions.builder()
     .generatedClassName("org.example.MyConfigurator")
     .generatedClassSuperclassName("org.example.MyTylerConfiguratorBase")
     .translationTimeInclusionEnabled(true)
+    .allowedPackages(List.of("org.example.logging"))
     .build();
 
 ModelToJava m2j = new ModelToJava(context, options);
@@ -257,5 +258,154 @@ The available options are:
   `<include>` elements. Defaults to false. Only enable this option for
   trusted input.
 
+- `allowedPackages`: the packages, including their subpackages, whose
+  classes may be loaded at translation time, e.g. classes of
+  appenders, encoders, layouts, filters, conditions or converters.
+  Classes of other packages are reported as errors. Classes of the `ch.qos.logback` package are always
+  allowed. Defaults to the packages of logback's documentation
+  examples, i.e. `chapters.appenders`, `chapters.layouts` and
+  `chapters.filters`, which the given packages replace. Alternatively,
+  `allowAllPackages()` allows the classes of all packages. As classes
+  are loaded at translation time, only allow all packages for trusted
+  input.
+
+- `classLoader`: the class loader used at translation time to load
+  the classes referenced by the configuration file and to find the
+  resources referenced by `<include resource="...">` elements. For
+  example, a build tool can pass a class loader which sees the
+  dependencies of the project being built. Defaults to the class
+  loader of logback.
+
 The `ModelToJava(Context)` constructor uses
 `TranslationOptions.DEFAULT`.
+
+## Maven plugin
+
+As of version 1.0.7, the `tyler-maven-plugin` translates a logback.xml
+file into a custom configurator at build time. The generated class is
+compiled with the rest of your project and installed as a service
+provider in
+_META-INF/services/ch.qos.logback.classic.spi.Configurator_. Thus,
+logback picks it up at initialization without any further
+configuration.
+
+```xml
+<build>
+  <plugins>
+    <plugin>
+      <groupId>ch.qos.logback.tyler</groupId>
+      <artifactId>tyler-maven-plugin</artifactId>
+      <version>1.0.7</version>
+      <executions>
+        <execution>
+          <goals>
+            <goal>generate</goal>
+          </goals>
+        </execution>
+      </executions>
+      <configuration>
+        <configurationFile>${project.basedir}/src/main/resources/logback.xml</configurationFile>
+        <className>org.example.logging.MyConfigurator</className>
+      </configuration>
+    </plugin>
+  </plugins>
+</build>
+```
+
+The `generate` goal runs in the `generate-sources` phase. It writes
+the generated class under _target/generated-sources/tyler_ and the
+provider-configuration file under _target/generated-resources/tyler_,
+and adds both directories to the project.
+
+The available parameters are listed below. Each parameter can also be
+set via the user property shown in parentheses, e.g.
+`-Dtyler.skip=true`.
+
+- `configurationFile` (`tyler.configurationFile`): the logback.xml
+  file to translate. Defaults to
+  `${project.basedir}/src/main/resources/logback.xml`.
+
+- `className` (`tyler.className`): the fully qualified name of the
+  generated configurator class. Defaults to
+  `com.example.TylerConfigurator`.
+
+- `superclassName` (`tyler.superclassName`): the fully qualified name
+  of the superclass of the generated class, see
+  `generatedClassSuperclassName` above. Defaults to
+  `ch.qos.logback.classic.tyler.TylerConfiguratorBase`.
+
+- `translationTimeInclusionEnabled`
+  (`tyler.translationTimeInclusionEnabled`): whether files referenced
+  by `<include>` elements are inlined at translation time, see above.
+  Defaults to false.
+
+- `allowedPackages` (`tyler.allowedPackages`): the packages whose
+  classes may be referenced by the configuration file, in addition to
+  `ch.qos.logback`, see above. As the configuration file belongs to
+  your project, all packages are allowed if this parameter is not set.
+
+- `failOnWarning` (`tyler.failOnWarning`): whether warnings issued
+  during translation fail the build. Errors always do. Defaults to
+  false.
+
+- `skip` (`tyler.skip`): skips the translation. Defaults to false.
+
+- `outputDirectory` and `resourcesOutputDirectory`: the directories
+  where the generated class and the provider-configuration file are
+  written.
+
+Classes referenced by the configuration file, e.g. third-party
+appenders or encoders, are looked up in the compile class path of your
+project. Thus, they must be declared as dependencies with `compile`
+scope, which is required anyway to compile the generated class.
+Resources referenced by `<include resource="...">` elements are looked
+up in the resource directories of your project. Relative paths in
+`<include file="...">` elements are resolved against the current
+working directory of Maven.
+
+Errors and warnings issued during translation are reported in the
+Maven build log.
+
+Please note that the provider-configuration file is part of your
+main resources. Consequently, the generated configurator also takes
+precedence over any logback-test.xml file when running tests.
+
+## Gradle plugin
+
+As of version 1.0.7, the `ch.qos.logback.tyler` Gradle plugin performs
+the same translation as the Maven plugin. For Java projects, it
+registers the `generateTylerConfigurator` task and adds its outputs to
+the main source set. Thus, the generated configurator is compiled, and
+the provider-configuration file packaged, with the rest of your
+project.
+
+```kotlin
+plugins {
+    java
+    id("ch.qos.logback.tyler") version "1.0.7"
+}
+
+tyler {
+    configurationFile = file("src/main/resources/logback.xml")
+    className = "org.example.logging.MyConfigurator"
+}
+```
+
+The `tyler` extension supports the following properties, with the
+same meaning and defaults as the parameters of the Maven plugin:
+`configurationFile`, `className`, `superclassName`,
+`translationTimeInclusionEnabled`, `allowedPackages` and
+`failOnWarning`. If `allowedPackages` is empty, which is the default,
+all packages are allowed.
+
+Classes referenced by the configuration file are looked up in the
+compile class path of the main source set, including other projects
+of your build, and resources referenced by `<include resource="...">`
+elements in its resource directories. The generated files are written
+under _build/generated/tyler_. The task supports up-to-date checks,
+the build cache and the configuration cache.
+
+The Gradle plugin is built with Gradle, separately from the other
+modules. To build it, first install tyler-base with `mvn install` in
+the top-level directory, then run `./gradlew build` in the
+_tyler-gradle-plugin_ directory.

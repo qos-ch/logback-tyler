@@ -236,7 +236,6 @@ public class ModelToJava {
 
         JavaFile javaFile = javaFileBuilder.indent("  ").build();
         StringBuffer sb = new StringBuffer();
-        String s = javaFile.toString();
         javaFile.writeTo(sb);
         return sb;
     }
